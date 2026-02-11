@@ -25,6 +25,10 @@ const adminSchema = new mongoose.Schema({
     enum: ["super_admin", "admin"],
     default: "admin",
   },
+  avatar: {
+    type: String,
+    require: true,
+  },
   isVerified:{
     type: Boolean,
     default: false
