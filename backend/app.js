@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import express from 'express'
 import dotenv from 'dotenv'
 
@@ -14,5 +13,3 @@ app.get('/', (req, res) => {
 app.listen(PORT, ()=> {
   console.log(`Server running at: http://localhost:${PORT}`)
 })
-=======
->>>>>>> 862afaf201de191bd45815ab1bc7e33e09ba127f
