@@ -155,3 +155,15 @@ try {
 } catch (error) {
   return res.status(500).json({success: false, message: error.message})
 }}
+
+export const adminLogout = async (req, res) => {
+try {
+    const adminId = req.adminId;
+    await AdminSession.deleteMany({ adminId })
+  
+    await Admin.findByIdAndUpdate(adminId, {isLoggedIn: false}, {new: true});
+    return res.status(200).json({success: true, message: "Admin Logout successfully"})
+} catch (error) {
+  return res.status(500).json({success: false, message: error.message})
+}
+}

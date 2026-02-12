@@ -1,6 +1,7 @@
 import express from 'express'
 import { upload } from '../middleware/multer.middleware.js'
-import { adminLogin, adminRegistration, adminVerification } from '../controllers/admin.controller.js'
+import { adminLogin, adminLogout, adminRegistration, adminVerification } from '../controllers/admin.controller.js'
+import { isAuthenticated } from '../middleware/auth.middleware.js'
 
 const adminRouter = express.Router()
 
@@ -10,7 +11,8 @@ adminRouter.post('/admin-registration', upload.fields([
       maxCount: 1,
   }
 ]), adminRegistration)
-adminRouter.post('/admin-verification', adminVerification)
-adminRouter.post('/admin-login', adminLogin)
+adminRouter.post('/admin-verification', adminVerification);
+adminRouter.post('/admin-login', adminLogin);
+adminRouter.delete('/admin-logout', isAuthenticated, adminLogout)
 
 export { adminRouter }
