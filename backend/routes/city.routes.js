@@ -4,12 +4,6 @@ import { upload } from "../middleware/multer.middleware.js"
 
 const router = express.Router()
 
-router.post("/", upload.fields([
-  {
-    name : "images",
-    maxCount : 1,
-
-  }
-]) ,  createCity) 
+router.post("/", upload.array("images" , 5) ,  createCity) 
 
 export default router
