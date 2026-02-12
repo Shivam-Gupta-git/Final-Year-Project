@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { verifyEmail } from "../verifyEmail/verifyEmail.js";
 import { AdminSession } from "../model/adminSession.model.js";
+import { sendOtpMail } from "../verifyEmail/sendOtpMail.js";
 
 export const adminRegistration = async (req, res) => {
   try {
@@ -163,6 +164,32 @@ try {
   
     await Admin.findByIdAndUpdate(adminId, {isLoggedIn: false}, {new: true});
     return res.status(200).json({success: true, message: "Admin Logout successfully"})
+} catch (error) {
+  return res.status(500).json({success: false, message: error.message})
+}
+}
+
+export const forgotAdminPassword = async (req, res) => {
+try {
+    const { email } = req.body;
+    if(!email){
+      return res.status(402).json({success: false, message: 'email filed must be required'})
+    }
+  
+    const admin = await Admin.findOne({ email });
+    if(!admin){
+      return res.status(402).json({success: false, message: "admin not found"})
+    }
+  
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expOTP = new Date(Date.now() + 10 * 60 * 1000);
+  
+    admin.otp = otp;
+    admin.expOTP = expOTP;
+    await admin.save();
+  
+    await sendOtpMail(email, otp);
+    return res.status(200).json({success: true, message: 'forgotAdminPassword successfully'})
 } catch (error) {
   return res.status(500).json({success: false, message: error.message})
 }
