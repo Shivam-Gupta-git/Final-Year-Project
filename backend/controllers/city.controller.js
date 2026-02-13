@@ -36,7 +36,6 @@ export const createCity = async (req, res) => {
         const uploadResult = await uploadCloudinary(file.path, "cities");
         imageUrls.push(uploadResult.secure_url);
 
-        
         if (fs.existsSync(file.path)) {
           fs.unlinkSync(file.path);
         }

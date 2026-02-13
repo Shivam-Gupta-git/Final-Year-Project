@@ -1,0 +1,457 @@
+import { uploadCloudinary } from "../config/cloudinary.config.js";
+import { User } from "../model/user.model.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { verifyEmail } from "../verifyEmail/verifyEmail.js";
+import { UserSession } from "../model/userSession.model.js";
+import { sendOtpMail } from "../verifyEmail/sendOtpMail.js";
+
+export const userRegistration = async (req, res) => {
+  try {
+    const { userName, email, contactNumber, password } = req.body;
+
+    if (
+      [userName, email, contactNumber, password].some(
+        (field) => !field || field.trim() === ""
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const userExistance = await User.findOne({ email });
+    if (userExistance) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    if (!avatarLocalPath) {
+      return res.status(400).json({
+        success: false,
+        message: "Avatar file is required",
+      });
+    }
+
+    const avatar = await uploadCloudinary(avatarLocalPath);
+    if (!avatar) {
+      return res.status(400).json({
+        success: false,
+        message: "Failed to upload avatar",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      userName,
+      email,
+      contactNumber,
+      password: hashedPassword,
+      avatar: avatar.url,
+      role: "user",
+    });
+
+    const token = jwt.sign({ id: newUser._id }, process.env.SECRET_KET, {
+      expiresIn: "1d",
+    });
+    newUser.token = token;
+    verifyEmail(email, token);
+
+    console.log(token);
+
+    await newUser.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      adminId: newUser._id,
+      data: newUser,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const superAdminRegistration = async (req, res) => {
+  try {
+    const { userName, email, contactNumber, password } = req.body;
+
+    if (
+      [userName, email, contactNumber, password].some(
+        (field) => !field || field.trim() === ""
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // 🔐 Allow only ONE super admin
+    const existingSuperAdmin = await User.findOne({ role: "super_admin" });
+    if (existingSuperAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Super admin already exists",
+      });
+    }
+
+    const userExistance = await User.findOne({ email });
+    if (userExistance) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    if (!avatarLocalPath) {
+      return res.status(400).json({
+        success: false,
+        message: "Avatar file is required",
+      });
+    }
+
+    const avatar = await uploadCloudinary(avatarLocalPath);
+    if (!avatar) {
+      return res.status(400).json({
+        success: false,
+        message: "Failed to upload avatar",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      userName,
+      email,
+      contactNumber,
+      password: hashedPassword,
+      avatar: avatar.url,
+      role: "super_admin",
+    });
+
+    const token = jwt.sign({ id: newUser._id }, process.env.SECRET_KET, {
+      expiresIn: "1d",
+    });
+    newUser.token = token;
+    verifyEmail(email, token);
+
+    console.log(token);
+
+    await newUser.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      adminId: newUser._id,
+      data: newUser,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const createAdminRegistration = async (req, res) => {
+  try {
+    const { userName, email, contactNumber, password } = req.body || {};
+
+    if (
+      [userName, email, contactNumber, password].some(
+        (field) => !field || field.trim() === ""
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const userExistance = await User.findOne({ email });
+    if (userExistance) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const admin = await User.create({
+      userName,
+      email,
+      contactNumber,
+      password: hashedPassword,
+      avatar: null,
+      role: "admin",
+      isActive: false,    
+      isVerified: false
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Admin created. Awaiting super-admin approval.",
+      adminId: admin._id,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const approveAdmin = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+
+    const admin = await User.findById(adminId);
+
+    if (!admin || admin.role !== "admin") {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    admin.isActive = true;
+    admin.isVerified = true;
+
+    await admin.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Admin approved successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const userVerification = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(400).json({
+        success: false,
+        message: "Authorization token is missing or Invalid",
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.SECRET_KET);
+    } catch (error) {
+      if (error.name === "TokenExpiredError") {
+        return res.status(400).json({
+          success: false,
+          message: "this registration token has expired",
+        });
+      }
+      return res
+        .status(400)
+        .json({ success: false, message: "token verification is failed" });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "user not found" });
+    }
+
+    (user.token = null), (user.isVerified = true);
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "user verification successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const userLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if ([email, password].some((fields) => !fields || fields?.trim() === "")) {
+      return res
+        .status(400)
+        .json({ success: false, message: "all fields must be required !" });
+    }
+
+    const registeredUser = await User.findOne({ email }).select("+password");
+    if (!registeredUser) {
+      return res
+        .status(400)
+        .json({ success: false, message: "user is not exist" });
+    }
+
+    const checkUserPassword = await bcrypt.compare(
+      password,
+      registeredUser.password
+    );
+    if (!checkUserPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Incorrect Password" });
+    }
+
+    if (registeredUser.isVerified !== true) {
+      return res.status(400).json({
+        success: false,
+        message: "user is not verified. go and verify your account first.",
+      });
+    }
+
+    const existingSession = await UserSession.findOne({
+      userId: registeredUser._id,
+    });
+    if (existingSession) {
+      await UserSession.deleteOne({ userId: registeredUser._id });
+    }
+
+    await UserSession.create({ userId: registeredUser._id });
+
+    const accessToken = jwt.sign(
+      { id: registeredUser._id },
+      process.env.SECRET_KET,
+      { expiresIn: "7d" }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: registeredUser._id },
+      process.env.SECRET_KET,
+      { expiresIn: "10d" }
+    );
+
+    registeredUser.isLoggedIn = true;
+    await registeredUser.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `user login successfully ${registeredUser.userName}`,
+      registeredUser,
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const userLogout = async (req, res) => {
+  try {
+    const userId = req.userId;
+    await UserSession.deleteMany({ userId });
+
+    await User.findByIdAndUpdate(userId, { isLoggedIn: false }, { new: true });
+    return res
+      .status(200)
+      .json({ success: true, message: "user Logout successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const forgotUserPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res
+        .status(402)
+        .json({ success: false, message: "email filed must be required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(402)
+        .json({ success: false, message: "user not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expOTP = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.otp = otp;
+    user.expOTP = expOTP;
+    await user.save();
+
+    await sendOtpMail(email, otp);
+    return res
+      .status(200)
+      .json({ success: true, message: "forgotAdminPassword successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const verifyUserOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+    const email = req.params.email;
+
+    if (!otp) {
+      return res
+        .status(400)
+        .json({ success: false, message: "otp is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "user not found" });
+    }
+
+    if (!user || !user.expOTP) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP not generated or allready vieified",
+      });
+    }
+
+    if (user.expOTP < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP is expired. please generate a new one",
+      });
+    }
+
+    if (otp !== user.otp) {
+      return res.status(400).json({ success: false, message: "Invalid otp" });
+    }
+
+    user.otp = null;
+    user.expOTP = null;
+
+    await user.save();
+    return res
+      .status(200)
+      .json({ success: true, message: "OTP verification successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+
+
+
