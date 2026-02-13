@@ -664,7 +664,7 @@ export const changePassword = async (req, res) => {
   try {
     const { email } = req.params;
     const { newPassword, confirmPassword } = req.body;
-    
+
     if([newPassword, confirmPassword].some((fields) => !fields || fields?.trim() === "")){
       return res.status(400).json({success: false, message: "all fields mush be required"})
     }
@@ -686,4 +686,37 @@ export const changePassword = async (req, res) => {
   } catch (error) {
     return res.status(500).json({success: false, message: error.message})
   }
+}
+
+export const userChangePassword = async (req, res) => {
+try {
+    const userId = req.user.id;
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+  
+    if([oldPassword, newPassword, confirmPassword].some((fields) => !fields || fields?.trim() === "")){
+      return res.status(200).json({success: false, message: "all fields must be required"})
+    }
+
+    if(newPassword !== confirmPassword){
+      return res.status(400).json({success: false, message: "both password are not matched"})
+    }
+
+    const user = await User.findOne( userId ).select("+password")
+    if(!user){
+      return res.status(400).json({success: false, message: 'user not found'})
+    }
+
+    const checkPassword = await bcrypt.compare(oldPassword, user.password);
+    if(!checkPassword){
+      return res.status(400).json({success: false, message: "old password is Incorrect"})
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+    return res.status(200).json({success: false, message: 'password change successfully'})
+} catch (error) {
+  return res.status(500).json({success: false, message: error.message})
+}
 }

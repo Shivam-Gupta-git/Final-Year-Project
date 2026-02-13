@@ -8,6 +8,7 @@ import {
   forgotUserPassword,
   verifyUserOtp,
   changePassword,
+  userChangePassword,
 } from "../controllers/user.controller.js";
 import { isAuthenticated, authorize } from "../middleware/auth.middleware.js";
 
@@ -28,6 +29,7 @@ userRouter.delete("/user-logout", isAuthenticated, userLogout);
 userRouter.post("/user-verification", userVerification);
 userRouter.post("/forgot-user-password", forgotUserPassword);
 userRouter.post("/verify-user-otp/:email", verifyUserOtp);
-userRouter.post("/change-password/:email", changePassword)
+userRouter.post("/change-password/:email", changePassword);
+userRouter.post("/user-change-password",isAuthenticated, userChangePassword)
 
 export { userRouter };
