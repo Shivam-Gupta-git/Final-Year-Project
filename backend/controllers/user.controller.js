@@ -659,3 +659,31 @@ export const verifyUserOtp = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const changePassword = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { newPassword, confirmPassword } = req.body;
+    
+    if([newPassword, confirmPassword].some((fields) => !fields || fields?.trim() === "")){
+      return res.status(400).json({success: false, message: "all fields mush be required"})
+    }
+
+    if(newPassword !== confirmPassword){
+      return res.status(400).json({success: false, message: "both password are not same"})
+    }
+
+    const user = await User.findOne({ email })
+    if(!user){
+      return res.status(400).json({success: false, message: "user not found"})
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({success: true, message: "password change successfully"})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
+}
