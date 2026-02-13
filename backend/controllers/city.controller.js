@@ -67,3 +67,25 @@ export const createCity = async (req, res) => {
     });
   }
 };
+
+export const getActiveCities = async (req , res) => {
+  try {
+    const cities = await City.find({status : "active"})
+    console.log("cities", cities);
+    
+    return res
+    .status(200)
+    .json({
+      success : true,
+      message : "get active cities succcessfully",
+      data : cities
+    })
+  } catch (error) {
+    return res
+    .status(500)
+    .json({
+      success : false,
+      message : error.message
+    })
+  }
+}
