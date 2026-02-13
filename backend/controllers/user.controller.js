@@ -81,6 +81,85 @@ export const userRegistration = async (req, res) => {
   }
 };
 
+export const userLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if ([email, password].some(f => !f || f.trim() === "")) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const registeredUser = await User.findOne({
+      email,
+      role: "user", 
+    }).select("+password");
+
+    if (!registeredUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, registeredUser.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password",
+      });
+    }
+
+    if (!registeredUser.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Verify your account first",
+      });
+    }
+
+
+    await UserSession.deleteMany({
+      userId: registeredUser._id,
+      role: "user",
+    });
+
+ 
+    await UserSession.create({
+      userId: registeredUser._id,
+      role: "user",
+    });
+
+    const accessToken = jwt.sign(
+      { id: registeredUser._id },
+      process.env.SECRET_KET,
+      { expiresIn: "7d" }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: registeredUser._id },
+      process.env.SECRET_KET,
+      { expiresIn: "10d" }
+    );
+
+    registeredUser.isLoggedIn = true;
+    await registeredUser.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `User logged in successfully`,
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const superAdminRegistration = async (req, res) => {
   try {
     const { userName, email, contactNumber, password } = req.body;
@@ -165,6 +244,114 @@ export const superAdminRegistration = async (req, res) => {
   }
 };
 
+export const superAdminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if ([email, password].some(f => !f || f.trim() === "")) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const superAdmin = await User.findOne({
+      email,
+      role: "super_admin",
+    });
+
+    if (!superAdmin) {
+      return res.status(404).json({
+        success: false,
+        message: "Super-admin not found",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, superAdmin.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password",
+      });
+    }
+
+    if (!superAdmin.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Verify your account first",
+      });
+    }
+
+    
+    await UserSession.deleteMany({
+      userId: superAdmin._id,
+      role: "super_admin",
+    });
+
+  
+    await UserSession.create({
+      userId: superAdmin._id,
+      role: "super_admin",
+    });
+
+    
+    const accessToken = jwt.sign(
+      { id: superAdmin._id },
+      process.env.SECRET_KET,
+      { expiresIn: "7d" }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: superAdmin._id },
+      process.env.SECRET_KET,
+      { expiresIn: "10d" }
+    );
+
+    superAdmin.isLoggedIn = true;
+    await superAdmin.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Super-admin logged in successfully",
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const superAdminLogout = async (req, res) => {
+  try {
+    const superAdminId = req.user.id; 
+
+    await UserSession.deleteMany({
+      userId: superAdminId,
+      role: "super_admin"
+    });
+
+
+    await User.findByIdAndUpdate(
+      superAdminId,
+      { isLoggedIn: false },
+      { returnDocument: "after" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Super admin logged out successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const createAdminRegistration = async (req, res) => {
   try {
     const { userName, email, contactNumber, password } = req.body || {};
@@ -213,6 +400,22 @@ export const createAdminRegistration = async (req, res) => {
     });
   }
 };
+
+export const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if([email, password].some((fields) => !fields || fields?.trim() === "")){
+      return res.status(400).json({success: false, message: 'all fields must be required'})
+    }
+
+    const registredAdmin = await User.findOne({ email, role:'admin' })
+    if(!registredAdmin){
+      return res.status(400).json({success: false, message: "admin not found"})
+    }
+  } catch (error) {
+    
+  }
+}
 
 export const approveAdmin = async (req, res) => {
   try {
@@ -286,82 +489,13 @@ export const userVerification = async (req, res) => {
   }
 };
 
-export const userLogin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if ([email, password].some((fields) => !fields || fields?.trim() === "")) {
-      return res
-        .status(400)
-        .json({ success: false, message: "all fields must be required !" });
-    }
-
-    const registeredUser = await User.findOne({ email }).select("+password");
-    if (!registeredUser) {
-      return res
-        .status(400)
-        .json({ success: false, message: "user is not exist" });
-    }
-
-    const checkUserPassword = await bcrypt.compare(
-      password,
-      registeredUser.password
-    );
-    if (!checkUserPassword) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Incorrect Password" });
-    }
-
-    if (registeredUser.isVerified !== true) {
-      return res.status(400).json({
-        success: false,
-        message: "user is not verified. go and verify your account first.",
-      });
-    }
-
-    const existingSession = await UserSession.findOne({
-      userId: registeredUser._id,
-    });
-    if (existingSession) {
-      await UserSession.deleteOne({ userId: registeredUser._id });
-    }
-
-    await UserSession.create({ userId: registeredUser._id });
-
-    const accessToken = jwt.sign(
-      { id: registeredUser._id },
-      process.env.SECRET_KET,
-      { expiresIn: "7d" }
-    );
-
-    const refreshToken = jwt.sign(
-      { id: registeredUser._id },
-      process.env.SECRET_KET,
-      { expiresIn: "10d" }
-    );
-
-    registeredUser.isLoggedIn = true;
-    await registeredUser.save();
-
-    return res.status(200).json({
-      success: true,
-      message: `user login successfully ${registeredUser.userName}`,
-      registeredUser,
-      accessToken,
-      refreshToken,
-    });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
 export const userLogout = async (req, res) => {
   try {
-    const userId = req.userId;
-    await UserSession.deleteMany({ userId });
+    const userId = req.user.id;
+    await UserSession.deleteMany({ userId: userId, role:
+    'user' });
 
-    await User.findByIdAndUpdate(userId, { isLoggedIn: false }, { new: true });
+    await User.findByIdAndUpdate(userId, { isLoggedIn: false }, { returnDocument: "after" });
     return res
       .status(200)
       .json({ success: true, message: "user Logout successfully" });
@@ -369,6 +503,8 @@ export const userLogout = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
 
 export const forgotUserPassword = async (req, res) => {
   try {
