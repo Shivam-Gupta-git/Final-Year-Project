@@ -7,9 +7,6 @@ import {
   userVerification,
   forgotUserPassword,
   verifyUserOtp,
-  superAdminRegistration,
-  superAdminLogin,
-  superAdminLogout,
 } from "../controllers/user.controller.js";
 import { isAuthenticated, authorize } from "../middleware/auth.middleware.js";
 
@@ -25,18 +22,10 @@ userRouter.post(
   ]),
   userRegistration
 );
-userRouter.post("/user-verification", userVerification);
 userRouter.post("/user-login", userLogin);
 userRouter.delete("/user-logout", isAuthenticated, userLogout);
+userRouter.post("/user-verification", userVerification);
 userRouter.post("/forgot-user-password", forgotUserPassword);
 userRouter.post("/verify-user-otp/:email", verifyUserOtp);
-userRouter.post(
-  "/super-admin-registration",
-  upload.fields([{ name: "avatar", maxCount: 1 }]),
-  superAdminRegistration
-);
-userRouter.post('/super-admin-login', superAdminLogin)
-
-userRouter.delete("/super-admin-logout", isAuthenticated, authorize("super_admin"),superAdminLogout);
 
 export { userRouter };
