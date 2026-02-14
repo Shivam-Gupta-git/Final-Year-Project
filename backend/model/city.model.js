@@ -2,41 +2,46 @@ import mongoose from "mongoose";
 
 const citySchema = new mongoose.Schema(
   {
-    name: { 
-      type: String, 
-      required: true, 
-      unique: true, 
-      trim: true },
-
-    state: { 
-      type: String, 
-      required: true },
-
-    country: { 
-      type: String, 
-      default: "India" },
-
-    description: { 
-      type: String 
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
     },
-    famousFor: { 
-      type: String, 
-      required: true },
 
-    bestTimeToVisit: { 
-      type: String, 
-      required: true },
+    state: {
+      type: String,
+      required: true,
+    },
 
-    avgDailyBudget: { 
-      type: Number, 
-      required: true }, 
+    country: {
+      type: String,
+      default: "India",
+    },
 
-    images: 
-    [
+    description: {
+      type: String,
+    },
+    famousFor: {
+      type: String,
+      required: true,
+    },
+
+    bestTimeToVisit: {
+      type: String,
+      required: true,
+    },
+
+    avgDailyBudget: {
+      type: Number,
+      required: true,
+    },
+
+    images: [
       {
-        type: String 
-        }
-      ],
+        type: String,
+      },
+    ],
 
     status: {
       type: String,
@@ -49,20 +54,18 @@ const citySchema = new mongoose.Schema(
         type: String,
         enum: ["Point"],
         default: "Point",
-        required  : true,
+        required: true,
       },
       coordinates: {
-        type: [Number], 
+        type: [Number],
         required: true,
       },
     },
-
-    
   },
   { timestamps: true },
 );
 
 //this is required for log/lot location .
-citySchema.index({location : "2dsphere"})
+citySchema.index({ location: "2dsphere" });
 
 export const City = mongoose.model("City", citySchema);

@@ -1,19 +1,49 @@
-import express from 'express'
-import { upload } from '../middleware/multer.middleware.js'
-import { adminLogin, adminLogout, adminRegistration, adminVerification, forgotAdminPassword } from '../controllers/admin.controller.js'
-import { isAuthenticated } from '../middleware/auth.middleware.js'
+import express from "express";
+import { isAuthenticated, authorize } from "../middleware/auth.middleware.js";
+import {
+  superAdminRegistration,
+  superAdminLogin,
+  superAdminLogout,
+  adminLogin,
+  adminLogout,
+  approveAdmin,
+  createAdminRegistration,
+} from "../controllers/user.controller.js";
+import { upload } from "../middleware/multer.middleware.js";
 
-const adminRouter = express.Router()
+const adminRouter = express.Router();
 
-adminRouter.post('/admin-registration', upload.fields([
-  {
-    name: "avatar",
-      maxCount: 1,
-  }
-]), adminRegistration)
-adminRouter.post('/admin-verification', adminVerification);
-adminRouter.post('/admin-login', adminLogin);
-adminRouter.delete('/admin-logout', isAuthenticated, adminLogout);
-adminRouter.post('/forgot-admin-password', forgotAdminPassword)
+adminRouter.post(
+  "/super-admin-registration",
+  upload.fields([{ name: "avatar", maxCount: 1 }]),
+  superAdminRegistration
+);
+adminRouter.post("/super-admin-login", superAdminLogin);
+adminRouter.delete(
+  "/super-admin-logout",
+  isAuthenticated,
+  authorize("super_admin"),
+  superAdminLogout
+);
 
-export { adminRouter }
+adminRouter.post(
+  "/admin-registration",
+  isAuthenticated,
+  authorize("super_admin"),
+  createAdminRegistration
+);
+adminRouter.patch(
+  "/approve-admin/:adminId",
+  isAuthenticated,
+  authorize("super_admin"),
+  approveAdmin
+);
+adminRouter.post("/admin-login", adminLogin);
+adminRouter.delete(
+  "/admin-logout",
+  isAuthenticated,
+  authorize("admin"),
+  adminLogout
+);
+
+export { adminRouter };
