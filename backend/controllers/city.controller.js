@@ -15,7 +15,15 @@ export const createCity = async (req, res) => {
       avgDailyBudget,
     } = req.body;
 
-    const location = JSON.parse(req.body.location);
+    let location;
+    try {
+      location = JSON.parse(req.body.location);
+    } catch {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid location format",
+      });
+    }
 
     if (
       !name ||
@@ -26,7 +34,10 @@ export const createCity = async (req, res) => {
       !avgDailyBudget ||
       !location
     ) {
-      throw new Error("Bad request");
+      return res.status(400).json({
+        success: false,
+        message: "All required fields are mandatory",
+      });
     }
 
     let imageUrls = [];
@@ -36,7 +47,6 @@ export const createCity = async (req, res) => {
         const uploadResult = await uploadCloudinary(file.path, "cities");
         imageUrls.push(uploadResult.secure_url);
 
-        
         if (fs.existsSync(file.path)) {
           fs.unlinkSync(file.path);
         }
@@ -69,24 +79,132 @@ export const createCity = async (req, res) => {
   }
 };
 
-export const getActiveCities = async (req , res) => {
+export const getActiveCities = async (req, res) => {
   try {
-    const cities = await City.find({status : "active"})
+    const cities = await City.find({ status: "active" });
     console.log("cities", cities);
-    
-    return res
-    .status(200)
-    .json({
-      success : true,
-      message : "get active cities succcessfully",
-      data : cities
-    })
+
+    return res.status(200).json({
+      success: true,
+      message: "get active cities succcessfully",
+      data: cities,
+    });
   } catch (error) {
-    return res
-    .status(500)
-    .json({
-      success : false,
-      message : error.message
-    })
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
-}
+};
+
+export const getCityById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const city = await City.findById(id);
+
+    if (!city) {
+      return res.status(404).json({
+        success: false,
+        message: "City not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: city,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateCity = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updatedCity = await City.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    if (!updatedCity) {
+      return res.status(404).json({
+        success: false,
+        message: "City not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "City updated successfully",
+      data: updatedCity,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//access to admin also
+export const deactivateCity = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const city = await City.findByIdAndUpdate(
+      id,
+      { status: "inactive" },
+      { new: true },
+    );
+
+    if (!city) {
+      return res.status(404).json({
+        success: false,
+        message: "City not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "City deactivated successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getNearbyCities = async (req, res) => {
+  try {
+    const { lng, lat, distance = 50000 } = req.query;
+
+    const cities = await City.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [Number(lng), Number(lat)],
+          },
+          $maxDistance: Number(distance),
+        },
+      },
+      status: "active",
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: cities,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
