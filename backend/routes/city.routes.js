@@ -1,15 +1,23 @@
 import express from "express";
-import { createCity, getActiveCities } from "../controllers/city.controller.js"
-import { upload } from "../middleware/multer.middleware.js"
-
+import {
+  createCity,
+  getActiveCities,
+  getCityById,
+  updateCity,
+  deactivateCity,
+  getNearbyCities,
+} from "../controllers/city.controller.js";
 
 const router = express.Router();
 
+// Admin
+router.post("/", createCity);
+router.put("/:id", updateCity);
+router.delete("/:id", deactivateCity);
 
-router.post("/", upload.array("images", 5), createCity);
-
-router.post("/", upload.array("images" , 5) ,  createCity) 
-router.get("/getactive-city", getActiveCities)
-
+// Public
+router.get("/", getActiveCities);
+router.get("/nearby", getNearbyCities);
+router.get("/:id", getCityById);
 
 export default router;
