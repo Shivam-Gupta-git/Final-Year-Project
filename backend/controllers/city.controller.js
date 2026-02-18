@@ -127,7 +127,7 @@ export const updateCity = async (req, res) => {
     const { id } = req.params;
 
     const updatedCity = await City.findByIdAndUpdate(id, req.body, {
-      new: true,
+      returnDocument: "after",
     });
 
     if (!updatedCity) {

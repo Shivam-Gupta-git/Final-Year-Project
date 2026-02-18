@@ -7,17 +7,42 @@ import {
   deactivateCity,
   getNearbyCities,
 } from "../controllers/city.controller.js";
+import { isAuthenticated } from "../middleware/auth.middleware.js";
+import { authorize } from "../middleware/auth.middleware.js";
+import { upload } from "../middleware/multer.middleware.js";
 
-const router = express.Router();
+const cityRouter = express.Router();
 
-// Admin
-router.post("/", createCity);
-router.put("/:id", updateCity);
-router.delete("/:id", deactivateCity);
+/* ------------ ADMIN ROUTES ------------ */
 
-// Public
-router.get("/", getActiveCities);
-router.get("/nearby", getNearbyCities);
-router.get("/:id", getCityById);
+// Admin creates city
+cityRouter.post(
+  "/", upload.array("images", 5),//whenever you use multer here you can remove this upload
+  // isAuthenticated,
+  // authorize("admin"),
+  createCity
+);
 
-export default router;
+// Admin updates city
+cityRouter.put(
+  "/:id",
+  // isAuthenticated,
+  // authorize("admin"),
+  updateCity
+);
+
+// Super Admin deactivates city
+cityRouter.delete(
+  "/:id",
+  // isAuthenticated,
+  // authorize("superadmin"),
+  deactivateCity
+);
+
+/* ------------ PUBLIC ROUTES ------------ */
+
+cityRouter.get("/", getActiveCities);
+cityRouter.get("/nearby", getNearbyCities);
+cityRouter.get("/:id", getCityById);
+
+export default cityRouter;

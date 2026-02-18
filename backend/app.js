@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import connectDB from "./config/mongoDB.config.js";
 import connectCloudinary from "./config/cloudinary.config.js";
 import { userRouter } from "./routes/user.routes.js";
-import router from "./routes/city.routes.js";
 import { adminRouter } from "./routes/admin.routes.js";
+import cityRouter from "./routes/city.routes.js";
 
 const app = express();
 
@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter)
-app.use("/api/city", router);
+app.use("/api/city", cityRouter);
 
 app.get("/", (req, res) => {
   res.send("backend server will be start");

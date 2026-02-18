@@ -26,12 +26,14 @@ adminRouter.delete(
   superAdminLogout
 );
 
+//admin registration
 adminRouter.post(
   "/admin-registration",
   isAuthenticated,
   authorize("super_admin"),
   createAdminRegistration
 );
+
 adminRouter.patch(
   "/approve-admin/:adminId",
   isAuthenticated,
