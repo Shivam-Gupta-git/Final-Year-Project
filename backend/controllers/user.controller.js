@@ -887,8 +887,8 @@ export const findNearbyAdmins = async (req, res) => {
           $geometry: {
             type: "Point",
             coordinates: [
-              Number(longitude),
-              Number(latitude)
+              Number(latitude),
+              Number(longitude)
             ]
           },
           $maxDistance: distance * 1000 // km → meters
