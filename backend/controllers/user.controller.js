@@ -831,3 +831,79 @@ try {
 }
 }
 
+export const updateUserLocation = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if(!userId){
+      return res.status(400).json({success: false, message: 'User Unauthorize'})
+    }
+
+    const { latitude, longitude, city, state, country, address } = req.body;
+
+    if(!latitude && !city){
+      return res.status(400).json({success: false, message: 'Provide latitude/longitude or city'})
+    }
+
+    const updateData = {};
+    if(latitude && longitude){
+      updateData.location = {
+        type: 'Point',
+        coordinates:[longitude, latitude],
+        city,
+        state,
+        country,
+        address
+      }
+    }else{
+      updateData.location = {city, state, country, address}
+    }
+
+    const user = await User.findByIdAndUpdate(userId, updateData, {returnDocument: 'after', runValidators: true})
+    if(!user){
+      return res.status(400).json({success: false, message: 'Location updated failed'})
+    }
+
+    return res.status(200).json({success: true, message: 'Location updated successfully', location: user.location})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
+}
+
+export const findNearbyAdmins = async (req, res) => {
+  try {
+    const { latitude, longitude, distance = 10 } = req.query;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        success: false,
+        message: "latitude and longitude are required"
+      });
+    }
+
+    const admins = await User.find({
+      role: "admin",
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [
+              Number(longitude),
+              Number(latitude)
+            ]
+          },
+          $maxDistance: distance * 1000 // km → meters
+        }
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      count: admins.length,
+      admins
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+

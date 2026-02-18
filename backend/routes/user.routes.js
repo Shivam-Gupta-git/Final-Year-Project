@@ -10,6 +10,8 @@ import {
   changePassword,
   userChangePassword,
   updateUserProfile,
+  updateUserLocation,
+  findNearbyAdmins,
 } from "../controllers/user.controller.js";
 import { isAuthenticated, authorize } from "../middleware/auth.middleware.js";
 
@@ -38,5 +40,7 @@ userRouter.put('/update-user-profile', isAuthenticated, upload.fields([
     maxCount:1
   }
 ]), updateUserProfile)
+userRouter.post('/update-location', isAuthenticated, updateUserLocation)
+userRouter.get("/nearby-admins", findNearbyAdmins);
 
 export { userRouter };
