@@ -585,7 +585,37 @@ export const adminLogout = async (req, res) => {
 };
 
 export const updateAdminProfile = async (req, res) => {
-  
+  try {
+    const userId = req.user?.id;
+    if(!userId){
+      return res.status(400).json({success: false, message: 'Unauthorize User'})
+    }
+
+    const { userName, contactNumber } = req.body;
+
+    const updateData = {};
+
+    if(userName?.trim()) updateData.userName = userName;
+    if(contactNumber?.trim()) updateData.contactNumber = contactNumber;
+
+    if(req.files?.avatar?.[0]?.path){
+      const avatar = await uploadCloudinary(req.files.avatar[0].path)
+      if(!avatar){
+        return res.status(400).json({success: false, message:'Avatar upload failed'})
+      }
+      updateData.avatar = avatar.url;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {returnDocument:"after", runValidators: true})
+
+    if(!updatedUser){
+      return res.status(400).json({success: false, message: 'admin profile not updated'})
+    }
+
+    return res.status(200).json({success: true, message: 'admin profile update successfully'})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
 }
 
 export const approveAdmin = async (req, res) => {

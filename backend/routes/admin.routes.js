@@ -9,6 +9,7 @@ import {
   approveAdmin,
   createAdminRegistration,
   updateSuperAdminProfile,
+  updateAdminProfile,
 } from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 
@@ -20,10 +21,10 @@ adminRouter.post(
   upload.fields([{ name: "avatar", maxCount: 1 }]),
   superAdminRegistration
 );
-// Login Super Admin 
+// Login Super Admin
 adminRouter.post("/super-admin-login", superAdminLogin);
 
-// Logout Super Admin 
+// Logout Super Admin
 adminRouter.delete(
   "/super-admin-logout",
   isAuthenticated,
@@ -32,7 +33,13 @@ adminRouter.delete(
 );
 
 // update Super Admin Profile
-adminRouter.put('/update-super-admin-profile', isAuthenticated, authorize("super_admin"),upload.fields([{name: "avatar", maxCount: 1}]), updateSuperAdminProfile)
+adminRouter.put(
+  "/update-super-admin-profile",
+  isAuthenticated,
+  authorize("super_admin"),
+  upload.fields([{ name: "avatar", maxCount: 1 }]),
+  updateSuperAdminProfile
+);
 
 // admin registration by Super Admin
 adminRouter.post(
@@ -57,6 +64,15 @@ adminRouter.delete(
   isAuthenticated,
   authorize("admin"),
   adminLogout
+);
+
+// update admin profile
+adminRouter.put(
+  "/update-admin-profile",
+  isAuthenticated,
+  authorize("admin"),
+  upload.fields([{ name: "avatar", maxCount: 1 }]),
+  updateAdminProfile
 );
 
 export { adminRouter };
