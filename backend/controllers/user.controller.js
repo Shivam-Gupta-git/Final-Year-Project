@@ -401,6 +401,44 @@ export const superAdminLogout = async (req, res) => {
   }
 };
 
+export const updateSuperAdminProfile = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if(!userId){
+      return res.status(400).json({success: false, message: 'Unauthorized user'})
+    }
+
+    const { userName, contactNumber } = req.body;
+
+    const updateData = {};
+
+    if(userName?.trim()) updateData.userName = userName;
+    if(contactNumber?.trim()) updateData.contactNumber = contactNumber;
+
+    if(req.files?.avatar?.[0]?.path){
+      const avatar = await uploadCloudinary(req.files.avatar[0].path)
+      if(!avatar){
+        return res.status(400).json({success: false, message: 'Avatar upload failed'})
+      }
+      updateData.avatar = avatar.url;
+    }
+
+    if(Object.keys(updateData).length === 0){
+      return res.status(400).json({success: false, message:'Nothing to update'})
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {returnDocument:'after', runValidators: true})
+
+    if(!updatedUser){
+      return res.status(400).json({success: false, message: 'User not found'})
+    }
+
+    return res.status(200).json({success: true, message: 'Super Admin Profile updated successfully'})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
+}
+
 export const createAdminRegistration = async (req, res) => {
   try {
     const { userName, email, contactNumber, password } = req.body || {};
@@ -545,6 +583,10 @@ export const adminLogout = async (req, res) => {
     });
   }
 };
+
+export const updateAdminProfile = async (req, res) => {
+  
+}
 
 export const approveAdmin = async (req, res) => {
   try {
