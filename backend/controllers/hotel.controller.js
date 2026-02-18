@@ -64,3 +64,34 @@ export const createHotel = async (req, res) => {
     });
   }
 };
+
+export const getHotelbyid = async (req , res) => {
+  try {
+    const {cityid} = req.query
+
+    if (!cityid) {
+      return res.status(400).json({
+        success: false,
+        message: "cityId is required",
+      })
+    }
+
+    const hotels = await Hotel.find({
+      city : cityid,
+      status : "Active"
+    })
+    console.log(hotels);
+    
+
+    return res.status(200).json({
+      success: true,
+      data: hotels,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success : false,
+      message : error.message
+    })
+  }
+}
