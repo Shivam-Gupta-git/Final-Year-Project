@@ -17,3 +17,4 @@ hotelRouter.put("/:id", upload.array("images", 5), updateHotel);
 hotelRouter.delete("/:id", deleteHotel);
 
 export default hotelRouter;
+  

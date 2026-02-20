@@ -13,6 +13,7 @@ export const createCity = async (req, res) => {
       description,
       bestTimeToVisit,
       avgDailyBudget,
+      status
     } = req.body;
 
     let location;
@@ -32,7 +33,8 @@ export const createCity = async (req, res) => {
       !famousFor ||
       !bestTimeToVisit ||
       !avgDailyBudget ||
-      !location
+      !location ||
+      !status
     ) {
       return res.status(400).json({
         success: false,
@@ -63,6 +65,7 @@ export const createCity = async (req, res) => {
       images: imageUrls,
       location,
       bestTimeToVisit,
+      status
     });
     console.log(city);
 
