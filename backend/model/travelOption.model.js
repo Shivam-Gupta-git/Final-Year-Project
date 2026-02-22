@@ -8,15 +8,19 @@ const travelOptionSchema = new mongoose.Schema(
       required: true,
     },
 
+    toCity: {
+      type: Schema.Types.ObjectId,
+      ref: "City",
+    },
+
     toPlace: {
       type: Schema.Types.ObjectId,
       ref: "Place",
-      required: true,
     },
 
     transportType: {
       type: String,
-      enum: ["bus", "train", "cab", "auto", "metro"],
+      enum: ["bus", "train", "cab", "auto", "metro", "flight"],
       required: true,
     },
 
@@ -26,18 +30,33 @@ const travelOptionSchema = new mongoose.Schema(
     },
 
     timeRequired: {
-      type: String, // e.g. "30 min", "1.5 hr"
+      type: String,
       required: true,
     },
 
-    isCheapest: {
-      type: Boolean,
-      default: false,
+    isCheapest: { type: Boolean, default: false },
+    isFastest: { type: Boolean, default: false },
+
+    images: [String],
+
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
     },
 
-    isFastest: {
-      type: Boolean,
-      default: false,
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+        required: true,
+      },
+      coordinates: {
+        type: [Number], // [lng, lat]
+        required: true,
+      },
     },
 
     status: {
@@ -48,6 +67,17 @@ const travelOptionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+
+travelOptionSchema.index({ location: "2dsphere" });
+
+
+travelOptionSchema.pre("validate", function (next) {
+  if (!this.toCity && !this.toPlace) {
+    return next(new Error("Either toCity or toPlace is required"));
+  }
+  next();
+});
 
 export const TravelOption = mongoose.model(
   "TravelOption",
