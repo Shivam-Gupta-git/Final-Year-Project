@@ -1,5 +1,6 @@
 import mongoose, { Schema }  from "mongoose";
 
+
 const placeSchema = new mongoose.Schema({
   name : {
     type : String,
@@ -23,9 +24,12 @@ const placeSchema = new mongoose.Schema({
       required : true
     },
 
+    //change here 
     timeRequired : {
       type : String,
-      enum : ["1-2 hr" , "half day" , "full day"],
+      trim : true,
+      minlength: 2,
+      maxlength: 20,
       required : true
     },
 
@@ -65,9 +69,19 @@ const placeSchema = new mongoose.Schema({
       },
     },
 
+    approvedBy : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "User"
+    },
+
+    createdBy : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "User"
+    },
+
     status : {
       type : String,
-      enum : ["active", "inactive" , "pending"],
+      enum : ["active", "inactive" , "pending","rejected"],
       default : "pending"
     }
 
