@@ -12,6 +12,7 @@ import {
   updateUserProfile,
   updateUserLocation,
   findNearbyAdmins,
+  smartSearch,
 } from "../controllers/user.controller.js";
 import { isAuthenticated, authorize } from "../middleware/auth.middleware.js";
 
@@ -42,5 +43,6 @@ userRouter.put('/update-user-profile', isAuthenticated, upload.fields([
 ]), updateUserProfile)
 userRouter.post('/update-location', isAuthenticated, updateUserLocation)
 userRouter.get("/nearby-admins", findNearbyAdmins);
+userRouter.get('/smart-Search', smartSearch)
 
 export { userRouter };

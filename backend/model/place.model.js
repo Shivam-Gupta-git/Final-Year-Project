@@ -7,7 +7,7 @@ const placeSchema = new mongoose.Schema({
     required : true,
     },
 
-    cityId : {
+    city : {
       type : Schema.Types.ObjectId,
       ref : "City",
       required : true
