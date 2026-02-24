@@ -20,7 +20,7 @@ const placeSchema = new mongoose.Schema({
 
     category : {
       type : String,
-      enum : ["temple" , "fort" , "nature" , "market" , "other"],
+      enum : ["temple" , "fort" , "park" , "market" , "other"],
       required : true
     },
 

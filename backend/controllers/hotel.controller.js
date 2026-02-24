@@ -102,24 +102,20 @@ export const createHotel = async (req, res) => {
 
 export const getHotelbyid = async (req, res) => {
   try {
-    const { cityId } = req.query;
+    const { id } = req.params;
 
-    if (!cityId) {
+    const hotel = await Hotel.findById(id).populate("city" , "name state")
+
+    if (!hotel) {
       return res.status(400).json({
-        success: false,
-        message: "cityId is required",
-      });
+        success : false,
+        message : "Hotel not found"
+      })
     }
-
-    const hotels = await Hotel.find({
-      city: cityId,
-      status: "active",
-    });
-    console.log(hotels);
 
     return res.status(200).json({
       success: true,
-      data: hotels,
+      data: hotel,
     });
   } catch (error) {
     return res.status(500).json({
@@ -146,19 +142,19 @@ export const updateHotel = async (req, res) => {
       }
     }
 
-    // if (updateData.location?.coordinates) {
-    //   const existingHotel = await Hotel.findOne({
-    //     _id: { $ne: id },
-    //     "location.coordinates": updateData.location.coordinates,
-    //   });
+    if (updateData.location?.coordinates) {
+      const existingHotel = await Hotel.findOne({
+        _id: { $ne: id },
+        "location.coordinates": updateData.location.coordinates,
+      });
 
-    //   if (existingHotel) {
-    //     return res.status(409).json({
-    //       success: false,
-    //       message: "Another hotel already exists at this location",
-    //     });
-    //   }
-    // }
+      if (existingHotel) {
+        return res.status(409).json({
+          success: false,
+          message: "Another hotel already exists at this location",
+        });
+      }
+    }
 
     if (req.files && req.files.length > 0) {
       let imageUrls = [];
@@ -227,34 +223,6 @@ export const deleteHotel = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Hotel delete successfully",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-export const getHotelsByCity = async (req, res) => {
-  try {
-    const { cityId } = req.query;
-
-    if (!cityId) {
-      return res.status(400).json({
-        success: false,
-        message: "cityId is required",
-      });
-    }
-
-    const hotels = await Hotel.find({
-      city: cityId,
-      status: "active",
-    });
-
-    return res.status(200).json({
-      success: true,
-      data: hotels,
     });
   } catch (error) {
     return res.status(500).json({

@@ -4,7 +4,6 @@ import {
   deleteHotel,
   getActiveHotels,
   getHotelbyid,
-  getHotelsByCity,
   updateHotel,
 } from "../controllers/hotel.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
@@ -20,7 +19,6 @@ hotelRouter.delete("/:id",isAuthenticated, authorize("admin"), deleteHotel);
 
 //public routes
 hotelRouter.get("/", getHotelbyid);
-hotelRouter.get("/:id", getHotelsByCity);
 hotelRouter.get("/activehotel", getActiveHotels)
 export default hotelRouter;
   
