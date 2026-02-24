@@ -62,7 +62,7 @@ export const createPlace = async (req, res) => {
     //verify place by city
     const existingPlace = await Place.findOne({
       name,
-      cityId,
+      city : cityId,
     });
     if (existingPlace) {
       return res.status(409).json({
@@ -118,7 +118,7 @@ export const createPlace = async (req, res) => {
     return res.status(201).json({
       success: true,
       data: place,
-      success: "place created successfully",
+      message : "place created successfully",
     });
   } catch (error) {
     return res.status(500).json({

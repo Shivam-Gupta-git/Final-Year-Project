@@ -72,6 +72,10 @@ const restaurantSchema = new mongoose.Schema(
       enum: ["active", "inactive", "pending"],
       default: "pending",
     },
+    createdBy : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "User"
+    },
   },
   { timestamps: true }
 );
