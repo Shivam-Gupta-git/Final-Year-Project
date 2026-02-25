@@ -1,6 +1,7 @@
 import { uploadCloudinary } from "../config/cloudinary.config.js";
 import { TravelOption } from "../model/travelOption.model.js";
 import { City } from "../model/city.model.js";
+import mongoose, { Mongoose } from "mongoose";
 
 export const createTravelOptions = async (req, res) => {
   try {
@@ -151,6 +152,101 @@ try {
 } catch (error) {
   return res.status(500).json({success: false, message: error.message})
 }
+}
+
+export const updateTravelOptions = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid travel option id",
+      });
+    }
+
+    const updateData = { ...req.body };
+
+    // protect fields
+    delete updateData.status;
+    delete updateData.approvedBy;
+
+    /* 🔥 LOCATION FIX */
+    if (req.body.location) {
+      let location;
+
+      try {
+        location =
+          typeof req.body.location === "string"
+            ? JSON.parse(req.body.location)
+            : req.body.location;
+      } catch {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid location JSON",
+        });
+      }
+
+      if (
+        location.type !== "Point" ||
+        !Array.isArray(location.coordinates) ||
+        location.coordinates.length !== 2
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid GeoJSON location",
+        });
+      }
+
+      updateData.location = {
+        type: "Point",
+        coordinates: location.coordinates.map(Number),
+      };
+    }
+
+    const updated = await TravelOption.findByIdAndUpdate(id, updateData, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Travel option not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Travel option updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const deleteTravelOptions = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if(!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400).json({success: false, message: 'Invalid travelOption Id'})
+    }
+
+    const travelOption = await TravelOption.findByIdAndDelete(id, { status: 'inactive'}, {returnDocument: 'after', runValidators: true})
+
+    if(!travelOption){
+      return res.status(400).json({success: false, message: 'travel option is not found'})
+    }
+
+    return res.status(200).json({success: true, message: 'travelOption delete successfully'})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
 }
 
 export const searchCityToCityTravelOptions = async (req, res) => {
