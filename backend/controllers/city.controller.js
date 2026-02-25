@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { uploadCloudinary } from "../config/cloudinary.config.js";
 import { City } from "../model/city.model.js";
 import fs from "fs";
@@ -94,42 +95,46 @@ export const createCity = async (req, res) => {
 export const approveCity = async (req, res) => {
   try {
     const city = await City.findById(req.params.id);
-  
+
+    
+
     if (!city) {
       return res.status(404).json({ message: "City not found" });
     }
-  
+
     city.status = "active";
     city.approvedBy = req.user._id; //super admin id
     await city.save();
-  
+
     return res.json({ success: true, message: "City approved" });
   } catch (error) {
     return res.status(500).json({
-      success : false,
-      message : error.message
-    })
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 export const rejectCity = async (req, res) => {
   try {
     const city = await City.findById(req.params.id);
-  
+
+    
+
     if (!city) {
       return res.status(404).json({ message: "City not found" });
     }
-  
+
     city.status = "rejected";
     city.approvedBy = null;
     await city.save();
-  
+
     return res.json({ success: true, message: "City rejected" });
   } catch (error) {
     return res.status(500).json({
-      success : false,
-      message : error.message
-    })
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -154,6 +159,13 @@ export const getActiveCities = async (req, res) => {
 export const getCityById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid city ID",
+      });
+    }
 
     const city = await City.findOne({
       _id: id,
@@ -182,6 +194,13 @@ export const getCityById = async (req, res) => {
 export const updateCity = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid city ID",
+      });
+    }
 
     let updatedata = { ...req.body };
     delete updatedata.status;
@@ -224,10 +243,17 @@ export const updateCity = async (req, res) => {
   }
 };
 
-//access to admin also
+//access to admin also good for soft delete
 export const deleteCity = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid city ID",
+      });
+    }
 
     const city = await City.findByIdAndUpdate(
       id,
@@ -285,18 +311,20 @@ export const getNearbyCities = async (req, res) => {
 
 export const getPendingCities = async (req, res) => {
   try {
-    const cities = await City.find({status : "pending"})
-  .populate("createdBy" , "userName email role")
+    const cities = await City.find({ status: "pending" }).populate(
+      "createdBy",
+      "userName email role",
+    );
 
-  return res.status(200).json({
-    success : true,
-    data : cities,
-    count : cities.length
-  })
+    return res.status(200).json({
+      success: true,
+      data: cities,
+      count: cities.length,
+    });
   } catch (error) {
     return res.status(500).json({
-      success : false,
-      message  : error.message
-    })
+      success: false,
+      message: error.message,
+    });
   }
-}
+};
