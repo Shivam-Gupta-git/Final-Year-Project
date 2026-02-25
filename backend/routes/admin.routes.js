@@ -16,7 +16,7 @@ import { approveCity, getPendingCities, rejectCity } from "../controllers/city.c
 import { approveHotel, getPendingHotels, rejectHotel } from "../controllers/hotel.controller.js";
 import { approvePlace, pendingPlace, rejectPlace } from "../controllers/place.controller.js";
 import { approveResturant, rejectResturant } from "../controllers/restaurant.controller.js";
-import { approveTravelOptions, pendingTravelOptions, rejectTravelOption } from "../controllers/travelOption.controller.js";
+import { approveTravelOptions, getPendingTravelOptions, rejectTravelOption } from "../controllers/travelOption.controller.js";
 
 const adminRouter = express.Router();
 
@@ -98,6 +98,6 @@ adminRouter.patch("/travel-options/:id/reject", isAuthenticated, authorize("supe
 adminRouter.get("/cities/pending", isAuthenticated, authorize("super_admin"), getPendingCities)
 adminRouter.get("/hotels/pending", isAuthenticated, authorize("super_admin"), getPendingHotels)
 adminRouter.get("/place/pending", isAuthenticated, authorize("super_admin"), pendingPlace)
-adminRouter.get("/travel-options", isAuthenticated, authorize("super_admin"), pendingTravelOptions)
+adminRouter.get("/travel-options", isAuthenticated, authorize("super_admin"), getPendingTravelOptions)
 
 export { adminRouter };

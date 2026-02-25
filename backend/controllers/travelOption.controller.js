@@ -87,7 +87,7 @@ export const createTravelOptions = async (req, res) => {
   }
 };
 
-export const pendingTravelOptions = async (req, res) => {
+export const getPendingTravelOptions = async (req, res) => {
   try {
     const travelOption = await TravelOption.find({status: 'pending'}).populate("createdBy",
     "userName email role",)
@@ -101,7 +101,6 @@ export const pendingTravelOptions = async (req, res) => {
 export const approveTravelOptions = async (req, res) => {
   try {
     const travelOptionId = req.params.id;
-    console.log(travelOptionId);
     if(!travelOptionId){
       return res.status(400).json({success: false, message: "Travel Options Id is required"})
     }
@@ -142,6 +141,16 @@ export const rejectTravelOption = async (req, res) => {
   } catch (error) {
     return res.status(500).json({success: false, message: error.message})
   }
+}
+
+export const getActiveTravelOptions = async (req, res) => {
+try {
+  const travelOption = await TravelOption.find({ status: 'active'})
+
+  return res.status(200).json({success: true, data: travelOption, count: travelOption.length})
+} catch (error) {
+  return res.status(500).json({success: false, message: error.message})
+}
 }
 
 export const searchCityToCityTravelOptions = async (req, res) => {
