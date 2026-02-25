@@ -87,23 +87,58 @@ export const createTravelOptions = async (req, res) => {
   }
 };
 
-export const getApproveTravelOptions = async (req, res) => {
+export const pendingTravelOptions = async (req, res) => {
+  try {
+    const travelOption = await TravelOption.find({status: 'pending'}).populate("createdBy",
+    "userName email role",)
+
+    return res.status(200).json({success: true, data: travelOption, count: travelOption.length})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
+}
+
+export const approveTravelOptions = async (req, res) => {
   try {
     const travelOptionId = req.params.id;
+    console.log(travelOptionId);
     if(!travelOptionId){
       return res.status(400).json({success: false, message: "Travel Options Id is required"})
     }
 
-    const travelOption = await TravelOption.findOne({ travelOptionId })
+    const travelOption = await TravelOption.findById(travelOptionId )
     if(!travelOption){
       return res.status(400).json({success: false, message: 'travel Option is not found'})
     }
 
     travelOption.status = 'active'
-    travelOption.approvedBy = req.user._id
+    travelOption.approvedBy = req.user._id;
     await travelOption.save()
 
     return res.status(200).json({success: true, message: "status approve successfully"})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
+}
+
+export const rejectTravelOption = async (req, res) => {
+  try {
+    const travelOptionId = req.params.id;
+    if(!travelOptionId){
+      return res.status(400).json({success: false, message: 'travelOption Id is required'})
+    }
+
+    const travelOption = await TravelOption.findById(travelOptionId)
+    if(!travelOption){
+      return res.status(400).json({success: false, message: 'travelOption is not found'})
+    }
+
+    travelOption.status = 'rejected';
+    travelOption.approvedBy = null;
+
+    await travelOption.save();
+
+    return res.status(200).json({success: false, message: 'travelOption rejected successfully'})
   } catch (error) {
     return res.status(500).json({success: false, message: error.message})
   }
