@@ -170,3 +170,55 @@ export const approveResturant = async (req, res) => {
     });
   }
 };
+
+export const rejectResturant = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid id",
+      });
+    }
+
+    if (req.user?.role !== "super-admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    //optimized way to reject --chatgpt
+    const resturant = await Restaurant.findOneAndUpdate(
+      {
+        _id: id,
+        status: { $ne: "rejected" },
+      },
+      {
+        status: "rejected",
+        approvedBy: null,
+      },
+      {
+        new: true,
+      },
+    );
+
+    if (!resturant) {
+      return res.status(404).json({
+        success: false,
+        message: "Restaurant not found or already rejected",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Restaurant rejected successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
