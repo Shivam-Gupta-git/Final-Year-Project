@@ -87,6 +87,28 @@ export const createTravelOptions = async (req, res) => {
   }
 };
 
+export const getApproveTravelOptions = async (req, res) => {
+  try {
+    const travelOptionId = req.params.id;
+    if(!travelOptionId){
+      return res.status(400).json({success: false, message: "Travel Options Id is required"})
+    }
+
+    const travelOption = await TravelOption.findOne({ travelOptionId })
+    if(!travelOption){
+      return res.status(400).json({success: false, message: 'travel Option is not found'})
+    }
+
+    travelOption.status = 'active'
+    travelOption.approvedBy = req.user._id
+    await travelOption.save()
+
+    return res.status(200).json({success: true, message: "status approve successfully"})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
+}
+
 export const searchCityToCityTravelOptions = async (req, res) => {
   try {
     const { fromCity, toCity } = req.query;
@@ -159,3 +181,4 @@ export const getMyTravelOptions = async (req, res) => {
     });
   }
 };
+

@@ -67,7 +67,11 @@ const travelOptionSchema = new mongoose.Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    }
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );
