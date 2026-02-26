@@ -345,6 +345,7 @@ export const getResturantbyID = async (req, res) => {
 export const updateResturant = async (req, res) => {
   try {
     const { id } = req.params;
+    let updataData = { ...req.body };
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -353,51 +354,9 @@ export const updateResturant = async (req, res) => {
       });
     }
 
-    const restaurant = await Restaurant.findById(id);
-
-    if (!restaurant) {
-      return res.status(404).json({
-        success: false,
-        message: "Restaurant not found",
-      });
-    }
-
-    if (
-      restaurant.createdBy.toString() !== req.user.id &&
-      !["admin", "super_admin"].includes(req.user.role)
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to update this restaurant",
-      });
-    }
-
-    const allowedFields = [
-      "name",
-      "address",
-      "famousFood",
-      "foodType",
-      "avgCostForOne",
-      "bestTime",
-      "isRecommended",
-      "location",
-    ];
-
-    const updatedData = {};
-
-    allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        updatedData[field] = req.body[field];
-      }
-    });
-
-    //parse location
     if (req.body.location) {
       try {
-        updatedData.location =
-          typeof req.body.location === "string"
-            ? JSON.parse(req.body.location)
-            : req.body.location;
+        updataData.location = JSON.parse(req.body.location);
       } catch (error) {
         return res.status(400).json({
           success: false,
@@ -406,30 +365,26 @@ export const updateResturant = async (req, res) => {
       }
     }
 
-    if (updatedData.location?.coordinates) {
-      const existingRestaurant = await Restaurant.findOne({
-        _id: { $ne: id },
-        "location.coordinates": updatedData.location.coordinates,
-      });
-
-      if (existingRestaurant) {
-        return res.status(409).json({
-          success: false,
-          message: "Another restaurant already exists at these coordinates",
-        });
-      }
-    }
+    if (updataData.location?.coordinates) {
+          const exitingResturant = await Restaurant.findOne({
+            _id: { $ne: id },
+            "location.coordinates": updatedata.location.coordinates,
+          });
+          if (exitingResturant) {
+            return res.status(409).json({
+              success: false,
+              message: "Another resturant already exists at these coordinates.",
+            });
+          }
+        }
 
     if (req.files && req.files.length > 0) {
       try {
         const uploadPromises = req.files.map((file) =>
           uploadCloudinary(file.path, "Restaurant"),
         );
-
         const uploadResults = await Promise.all(uploadPromises);
-
         updatedData.images = uploadResults.map((result) => result.secure_url);
-
         // Delete local temp files
         req.files.forEach((file) => {
           if (fs.existsSync(file.path)) {
@@ -444,15 +399,12 @@ export const updateResturant = async (req, res) => {
       }
     }
 
-    // 9️⃣ Update
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
-      id,
-      updatedData,
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).lean();
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(id , updataData , {
+      new : true,
+      runValidators : true
+    })
+    console.log(updatedRestaurant);
+    
 
     return res.status(200).json({
       success: true,
@@ -468,4 +420,39 @@ export const updateResturant = async (req, res) => {
   }
 };
 
-export const deleteResturant = async (req, res) => {};
+export const deleteResturant = async (req, res) => {
+  try {
+    const {id} = req.params;
+  
+    if(!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400).json({
+        success : false,
+        message : "Invalid id "
+      })
+    }
+  
+    const deleteresturant = await Restaurant.findByIdAndDelete(id , {
+      runValidators : true,
+      
+    })
+    if (!deleteresturant) {
+      return res.status(404).json({
+        success : true,
+        message : "Resturant not found"
+      })
+    }
+
+    return res.status(200).json({
+      success : true,
+      data : deleteresturant,
+      message : "successfully deleted"
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success : false,
+      message : error.message
+    })
+  }
+
+  
+};
