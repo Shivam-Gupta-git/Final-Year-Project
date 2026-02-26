@@ -88,5 +88,6 @@ const restaurantSchema = new mongoose.Schema(
 
 
 restaurantSchema.index({ location: "2dsphere" });
+restaurantSchema.index({status : 1})
 
 export const Restaurant = mongoose.model("Restaurant", restaurantSchema);

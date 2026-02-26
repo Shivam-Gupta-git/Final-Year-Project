@@ -15,7 +15,7 @@ import { upload } from "../middleware/multer.middleware.js";
 import { approveCity, getPendingCities, rejectCity } from "../controllers/city.controller.js";
 import { approveHotel, getPendingHotels, rejectHotel } from "../controllers/hotel.controller.js";
 import { approvePlace, pendingPlace, rejectPlace } from "../controllers/place.controller.js";
-import { approveResturant, rejectResturant } from "../controllers/restaurant.controller.js";
+import { allPendingResturant, approveResturant, rejectResturant } from "../controllers/restaurant.controller.js";
 import { approveTravelOptions, getPendingTravelOptions, rejectTravelOption } from "../controllers/travelOption.controller.js";
 
 const adminRouter = express.Router();
@@ -99,5 +99,6 @@ adminRouter.get("/cities/pending", isAuthenticated, authorize("super_admin"), ge
 adminRouter.get("/hotels/pending", isAuthenticated, authorize("super_admin"), getPendingHotels)
 adminRouter.get("/place/pending", isAuthenticated, authorize("super_admin"), pendingPlace)
 adminRouter.get("/travel-options", isAuthenticated, authorize("super_admin"), getPendingTravelOptions)
+adminRouter.get("/resturant/pending", isAuthenticated , authorize("super_admin"), allPendingResturant)
 
 export { adminRouter };
