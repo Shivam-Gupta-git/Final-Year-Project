@@ -278,7 +278,8 @@ export const searchCityToCityTravelOptions = async (req, res) => {
       fromCity: fromCityDoc._id,
       toCity: toCityDoc._id,
       status: "active",
-    })
+    }).sort({ avgCost: 1 })
+    
       .populate("fromCity", "name state")
       .populate("toCity", "name state")
       .sort({ avgCost: 1 }); // cheapest first
