@@ -9,6 +9,7 @@ export const createResturant = async (req, res) => {
     let {
       name,
       address,
+      state,
       cityId,
       famousFood,
       foodType,
@@ -31,6 +32,7 @@ export const createResturant = async (req, res) => {
     if (
       !name ||
       !address ||
+      !state ||
       !cityId ||
       !foodType ||
       !avgCostForOne ||
@@ -96,6 +98,7 @@ export const createResturant = async (req, res) => {
       name,
       city: cityId,
       address,
+      state,
       bestTime,
       avgCostForOne,
       isRecommended,
@@ -182,7 +185,7 @@ export const rejectResturant = async (req, res) => {
       });
     }
 
-    if (req.user?.role !== "super-admin") {
+    if (req.user?.role !== "super_admin") {
       return res.status(403).json({
         success: false,
         message: "Unauthorized",
@@ -258,18 +261,23 @@ export const allPendingResturant = async (req, res) => {
 export const allAciveResturant = async (req, res) => {
   try {
     const { cityId } = req.params;
+    console.log(cityId);
 
     if (!mongoose.Types.ObjectId.isValid(cityId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Resturant ID",
+        message: "Invalid city ID",
       });
     }
+    
+    
 
     const city = await City.findOne({
       _id: cityId,
       status: "active",
     });
+    console.log(city);
+    
 
     if (!city) {
       return res.status(400).json({
@@ -291,6 +299,8 @@ export const allAciveResturant = async (req, res) => {
       .limit(limit)
       .skip(skip)
       .lean();
+      console.log(restaurant);
+      
 
     return res.status(200).json({
       success: true,
@@ -345,7 +355,7 @@ export const getResturantbyID = async (req, res) => {
 export const updateResturant = async (req, res) => {
   try {
     const { id } = req.params;
-    let updataData = { ...req.body };
+    let updateData = { ...req.body };
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -356,7 +366,7 @@ export const updateResturant = async (req, res) => {
 
     if (req.body.location) {
       try {
-        updataData.location = JSON.parse(req.body.location);
+        updateData.location = JSON.parse(req.body.location);
       } catch (error) {
         return res.status(400).json({
           success: false,
@@ -365,10 +375,10 @@ export const updateResturant = async (req, res) => {
       }
     }
 
-    if (updataData.location?.coordinates) {
+    if (updateData.location?.coordinates) {
           const exitingResturant = await Restaurant.findOne({
             _id: { $ne: id },
-            "location.coordinates": updatedata.location.coordinates,
+            "location.coordinates": updateData.location.coordinates,
           });
           if (exitingResturant) {
             return res.status(409).json({
@@ -384,7 +394,7 @@ export const updateResturant = async (req, res) => {
           uploadCloudinary(file.path, "Restaurant"),
         );
         const uploadResults = await Promise.all(uploadPromises);
-        updatedData.images = uploadResults.map((result) => result.secure_url);
+        updateData.images = uploadResults.map((result) => result.secure_url);
         // Delete local temp files
         req.files.forEach((file) => {
           if (fs.existsSync(file.path)) {
@@ -392,6 +402,7 @@ export const updateResturant = async (req, res) => {
           }
         });
       } catch (uploadError) {
+        console.log("Upload Error:", uploadError);
         return res.status(500).json({
           success: false,
           message: "Image upload failed",
@@ -399,7 +410,7 @@ export const updateResturant = async (req, res) => {
       }
     }
 
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(id , updataData , {
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(id , updateData , {
       new : true,
       runValidators : true
     })
@@ -420,7 +431,7 @@ export const updateResturant = async (req, res) => {
   }
 };
 
-export const deleteResturant = async (req, res) => {
+export const deleteResturant = async (req, res) => { 
   try {
     const {id} = req.params;
   

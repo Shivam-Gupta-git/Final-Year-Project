@@ -12,7 +12,7 @@ restaurantRouter.put("/updateresturant/:id", isAuthenticated , authorize("admin"
 restaurantRouter.delete("/delete/:id", isAuthenticated, authorize("admin"), deleteResturant)
 
 //public routes
-restaurantRouter.get("/restaurant/:cityid" , allAciveResturant)
+restaurantRouter.get("/restaurant/:cityId" , allAciveResturant)
 restaurantRouter.get("/getresturant/:id", getResturantbyID)
 
 

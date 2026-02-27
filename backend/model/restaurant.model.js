@@ -8,6 +8,12 @@ const restaurantSchema = new mongoose.Schema(
       trim: true,
       lowercase : true,
     },
+    state : {
+      type : String,
+      lowercase : true,
+      trim : true,
+
+    },
 
     address: {
       type: String,
@@ -16,7 +22,7 @@ const restaurantSchema = new mongoose.Schema(
     },
 
     city: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "City",
       required: true,
     },
