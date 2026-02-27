@@ -8,6 +8,12 @@ const restaurantSchema = new mongoose.Schema(
       trim: true,
       lowercase : true,
     },
+    state : {
+      type : String,
+      lowercase : true,
+      trim : true,
+
+    },
 
     address: {
       type: String,
@@ -16,7 +22,7 @@ const restaurantSchema = new mongoose.Schema(
     },
 
     city: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "City",
       required: true,
     },
@@ -88,5 +94,6 @@ const restaurantSchema = new mongoose.Schema(
 
 
 restaurantSchema.index({ location: "2dsphere" });
+restaurantSchema.index({status : 1})
 
 export const Restaurant = mongoose.model("Restaurant", restaurantSchema);

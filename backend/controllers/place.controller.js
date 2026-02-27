@@ -255,13 +255,6 @@ export const getplacebyid = async (req, res) => {
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid place ID",
-      });
-    }
-
     return res.status(200).json({
       success: true,
       data: place,

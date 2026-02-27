@@ -17,8 +17,8 @@ hotelRouter.put("/:id",isAuthenticated, authorize("admin"), upload.array("images
 hotelRouter.delete("/:id",isAuthenticated, authorize("admin"), deleteHotel);
 
 
-//public routes
-hotelRouter.get("/", getHotelbyid);
-hotelRouter.get("/activehotel", getActiveHotels)
+//public routes 
+hotelRouter.get("/:id", getHotelbyid);
+hotelRouter.get("/activehotel/:cityid", getActiveHotels)
 export default hotelRouter;
   
