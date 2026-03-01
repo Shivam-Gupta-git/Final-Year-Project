@@ -100,3 +100,101 @@ export const getReviewsByTarget = async (req, res) => {
     });
   }
 };
+
+export const approveReview = async(req , res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({
+        success : false,
+        message : "Invalid ID"
+      })
+    }
+
+    if (req.user?.role !== "super_admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const review = await Review.findById(id)
+    if (!review) {
+      return res.status(400).json({
+        success : false,
+        message : "Not found id"
+      })
+    }
+
+    if (review.status === "active") {
+      return res.status(400).json({
+        success: false,
+        message: "Review already approved",
+      });
+    }
+
+    review.status = "active";
+    review.approvedBy = req.user?._id;
+    await review.save()
+
+    return res.status(200).json({
+      success : true,
+      data : review,
+      message : "Review Approved"
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success : false,
+      message : error.message
+    })
+  }
+}
+
+export const rejectReview = async(req, res) => {
+  try {
+    const {id} = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({
+        success : false,
+        message : "Invalid ID"
+      })
+    }
+
+    if (req.user?.role !== "super_admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const review = await Review.findByIdAndUpdate(
+      {
+        _id: id,
+        status: { $ne: "rejected" },
+      },
+      {
+        status: "rejected",
+        approvedBy: null,
+      },
+      {
+        new: true,
+      },
+    )
+
+    if (!review) {
+      return res.status(400).json({
+        success : false,
+        message : "review not found or already rejected"
+      })
+    }
+
+    
+  } catch (error) {
+    return res.status(500).json({
+      success : false,
+      message : error.message
+    })
+  }
+}
