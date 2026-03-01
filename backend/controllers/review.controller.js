@@ -185,7 +185,7 @@ export const approveReview = async (req, res) => {
     review.approvedBy = req.user?._id;
     await review.save();
 
-    await updateTargetRating(targetId , targetType)
+    await updateTargetRating(review.targetId , review.targetType)
 
     return res.status(200).json({
       success: true,
@@ -232,7 +232,12 @@ export const rejectReview = async (req, res) => {
       },
     );
 
-    await updateTargetRating(targetId , targetType)
+    if (review.status === "approved") {
+      review.status = "rejected"
+      await review.save()
+
+      await updateTargetRating(review.targetId , review.targetType)
+    }
 
     if (!review) {
       return res.status(400).json({
