@@ -39,12 +39,10 @@ export const createTravelOptions = async (req, res) => {
     }
 
     if (!toCity && !toPlace) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Either toCity or toPlace is required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Either toCity or toPlace is required",
+      });
     }
 
     let imageUrls = [];
@@ -90,69 +88,86 @@ export const createTravelOptions = async (req, res) => {
 
 export const getPendingTravelOptions = async (req, res) => {
   try {
-    const travelOption = await TravelOption.find({status: 'pending'}).populate("createdBy",
-    "userName email role",)
+    const travelOption = await TravelOption.find({
+      status: "pending",
+    }).populate("createdBy", "userName email role");
 
-    return res.status(200).json({success: true, data: travelOption, count: travelOption.length})
+    return res
+      .status(200)
+      .json({ success: true, data: travelOption, count: travelOption.length });
   } catch (error) {
-    return res.status(500).json({success: false, message: error.message})
+    return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const approveTravelOptions = async (req, res) => {
   try {
     const travelOptionId = req.params.id;
-    if(!travelOptionId){
-      return res.status(400).json({success: false, message: "Travel Options Id is required"})
+    if (!travelOptionId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Travel Options Id is required" });
     }
 
-    const travelOption = await TravelOption.findById(travelOptionId )
-    if(!travelOption){
-      return res.status(400).json({success: false, message: 'travel Option is not found'})
+    const travelOption = await TravelOption.findById(travelOptionId);
+    if (!travelOption) {
+      return res
+        .status(400)
+        .json({ success: false, message: "travel Option is not found" });
     }
 
-    travelOption.status = 'active'
+    travelOption.status = "active";
     travelOption.approvedBy = req.user._id;
-    await travelOption.save()
+    await travelOption.save();
 
-    return res.status(200).json({success: true, message: "status approve successfully"})
+    return res
+      .status(200)
+      .json({ success: true, message: "status approve successfully" });
   } catch (error) {
-    return res.status(500).json({success: false, message: error.message})
+    return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const rejectTravelOption = async (req, res) => {
   try {
     const travelOptionId = req.params.id;
-    if(!travelOptionId){
-      return res.status(400).json({success: false, message: 'travelOption Id is required'})
+    if (!travelOptionId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "travelOption Id is required" });
     }
 
-    const travelOption = await TravelOption.findById(travelOptionId)
-    if(!travelOption){
-      return res.status(400).json({success: false, message: 'travelOption is not found'})
+    const travelOption = await TravelOption.findById(travelOptionId);
+    if (!travelOption) {
+      return res
+        .status(400)
+        .json({ success: false, message: "travelOption is not found" });
     }
 
-    travelOption.status = 'rejected';
+    travelOption.status = "rejected";
     travelOption.approvedBy = null;
 
     await travelOption.save();
 
-    return res.status(200).json({success: false, message: 'travelOption rejected successfully'})
+    return res
+      .status(200)
+      .json({ success: false, message: "travelOption rejected successfully" });
   } catch (error) {
-    return res.status(500).json({success: false, message: error.message})
+    return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const getActiveTravelOptions = async (req, res) => {
-try {
-  const travelOption = await TravelOption.find({ status: 'active'})
+  try {
+    const travelOption = await TravelOption.find({ status: "active" });
 
-  return res.status(200).json({success: true, data: travelOption, count: travelOption.length})
-} catch (error) {
-  return res.status(500).json({success: false, message: error.message})
-}
-}
+    return res
+      .status(200)
+      .json({ success: true, data: travelOption, count: travelOption.length });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const updateTravelOptions = async (req, res) => {
   try {
@@ -233,26 +248,36 @@ export const deleteTravelOptions = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if(!mongoose.Types.ObjectId.isValid(id)){
-      return res.status(400).json({success: false, message: 'Invalid travelOption Id'})
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid travelOption Id" });
     }
 
-    const travelOption = await TravelOption.findByIdAndDelete(id, { status: 'inactive'}, {returnDocument: 'after', runValidators: true})
+    const travelOption = await TravelOption.findByIdAndDelete(
+      id,
+      { status: "inactive" },
+      { returnDocument: "after", runValidators: true }
+    );
 
-    if(!travelOption){
-      return res.status(400).json({success: false, message: 'travel option is not found'})
+    if (!travelOption) {
+      return res
+        .status(400)
+        .json({ success: false, message: "travel option is not found" });
     }
 
-    return res.status(200).json({success: true, message: 'travelOption delete successfully'})
+    return res
+      .status(200)
+      .json({ success: true, message: "travelOption delete successfully" });
   } catch (error) {
-    return res.status(500).json({success: false, message: error.message})
+    return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const searchCityToCityTravelOptions = async (req, res) => {
   try {
     const { fromCity, toCity } = req.query;
-    console.log(fromCity, toCity)
+    console.log(fromCity, toCity);
 
     if (!fromCity || !toCity) {
       return res.status(400).json({
@@ -307,13 +332,11 @@ export const getMyTravelOptions = async (req, res) => {
       .populate("fromCity toCity toPlace")
       .sort({ createdAt: -1 });
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        count: travelOptions.length,
-        data: travelOptions,
-      });
+    return res.status(200).json({
+      success: true,
+      count: travelOptions.length,
+      data: travelOptions,
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -321,4 +344,3 @@ export const getMyTravelOptions = async (req, res) => {
     });
   }
 };
-
