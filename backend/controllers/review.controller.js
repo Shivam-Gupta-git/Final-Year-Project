@@ -21,7 +21,7 @@ export const createReview = async (req, res) => {
       city: City,
       place: Place,
       hotel: Hotel,
-      resturant: Restaurant,
+      restaurant: Restaurant,
     };
     console.log(modelMap);
 
@@ -48,10 +48,17 @@ export const createReview = async (req, res) => {
       targetType,
       targetId,
     });
-    if (!exitingReview) {
+    if (exitingReview) {
       return res.status(409).json({
         success: false,
         message: "You have already reviewed this item",
+      });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Rating must be between 1 and 5",
       });
     }
 
@@ -80,19 +87,26 @@ export const getReviewsByTarget = async (req, res) => {
   try {
     const { targetType, targetId } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(targetId)) {
+      return res.status(400).json({
+        success : false ,
+        message : "Invalid target ID"
+      })
+    }
+
     const reviews = await Review.find({
       targetType,
       targetId,
-      status: "approved",
+      status: "active",
     })
       .populate("user", "name")
       .sort({ createdAt: -1 })
       .lean();
 
-      return res.status(200).json({
-        success : true,
-        data : reviews
-      })
+    return res.status(200).json({
+      success: true,
+      data: reviews,
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -101,15 +115,48 @@ export const getReviewsByTarget = async (req, res) => {
   }
 };
 
-export const approveReview = async(req , res) => {
+const updateTargetRating = async (targetId , targetType) => {
+  const modelMap = {
+      place : Place,
+      hotel : Hotel,
+      restaurant : Restaurant
+  }
+  const TargetModel = modelMap[targetType];
+
+  const stats = await Review.aggregate([
+    {
+      $match : {
+        targetId : new mongoose.Types.ObjectId(targetId),
+        status : "approved"
+      },
+    },
+    {
+      $group : {
+        _id : null,
+        avgRating : { $avg : "$rating"},
+        total : {$sum  : 1}
+      },
+    },
+  ]);
+
+  const avgRating = stats[0]?.avgRating || 0;
+  const totalReviews  = stats[0]?.total || 0;
+
+  await TargetModel.findByIdAndUpdate(targetId , {
+    averagerating : avgRating,
+    totalReviews
+  })
+}
+
+export const approveReview = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({
-        success : false,
-        message : "Invalid ID"
-      })
+        success: false,
+        message: "Invalid ID",
+      });
     }
 
     if (req.user?.role !== "super_admin") {
@@ -119,12 +166,12 @@ export const approveReview = async(req , res) => {
       });
     }
 
-    const review = await Review.findById(id)
+    const review = await Review.findById(id);
     if (!review) {
       return res.status(400).json({
-        success : false,
-        message : "Not found id"
-      })
+        success: false,
+        message: "Not found id",
+      });
     }
 
     if (review.status === "active") {
@@ -136,30 +183,32 @@ export const approveReview = async(req , res) => {
 
     review.status = "active";
     review.approvedBy = req.user?._id;
-    await review.save()
+    await review.save();
+
+    await updateTargetRating(targetId , targetType)
 
     return res.status(200).json({
-      success : true,
-      data : review,
-      message : "Review Approved"
-    })
+      success: true,
+      data: review,
+      message: "Review Approved",
+    });
   } catch (error) {
     return res.status(500).json({
-      success : false,
-      message : error.message
-    })
+      success: false,
+      message: error.message,
+    });
   }
-}
+};
 
-export const rejectReview = async(req, res) => {
+export const rejectReview = async (req, res) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({
-        success : false,
-        message : "Invalid ID"
-      })
+        success: false,
+        message: "Invalid ID",
+      });
     }
 
     if (req.user?.role !== "super_admin") {
@@ -181,20 +230,25 @@ export const rejectReview = async(req, res) => {
       {
         new: true,
       },
-    )
+    );
+
+    await updateTargetRating(targetId , targetType)
 
     if (!review) {
       return res.status(400).json({
-        success : false,
-        message : "review not found or already rejected"
-      })
+        success: false,
+        message: "review not found or already rejected",
+      });
     }
 
-    
+    return res.status(200).json({
+      success: true,
+      message: "rejected Review",
+    });
   } catch (error) {
     return res.status(500).json({
-      success : false,
-      message : error.message
-    })
+      success: false,
+      message: error.message,
+    });
   }
-}
+};
