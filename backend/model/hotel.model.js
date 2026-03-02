@@ -13,6 +13,17 @@ const hotelSchema = mongoose.Schema({
     required: true,
   },
 
+  totalRooms: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
+
+  maxGuestsPerRoom: {
+    type: Number,
+    default: 2,
+  },
+
   address: {
     type: String,
     required: true,
@@ -87,6 +98,6 @@ const hotelSchema = mongoose.Schema({
   },
 });
 
-hotelSchema.index({ location: "2dsphere" }, { unique: true });
+hotelSchema.index({ location: "2dsphere" });
 
 export const Hotel = mongoose.model("Hotel", hotelSchema);

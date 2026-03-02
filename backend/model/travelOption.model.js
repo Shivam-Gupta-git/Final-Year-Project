@@ -57,12 +57,16 @@ const travelOptionSchema = new mongoose.Schema(
         type: [Number], // [lng, lat]
         required: true,
       },
+    },
 
       status: {
         type: String,
-        enum: ["active", "inactive", "pending", "rejected"],
-        default: "pending",
+        enum:["active", "inactive", "rejected", "pending"],
+        default: "pending"
       },
+
+
+
       createdBy: {
         type: Schema.Types.ObjectId,
         ref: "User",
@@ -71,11 +75,9 @@ const travelOptionSchema = new mongoose.Schema(
       approvedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-      },
     },
-  },
-  { timestamps: true }
-);
+  
+}, {timestamps : true});
 
 travelOptionSchema.index({ location: "2dsphere" });
 
@@ -86,4 +88,9 @@ travelOptionSchema.pre("validate", function (next) {
   next();
 });
 
+
 export const TravelOption = mongoose.model("TravelOption", travelOptionSchema);
+
+
+
+
