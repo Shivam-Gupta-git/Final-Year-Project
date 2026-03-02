@@ -77,6 +77,6 @@ const citySchema = new mongoose.Schema(
 );
 
 //this is required for log/lot location .
-citySchema.index({ location: "2dsphere" }, {unique : true});
+citySchema.index({ location: "2dsphere" });
 
 export const City = mongoose.model("City", citySchema);

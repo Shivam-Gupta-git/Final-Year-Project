@@ -7,7 +7,8 @@ import { Place } from "../model/place.model.js";
 
 export const createHotel = async (req, res) => {
   try {
-    const { name, city, address, pricePerNight, facilities } = req.body;
+    const { name, city, address, pricePerNight, facilities, totalRooms } =
+      req.body;
 
     let location;
     try {
@@ -19,7 +20,14 @@ export const createHotel = async (req, res) => {
       });
     }
 
-    if (!name || !city || !address || !pricePerNight || !location) {
+    if (
+      !name ||
+      !city ||
+      !address ||
+      !pricePerNight ||
+      !location ||
+      !totalRooms
+    ) {
       return res.status(400).json({
         success: false,
         message: "All required fields are mandatory",
@@ -69,11 +77,20 @@ export const createHotel = async (req, res) => {
       });
     }
 
+    const totalRoomsNumber = Number(totalRooms);
+    if (isNaN(totalRoomsNumber) || totalRoomsNumber <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Total rooms must be a valid number greater than 0",
+      });
+    }
+
     const hotel = await Hotel.create({
       name,
       city,
       address,
       pricePerNight,
+      totalRooms : totalRoomsNumber,
       facilities: facilitiesArray,
       images: imageUrls,
       location,
@@ -113,13 +130,13 @@ export const getHotelbyid = async (req, res) => {
       });
     }
 
-    const hotel = await Hotel.findById(id).populate("city" , "name state")
+    const hotel = await Hotel.findById(id).populate("city", "name state");
 
     if (!hotel) {
       return res.status(400).json({
-        success : false,
-        message : "Hotel not found"
-      })
+        success: false,
+        message: "Hotel not found",
+      });
     }
 
     return res.status(200).json({
@@ -187,8 +204,10 @@ export const updateHotel = async (req, res) => {
       updateData.images = imageUrls;
     }
 
-    const updatehotel = await Hotel.findByIdAndUpdate(id, updateData, 
-      { new: true, runValidators: true } //this is use to validate data
+    const updatehotel = await Hotel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }, //this is use to validate data
     );
     console.log(updatehotel);
 
@@ -218,18 +237,18 @@ export const deleteHotel = async (req, res) => {
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
-        success : false,
-        message : "inavlid id"
-      })
+        success: false,
+        message: "inavlid id",
+      });
     }
 
-    const deletedHotel = await Place.findByIdAndDelete(id)
+    const deletedHotel = await Place.findByIdAndDelete(id);
 
     if (!deletedHotel) {
       return res.status(404).json({
-        success : false,
-        message : "Hotel not found"
-      })
+        success: false,
+        message: "Hotel not found",
+      });
     }
 
     return res.status(200).json({
@@ -250,8 +269,9 @@ export const approveHotel = async (req, res) => {
 
     if (!hotel) {
       return res.status(404).json({
-        success : false,
-        message: "Hotel not found" });
+        success: false,
+        message: "Hotel not found",
+      });
     }
 
     hotel.status = "active";
@@ -288,7 +308,6 @@ export const rejectHotel = async (req, res) => {
   }
 };
 
-
 export const getActiveHotels = async (req, res) => {
   try {
     const { cityId } = req.query;
@@ -320,18 +339,20 @@ export const getActiveHotels = async (req, res) => {
 
 export const getPendingHotels = async (req, res) => {
   try {
-    const hotels = await Hotel.find({status : "pending"})
-  .populate("createdBy" , "userName email role")
+    const hotels = await Hotel.find({ status: "pending" }).populate(
+      "createdBy",
+      "userName email role",
+    );
 
-  return res.status(200).json({
-    success : true,
-    data : hotels,
-    count : hotels.length
-  })
+    return res.status(200).json({
+      success: true,
+      data: hotels,
+      count: hotels.length,
+    });
   } catch (error) {
     return res.status(500).json({
-      success : false,
-      message  : error.message
-    })
+      success: false,
+      message: error.message,
+    });
   }
-}
+};
