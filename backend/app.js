@@ -9,6 +9,7 @@ import hotelRouter from "./routes/hotel.routes.js";
 import placeRouter from "./routes/place.routes.js";
 import travelOptionRouter from "./routes/travelOption.routes.js";
 import restaurantRouter from "./routes/restaurant.routes.js";
+import reviewRouter from "./routes/review.routes.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/hotel" , hotelRouter)
 app.use("/api/place", placeRouter)
 app.use("/api/travelOption", travelOptionRouter)
 app.use("/api/resturant", restaurantRouter)
+app.use("/api/review" , reviewRouter)
 
 app.get("/", (req, res) => {
   res.send("backend server will be start");

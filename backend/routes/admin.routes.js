@@ -17,6 +17,7 @@ import { approveHotel, getPendingHotels, rejectHotel } from "../controllers/hote
 import { approvePlace, pendingPlace, rejectPlace } from "../controllers/place.controller.js";
 import { allPendingResturant, approveResturant, rejectResturant } from "../controllers/restaurant.controller.js";
 import { approveTravelOptions, getPendingTravelOptions, rejectTravelOption } from "../controllers/travelOption.controller.js";
+import { approveReview, rejectReview } from "../controllers/review.controller.js";
 
 const adminRouter = express.Router();
 
@@ -86,6 +87,7 @@ adminRouter.patch("/hotel/:id/approve", isAuthenticated, authorize("super_admin"
 adminRouter.patch("/place/:id/approve", isAuthenticated, authorize("super_admin"), approvePlace)
 adminRouter.patch("/resturant/:id/approve", isAuthenticated , authorize("super_admin"), approveResturant)
 adminRouter.patch("/travel-options/:id/approve", isAuthenticated, authorize("super_admin"), approveTravelOptions)
+adminRouter.patch("/review/:id/approve" , isAuthenticated , authorize("super_admin"), approveReview)
 
 //reject 
 adminRouter.patch("/city/:id/reject", isAuthenticated, authorize("super_admin"), rejectCity)
@@ -93,6 +95,7 @@ adminRouter.patch("/hotel/:id/reject", isAuthenticated, authorize("super_admin")
 adminRouter.patch("/place/:id/reject", isAuthenticated , authorize("super_admin"), rejectPlace)
 adminRouter.patch("/resturant/:id/reject", isAuthenticated, authorize("super_admin"), rejectResturant)
 adminRouter.patch("/travel-options/:id/reject", isAuthenticated, authorize("super_admin"), rejectTravelOption)
+adminRouter.patch("/review/:id/reject", isAuthenticated, authorize("super_admin"), rejectReview)
 
 //get pending cities
 adminRouter.get("/cities/pending", isAuthenticated, authorize("super_admin"), getPendingCities)

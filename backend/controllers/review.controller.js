@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import { City } from "../model/city.model";
-import { Place } from "../model/place.model";
-import { Hotel } from "../model/hotel.model";
-import { Restaurant } from "../model/restaurant.model";
-import { Review } from "../model/review.model";
+import { City } from "../model/city.model.js";
+import { Place } from "../model/place.model.js";
+import { Hotel } from "../model/hotel.model.js";
+import { Restaurant } from "../model/restaurant.model.js";
+import { Review } from "../model/review.model.js";
 
 export const createReview = async (req, res) => {
   try {
@@ -228,7 +228,7 @@ export const rejectReview = async (req, res) => {
         approvedBy: null,
       },
       {
-        new: true,
+        returnDocument: "after",
       },
     );
 
