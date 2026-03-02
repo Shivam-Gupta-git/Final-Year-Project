@@ -5,46 +5,87 @@ import { User } from "../model/user.model.js";
 
 export const createDriver = async (req, res) => {
   try {
-    const { name, email, phone, vehicleType, latitude, longitude } = req.body;
 
-    if (!name || !email || !phone || !vehicleType || !latitude || !longitude) {
-      return res.status(400).json({ success: false, message: "All fields required" });
+    const body = req.body || {};
+    const { userName, email, contactNumber, password, vehicleType } = body;
+
+    if (!userName || !email || !contactNumber || !password || !vehicleType) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
     }
 
-    const driverExistance = await Driver.findOne({ email })
-
-    if(driverExistance){
-      return res.status(400).json({succes: false, message: "drive already exists"})
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: "Driver already exists",
+      });
     }
 
-    const tempPassword = "Driver@123"; // later auto-generate
-    const hashedPassword = await bcrypt.hash(tempPassword, 10);
-
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
-      userName: name ,
+      userName,
       email,
-      contactNumber: phone,
+      contactNumber,
       password: hashedPassword,
       role: "driver",
-      isVerified: true
-    })
+      status: "pending",
+      createdBy: req.user.id,
+    });
 
     const driver = await Driver.create({
       userId: user._id,
-      vechalType,
-      location:{
+      vehicleType,
+      createdBy: req.user.id,
+      location: {
         type: "Point",
-        coordinates: [longitude, latitude]
-      }
-    })
+        coordinates: [0, 0],
+      },
+    });
 
-    return res(200).json({succes: true, message: "Driver Created", loginPassword: tempPassword, data: driver})
+    return res.status(201).json({
+      success: true,
+      message: "Driver created successfully",
+      driver,
+    });
 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({succes: false, message: error.message})
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getMyDrivers = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    if(!adminId){
+      return res.status(400).json({succes: false, message: "admin id is wrong"})
+    }
+
+    const drivers = await Driver.find({ createdBy: adminId }).populate("userId", "userName email contactNumber status");
+
+    res.status(200).json({
+      success: true,
+      total: drivers.length,
+      drivers
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 }
+
+export const driverLogin = async (req, res) => {}
+
+
 
 export const goOnline = async (req, res) => {
 try {

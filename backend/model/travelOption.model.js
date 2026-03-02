@@ -36,6 +36,7 @@ const travelOptionSchema = new mongoose.Schema(
 
     isCheapest: { type: Boolean, default: false },
     isFastest: { type: Boolean, default: false },
+<<<<<<< HEAD
 
     images: [String],
 
@@ -44,6 +45,29 @@ const travelOptionSchema = new mongoose.Schema(
       default: 0,
       min: 0,
       max: 5,
+    },
+
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+        required: true,
+      },
+      coordinates: {
+        type: [Number], // [lng, lat]
+        required: true,
+      },
+=======
+
+    images: [String],
+
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+>>>>>>> 91b752c67c5d8954697bf8d60b9b6c24f3480bcd
     },
 
     location: {
@@ -79,6 +103,17 @@ const travelOptionSchema = new mongoose.Schema(
 
 travelOptionSchema.index({ location: "2dsphere" });
 
+<<<<<<< HEAD
+
+travelOptionSchema.pre("validate", function (next) {
+  if (!this.toCity && !this.toPlace) {
+    return next(new Error("Either toCity or toPlace is required"));
+  }
+  next();
+});
+
+=======
+>>>>>>> 91b752c67c5d8954697bf8d60b9b6c24f3480bcd
 export const TravelOption = mongoose.model(
   "TravelOption",
   travelOptionSchema
