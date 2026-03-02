@@ -1,0 +1,346 @@
+import { uploadCloudinary } from "../config/cloudinary.config.js";
+import { TravelOption } from "../model/travelOption.model.js";
+import { City } from "../model/city.model.js";
+import mongoose, { Mongoose } from "mongoose";
+
+export const createTravelOptions = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    if (!adminId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "admin not found" });
+    }
+    const {
+      fromCity,
+      toCity,
+      toPlace,
+      transportType,
+      avgCost,
+      timeRequired,
+      isCheapest,
+      isFastest,
+      latitude,
+      longitude,
+    } = req.body;
+
+    if (
+      !fromCity ||
+      !transportType ||
+      !avgCost ||
+      !timeRequired ||
+      !latitude ||
+      !longitude
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields are missing",
+      });
+    }
+
+    if (!toCity && !toPlace) {
+      return res.status(400).json({
+        success: false,
+        message: "Either toCity or toPlace is required",
+      });
+    }
+
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const upload = await uploadCloudinary(file.path, "travel-options");
+        imageUrls.push(upload.secure_url);
+      }
+    }
+
+    const location = {
+      type: "Point",
+      coordinates: [Number(longitude), Number(latitude)], // lng, lat
+    };
+
+    const travelOption = await TravelOption.create({
+      fromCity,
+      toCity: toCity || undefined,
+      toPlace: toPlace || undefined,
+      transportType,
+      avgCost,
+      timeRequired,
+      isCheapest,
+      isFastest,
+      images: imageUrls,
+      location,
+      status: "pending",
+      createdBy: adminId,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Travel option created (pending approval)",
+      data: travelOption,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getPendingTravelOptions = async (req, res) => {
+  try {
+    const travelOption = await TravelOption.find({
+      status: "pending",
+    }).populate("createdBy", "userName email role");
+
+    return res
+      .status(200)
+      .json({ success: true, data: travelOption, count: travelOption.length });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const approveTravelOptions = async (req, res) => {
+  try {
+    const travelOptionId = req.params.id;
+    if (!travelOptionId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Travel Options Id is required" });
+    }
+
+    const travelOption = await TravelOption.findById(travelOptionId);
+    if (!travelOption) {
+      return res
+        .status(400)
+        .json({ success: false, message: "travel Option is not found" });
+    }
+
+    travelOption.status = "active";
+    travelOption.approvedBy = req.user._id;
+    await travelOption.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "status approve successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const rejectTravelOption = async (req, res) => {
+  try {
+    const travelOptionId = req.params.id;
+    if (!travelOptionId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "travelOption Id is required" });
+    }
+
+    const travelOption = await TravelOption.findById(travelOptionId);
+    if (!travelOption) {
+      return res
+        .status(400)
+        .json({ success: false, message: "travelOption is not found" });
+    }
+
+    travelOption.status = "rejected";
+    travelOption.approvedBy = null;
+
+    await travelOption.save();
+
+    return res
+      .status(200)
+      .json({ success: false, message: "travelOption rejected successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getActiveTravelOptions = async (req, res) => {
+  try {
+    const travelOption = await TravelOption.find({ status: "active" });
+
+    return res
+      .status(200)
+      .json({ success: true, data: travelOption, count: travelOption.length });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateTravelOptions = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid travel option id",
+      });
+    }
+
+    const updateData = { ...req.body };
+
+    // protect fields
+    delete updateData.status;
+    delete updateData.approvedBy;
+
+    /* 🔥 LOCATION FIX */
+    if (req.body.location) {
+      let location;
+
+      try {
+        location =
+          typeof req.body.location === "string"
+            ? JSON.parse(req.body.location)
+            : req.body.location;
+      } catch {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid location JSON",
+        });
+      }
+
+      if (
+        location.type !== "Point" ||
+        !Array.isArray(location.coordinates) ||
+        location.coordinates.length !== 2
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid GeoJSON location",
+        });
+      }
+
+      updateData.location = {
+        type: "Point",
+        coordinates: location.coordinates.map(Number),
+      };
+    }
+
+    const updated = await TravelOption.findByIdAndUpdate(id, updateData, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Travel option not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Travel option updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const deleteTravelOptions = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid travelOption Id" });
+    }
+
+    const travelOption = await TravelOption.findByIdAndDelete(
+      id,
+      { status: "inactive" },
+      { returnDocument: "after", runValidators: true }
+    );
+
+    if (!travelOption) {
+      return res
+        .status(400)
+        .json({ success: false, message: "travel option is not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "travelOption delete successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const searchCityToCityTravelOptions = async (req, res) => {
+  try {
+    const { fromCity, toCity } = req.query;
+    console.log(fromCity, toCity);
+
+    if (!fromCity || !toCity) {
+      return res.status(400).json({
+        success: false,
+        message: "fromCity and toCity are required",
+      });
+    }
+
+    const fromCityName = fromCity.trim().toLowerCase();
+    const toCityName = toCity.trim().toLowerCase();
+
+    const fromCityDoc = await City.findOne({ name: fromCityName });
+    const toCityDoc = await City.findOne({ name: toCityName });
+
+    if (!fromCityDoc || !toCityDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "City not found",
+      });
+    }
+
+    const travelOptions = await TravelOption.find({
+      fromCity: fromCityDoc._id,
+      toCity: toCityDoc._id,
+      status: "active",
+    })
+      .populate("fromCity", "name state")
+      .populate("toCity", "name state")
+      .sort({ avgCost: 1 }); // cheapest first
+
+    return res.status(200).json({
+      success: true,
+      count: travelOptions.length,
+      data: travelOptions,
+    });
+  } catch (error) {
+    console.error("City-to-city search error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getMyTravelOptions = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+
+    const travelOptions = await TravelOption.find({
+      createdBy: adminId,
+    })
+      .populate("fromCity toCity toPlace")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: travelOptions.length,
+      data: travelOptions,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

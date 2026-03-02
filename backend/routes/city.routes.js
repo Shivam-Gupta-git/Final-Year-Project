@@ -19,30 +19,34 @@ cityRouter.post(
   "/",
   isAuthenticated,
   authorize("super_admin" , "admin"), upload.array("images", 5),
+  authorize("admin"),
+  upload.array("images", 5),
   createCity,
 );
 
+
+
 // Admin updates city
 cityRouter.put(
-  "/:id",
+  "/updatecity/:id",
   isAuthenticated,
-  authorize("admin", "super_admin"),
+  authorize("admin"),
   upload.array("images", 5),
   updateCity,
 );
 
 // Super Admin deactivates city
 cityRouter.delete(
-  "/:id",
+  "/deletecity/:id",
   isAuthenticated,
-  authorize("super_admin"),
+  authorize("admin"),
   deleteCity,
 );
 
 /* ------------ PUBLIC ROUTES ------------ */
 
-cityRouter.get("/", getActiveCities);
+cityRouter.get("/activecity", getActiveCities);
 cityRouter.get("/nearby", getNearbyCities);
-cityRouter.get("/:id", getCityById);
+cityRouter.get("/getcity/:id", getCityById);
 
 export default cityRouter;

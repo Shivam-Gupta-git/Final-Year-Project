@@ -36,6 +36,7 @@ const travelOptionSchema = new mongoose.Schema(
 
     isCheapest: { type: Boolean, default: false },
     isFastest: { type: Boolean, default: false },
+<<<<<<< HEAD
 
     images: [String],
 
@@ -57,12 +58,43 @@ const travelOptionSchema = new mongoose.Schema(
         type: [Number], // [lng, lat]
         required: true,
       },
+=======
+
+    images: [String],
+
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+>>>>>>> 91b752c67c5d8954697bf8d60b9b6c24f3480bcd
     },
 
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+        required: true,
+      },
+      coordinates: {
+        type: [Number], // [lng, lat]
+        required: true,
+      },
+    },
     status: {
       type: String,
-      enum: ["active", "inactive", "pending"],
+      enum: ["active", "inactive", "pending", "rejected"],
       default: "pending",
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true }
@@ -71,6 +103,7 @@ const travelOptionSchema = new mongoose.Schema(
 
 travelOptionSchema.index({ location: "2dsphere" });
 
+<<<<<<< HEAD
 
 travelOptionSchema.pre("validate", function (next) {
   if (!this.toCity && !this.toPlace) {
@@ -79,6 +112,8 @@ travelOptionSchema.pre("validate", function (next) {
   next();
 });
 
+=======
+>>>>>>> 91b752c67c5d8954697bf8d60b9b6c24f3480bcd
 export const TravelOption = mongoose.model(
   "TravelOption",
   travelOptionSchema

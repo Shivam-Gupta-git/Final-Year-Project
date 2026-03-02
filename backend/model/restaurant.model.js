@@ -6,6 +6,12 @@ const restaurantSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      lowercase: true,
+    },
+    state: {
+      type: String,
+      lowercase: true,
+      trim: true,
     },
 
     address: {
@@ -15,15 +21,16 @@ const restaurantSchema = new mongoose.Schema(
     },
 
     city: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "City",
       required: true,
     },
 
     famousFood: {
-      type: String, 
+      type: String,
       required: true,
       trim: true,
+      lowercase: true,
     },
 
     foodType: {
@@ -64,19 +71,37 @@ const restaurantSchema = new mongoose.Schema(
 
     isRecommended: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
 
     status: {
       type: String,
-      enum: ["active", "inactive", "pending"],
+      enum: ["active", "inactive", "pending", "rejected"],
       default: "pending",
     },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-
 restaurantSchema.index({ location: "2dsphere" });
+restaurantSchema.index({ status: 1 });
 
 export const Restaurant = mongoose.model("Restaurant", restaurantSchema);

@@ -52,7 +52,7 @@ const citySchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      
     },
 
     approvedBy: {
@@ -77,6 +77,6 @@ const citySchema = new mongoose.Schema(
 );
 
 //this is required for log/lot location .
-citySchema.index({ location: "2dsphere" });
+citySchema.index({ location: "2dsphere" }, {unique : true});
 
 export const City = mongoose.model("City", citySchema);

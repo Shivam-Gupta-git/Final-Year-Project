@@ -1,57 +1,60 @@
-import mongoose, { Schema }  from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const placeSchema = new mongoose.Schema({
-  name : {
-    type : String,
-    required : true,
+const placeSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
 
-    cityId : {
-      type : Schema.Types.ObjectId,
-      ref : "City",
-      required : true
+    city: {
+      type: Schema.Types.ObjectId,
+      ref: "City",
+      required: true,
     },
 
-    description : {
-      type : String,
-      required : true,
+    description: {
+      type: String,
+      required: true,
     },
 
-    category : {
-      type : String,
-      enum : ["temple" , "fort" , "nature" , "market" , "other"],
-      required : true
+    category: {
+      type: String,
+      enum: ["temple", "fort", "park", "market", "other"],
+      required: true,
     },
 
-    timeRequired : {
-      type : String,
-      enum : ["1-2 hr" , "half day" , "full day"],
-      required : true
+    //change here
+    timeRequired: {
+      type: String,
+      trim: true,
+      minlength: 2,
+      maxlength: 20,
+      required: true,
     },
 
-    entryfees : {
-      type : Number,
-      required : true,
-      default : 0
+    entryfees: {
+      type: Number,
+      required: true,
+      default: 0,
     },
 
-    isPopular : {
-      type : String,
-      default : false
+    isPopular: {
+      type: String,
+      default: false,
     },
 
-    bestTimeToVisit : {
-      type : String,
-      trim : true
+    bestTimeToVisit: {
+      type: String,
+      trim: true,
     },
 
-    images : [
+    images: [
       {
-        type : String,
+        type: String,
       },
     ],
 
-    
     location: {
       type: {
         type: String,
@@ -60,19 +63,40 @@ const placeSchema = new mongoose.Schema({
         required: true,
       },
       coordinates: {
-        type: [Number], 
+        type: [Number],
         required: true,
       },
     },
 
-    status : {
-      type : String,
-      enum : ["active", "inactive" , "pending"],
-      default : "pending"
-    }
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
 
-}, {timestamps : true})
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
 
-placeSchema.index({location : "2dsphere"})
+    status: {
+      type: String,
+      enum: ["active", "inactive", "pending", "rejected"],
+      default: "pending",
+    },
 
-export const Place = mongoose.model("Place" , placeSchema)
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { timestamps: true },
+);
+
+placeSchema.index({ location: "2dsphere" });
+
+export const Place = mongoose.model("Place", placeSchema);

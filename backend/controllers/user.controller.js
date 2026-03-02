@@ -5,6 +5,9 @@ import jwt from "jsonwebtoken";
 import { verifyEmail } from "../verifyEmail/verifyEmail.js";
 import { UserSession } from "../model/userSession.model.js";
 import { sendOtpMail } from "../verifyEmail/sendOtpMail.js";
+import { City } from "../model/city.model.js";
+import { Hotel } from "../model/hotel.model.js";
+import { Place } from "../model/place.model.js";
 
 export const userRegistration = async (req, res) => {
   try {
@@ -907,3 +910,78 @@ export const findNearbyAdmins = async (req, res) => {
   }
 };
 
+export const smartSearch = async (req, res) => {
+  try {
+    const q = req.query.q?.toLowerCase().trim();
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: "Query parameter is required",
+      });
+    }
+
+    const words = q.split(" ");
+
+    const isHotelSearch = words.includes("hotel") || words.includes("hotels");
+    const isPlaceSearch = words.includes("place") || words.includes("places");
+
+    // remove search keywords
+    const filteredWords = words.filter(
+      (w) => !["hotel", "hotels", "place", "places"].includes(w)
+    );
+
+    const cityKeyword = filteredWords[0];
+
+    if (!cityKeyword) {
+      return res.json({
+        success: true,
+        city: null,
+        hotels: [],
+        places: [],
+      });
+    }
+
+    const city = await City.findOne({
+      name: new RegExp(`^${cityKeyword}$`, "i"),
+      status: "active",
+    });
+
+    if (!city) {
+      return res.json({
+        success: true,
+        city: null,
+        hotels: [],
+        places: [],
+      });
+    }
+
+    let hotels = [];
+    let places = [];
+
+    if (isHotelSearch) {
+      hotels = await Hotel.find({
+        city: city._id,
+        status: "active",
+      }).populate("city", "name");
+    }
+
+    if (isPlaceSearch) {
+      places = await Place.find({
+        city: city._id,
+        status: "active",
+      }).populate("city", "name");
+    }
+
+    return res.json({
+      success: true,
+      city,
+      hotels,
+      places,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

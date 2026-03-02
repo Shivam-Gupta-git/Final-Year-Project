@@ -26,7 +26,7 @@ const hotelSchema = mongoose.Schema({
 
   facilities: {
     type: [String],
-    default : []
+    default: [],
   },
 
   images: [
@@ -40,6 +40,16 @@ const hotelSchema = mongoose.Schema({
     default: 0,
     min: 0,
     max: 5,
+  },
+
+  approveBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
 
   location: {
@@ -62,11 +72,21 @@ const hotelSchema = mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["active", "inactive", "pending"],
+    enum: ["active", "inactive", "pending", "rejected"],
     default: "pending",
+  },
+
+  averageRating: {
+    type: Number,
+    default: 0,
+  },
+
+  totalReviews: {
+    type: Number,
+    default: 0,
   },
 });
 
-hotelSchema.index({ location: "2dsphere" });
+hotelSchema.index({ location: "2dsphere" }, { unique: true });
 
 export const Hotel = mongoose.model("Hotel", hotelSchema);
