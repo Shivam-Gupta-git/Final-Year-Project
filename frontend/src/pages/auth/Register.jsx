@@ -22,7 +22,15 @@ function Register() {
   const [avatar, setAvatar] = useState(null);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+  // validation for contact number
+  if (name === "contactNumber") {
+    if (!/^\d{0,10}$/.test(value)) return;
+  }
+
+  setFormData({ ...formData, [name]: value });
+    // setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleImageChange = (e) => {
@@ -66,6 +74,8 @@ function Register() {
           <label className="block text-sm font-medium">Name</label>
           <input
             name="userName"
+            required
+            value={formData.userName}
             onChange={handleChange}
             placeholder="Enter your name"
             className="w-full mt-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -78,6 +88,7 @@ function Register() {
           <input
             name="email"
             type="email"
+            required
             onChange={handleChange}
             placeholder="Enter your email"
             className="w-full mt-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -89,8 +100,13 @@ function Register() {
           <label className="block text-sm font-medium">Contact Number</label>
           <input
             name="contactNumber"
+            type="tel"
+            value={formData.contactNumber}
             onChange={handleChange}
             placeholder="Enter phone number"
+            pattern="[0-9]{10}"
+            maxLength="10"
+            required
             className="w-full mt-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
@@ -101,6 +117,7 @@ function Register() {
           <input
             name="password"
             type="password"
+            required
             onChange={handleChange}
             placeholder="Enter password"
             className="w-full mt-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -112,7 +129,7 @@ function Register() {
           <label className="block text-sm font-medium">Profile Image</label>
           <input
             type="file"
-            accept="avatar/*"
+            accept="avatar/*" //image 
             onChange={handleImageChange}
             className="w-full mt-1 text-sm"
           />
