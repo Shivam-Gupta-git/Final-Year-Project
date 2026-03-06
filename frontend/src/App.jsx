@@ -6,6 +6,7 @@ import Home from './pages/localPages/Home'
 import About from './pages/localPages/About'
 import VerifyEmail from './pages/localPages/VerifyEmail'
 import Verify from './pages/localPages/Verify'
+import Login from './pages/auth/Login'
 
 function App() {
 
@@ -17,6 +18,7 @@ function App() {
       <Route path='/signUp' element={<Register/>}/>
       <Route path='/verifyEmail' element={<VerifyEmail/>}/>
       <Route path='/verify/:token' element={<Verify/>}/>
+      <Route path='/login' element={<Login/>}/>
       <Route path='/about' element={<About/>}/>
     </Routes> 
     </>

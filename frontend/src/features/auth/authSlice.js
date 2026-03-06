@@ -5,16 +5,20 @@ import axios from "axios";
 
 /* -------------- Initial State ---------------- */
 const initialState = {
-  token : localStorage.getItem("token"),
-  isAuthenticated: false,
-  role: null,
-  loading: false,
-  error: null,
-  registerSuccess: false
+    token: localStorage.getItem("token"),
+    isAuthenticated: false,
+    role: null,
+    user: null,
+    loading: false,
+    error: null,
+    registerSuccess: false,
+    verifySuccess: false,
+    loginSuccess: false
+
 }
 
 /* -------------- User Registration ------------------- */
-export const register = createAsyncThunk("/api/user/user-registration", async (data, thunkAPI) => {
+export const register = createAsyncThunk("auth/register", async (data, thunkAPI) => {
   try {
     const response = await apiClient.post("/api/user/user-registration", data)
     return response.data
@@ -24,7 +28,7 @@ export const register = createAsyncThunk("/api/user/user-registration", async (d
 })
 
 /* --------------- verifyEmail ------------------- */
-export const verifyEmail = createAsyncThunk("/api/user/user-verification", async (token, thunkAPI) => {
+export const verifyEmail = createAsyncThunk("auth/verifyEmail", async (token, thunkAPI) => {
   try {
     const response = await axios.post("http://localhost:3000/api/user/user-verification", null, {
       headers: {
@@ -36,6 +40,27 @@ export const verifyEmail = createAsyncThunk("/api/user/user-verification", async
     return thunkAPI.rejectWithValue(error.response?.data?.message || "Verification failed")
   }
 })
+
+/* ------------------- userLogin ----------------------- */
+export const userLogin = createAsyncThunk(
+  "auth/userLogin",
+  async (userData, thunkAPI) => {
+    try {
+      const response = await apiClient.post("/api/user/user-login", userData);
+
+      console.log("FULL RESPONSE:", response); 
+
+      return response;
+
+    } catch (error) {
+      console.log("LOGIN ERROR:", error);
+
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Login Failed"
+      );
+    }
+  }
+);
 
 /* ------------- Slice -------------- */
 const authSlice = createSlice({
@@ -86,6 +111,30 @@ const authSlice = createSlice({
       state.loading = false,
       state.error = action.payload
     })
+
+    /* ------------------ userLogin ---------------- */
+    builder
+    .addCase(userLogin.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+      state.loginSuccess = false;
+    })
+  
+    .addCase(userLogin.fulfilled, (state, action) => {
+      state.loginSuccess = true;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+
+    })
+  
+    .addCase(userLogin.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.loginSuccess = false;
+    });
+
+
   }
 })
 

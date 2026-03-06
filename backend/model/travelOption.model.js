@@ -57,10 +57,6 @@ const travelOptionSchema = new mongoose.Schema(
         type: [Number], // [lng, lat]
         required: true,
       },
-<<<<<<< HEAD
-=======
-    },
->>>>>>> 04ace6d77bb67081f9adbbe976b9f96424b92be0
 
     status: {
       type: String,
@@ -77,16 +73,13 @@ const travelOptionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-  },
+  }},
   { timestamps: true }
 );
 
 travelOptionSchema.index({ location: "2dsphere" });
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 04ace6d77bb67081f9adbbe976b9f96424b92be0
 travelOptionSchema.pre("validate", function (next) {
   if (!this.toCity && !this.toPlace) {
     return next(new Error("Either toCity or toPlace is required"));

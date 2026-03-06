@@ -3,6 +3,9 @@ import axios from "axios";
 export const apiClient = axios.create({
   baseURL: "http://localhost:3000", // backend URL
   withCredentials: true,
+  headers: {
+    "Content-Type": "application/json"
+  }
 });
 
 // attach token automatically
