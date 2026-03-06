@@ -1,5 +1,5 @@
 import './App.css'
-import Header from './components/Header'
+// import Header from './components/Header'
 import Register from './pages/auth/Register'
 import {Routes, Route } from 'react-router-dom'
 import Home from './pages/localPages/Home'
@@ -8,12 +8,17 @@ import VerifyEmail from './pages/localPages/VerifyEmail'
 import Verify from './pages/localPages/Verify'
 import Login from './pages/auth/Login'
 
+import LandingPage from './pages/auth/landingPage'
+import Navbar from './components/Navbar'
+
+
 function App() {
 
   return (
     <>
-    <Header/>
+    <Navbar/>
     <Routes>
+      <Route path='/' element={<LandingPage/>}/>
       <Route path='/' element={<Home/>}/>
       <Route path='/signUp' element={<Register/>}/>
       <Route path='/verifyEmail' element={<VerifyEmail/>}/>
