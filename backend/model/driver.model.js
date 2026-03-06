@@ -8,7 +8,7 @@ const driverSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
+  
     vechalType: {
       type: String,
       enum: ["bike", "car", "auto"],

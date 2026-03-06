@@ -59,29 +59,6 @@ const travelOptionSchema = new mongoose.Schema(
         required: true,
       },
 
-
-    images: [String],
-
-    rating: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
-
-    },
-
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-        required: true,
-      },
-      coordinates: {
-        type: [Number], // [lng, lat]
-        required: true,
-      },
-    },
     status: {
       type: String,
       enum: ["active", "inactive", "pending", "rejected"],
@@ -102,7 +79,6 @@ const travelOptionSchema = new mongoose.Schema(
 
 
 travelOptionSchema.index({ location: "2dsphere" });
-
 
 
 travelOptionSchema.pre("validate", function (next) {
