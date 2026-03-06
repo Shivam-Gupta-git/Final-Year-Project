@@ -1,11 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
 import { register } from "../../features/auth/authSlice";
 import { useState, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
   const dispatch = useDispatch();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const { loading, error, registerSuccess } = useSelector(
     (state) => state.auth
@@ -46,7 +46,7 @@ function Register() {
 
   useEffect(() => {
     if (registerSuccess) {
-      // navigate("/verify-info");
+      navigate("/verifyEmail");
       console.log("Registered successfully");
     }
   }, [registerSuccess]);

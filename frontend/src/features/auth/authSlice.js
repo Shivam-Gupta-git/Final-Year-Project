@@ -1,5 +1,7 @@
 import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
-import authApi from "./authApi";
+// import authApi from "./authApi";
+import apiClient from "../../services/apiClient";
+import axios from "axios";
 
 /* -------------- Initial State ---------------- */
 const initialState = {
@@ -12,11 +14,26 @@ const initialState = {
 }
 
 /* -------------- User Registration ------------------- */
-export const register = createAsyncThunk("http://localhost:3000/api/user/user-registration", async (data, {rejectWithValue}) => {
+export const register = createAsyncThunk("/api/user/user-registration", async (data, thunkAPI) => {
   try {
-    return await authApi.register(data)
+    const response = await apiClient.post("/api/user/user-registration", data)
+    return response.data
   } catch (error) {
-    return rejectWithValue(error.response.data.message)
+    return thunkAPI.rejectWithValue(error.response?.data?.message || "Registration failed")
+  }
+})
+
+/* --------------- verifyEmail ------------------- */
+export const verifyEmail = createAsyncThunk("/api/user/user-verification", async (token, thunkAPI) => {
+  try {
+    const response = await axios.post("http://localhost:3000/api/user/user-verification", null, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response?.data?.message || "Verification failed")
   }
 })
 
@@ -38,7 +55,7 @@ const authSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    /* ------------ Register -------------- */
+    /* ------------ userRegistration -------------- */
     builder.addCase(register.pending, (state) => {
       state.loading = true
       state.error = null
@@ -55,7 +72,20 @@ const authSlice = createSlice({
       state.error = action.payload
     })
 
+    /* ----------------- verifyEmail ---------------- */
+    builder.addCase(verifyEmail.pending, (state) => {
+      state.loading = true
+    })
 
+    builder.addCase(verifyEmail.fulfilled, (state) => {
+      state.loading = false,
+      state.verifySuccess = true
+    })
+
+    builder.addCase(verifyEmail.rejected, (state, action) => {
+      state.loading = false,
+      state.error = action.payload
+    })
   }
 })
 

@@ -659,8 +659,8 @@ export const userVerification = async (req, res) => {
     }
 
     const token = authHeader.split(" ")[1];
-
     let decoded;
+    console.log(decoded);
     try {
       decoded = jwt.verify(token, process.env.SECRET_KET);
     } catch (error) {

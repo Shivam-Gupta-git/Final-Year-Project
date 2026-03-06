@@ -1,11 +1,26 @@
 import './App.css'
+import Header from './components/Header'
 import Register from './pages/auth/Register'
+import {Routes, Route } from 'react-router-dom'
+import Home from './pages/localPages/Home'
+import About from './pages/localPages/About'
+import VerifyEmail from './pages/localPages/VerifyEmail'
+import Verify from './pages/localPages/Verify'
 
 function App() {
 
-
   return (
-  <Register/>
+    <>
+    <Header/>
+    <Routes>
+      <Route path='/' element={<Home/>}/>
+      <Route path='/signUp' element={<Register/>}/>
+      <Route path='/verifyEmail' element={<VerifyEmail/>}/>
+      <Route path='/verify/:token' element={<Verify/>}/>
+      <Route path='/about' element={<About/>}/>
+    </Routes> 
+    </>
+  
   )
 }
 

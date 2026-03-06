@@ -1,7 +1,8 @@
-import apiClient from "../../services/apiClient";
+// import apiClient from "../../services/apiClient";
 
-const authApi = {
-  register : (data) => apiClient.post("http://localhost:3000/api/user/user-registration", data)
-}
+// const authApi = {
+//   register : (data) => apiClient.post("http://localhost:3000/api/user/user-registration", data),
+//   verifyEmail : (data) => apiClient.post("http://localhost:3000/api/user/user-verification", {token})
+// }
 
-export default authApi
+// export default authApi

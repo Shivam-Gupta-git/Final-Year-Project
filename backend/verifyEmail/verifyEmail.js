@@ -10,7 +10,7 @@ export const verifyEmail = async (email, token) => {
   })
 
   const frontendURL = (
-    process.env.CLIENT_URL || "http://localhost:5173"
+    process.env.FRONTEND_URL || "http://localhost:5173"
   ).replace(/\/$/, "");
 
   const mailConfiguration = {
