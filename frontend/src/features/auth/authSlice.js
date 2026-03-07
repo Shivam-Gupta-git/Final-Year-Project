@@ -74,6 +74,37 @@ export const userLogout = createAsyncThunk("auth/userLogout", async (_, thunkAPI
   }
 })
 
+/* ----------------- ForgotPassword --------------------- */
+export const forgotPassword = createAsyncThunk("auth/forgot-user-password", async (email, thunkAPI) => {
+try {
+  const response = await apiClient.post("/api/user/forgot-user-password", {email})
+  return response
+} catch (error) {
+  return thunkAPI.rejectWithValue(error.response?.data?.message || "forgotpassword failed")
+}
+})
+
+/* ----------------- verify otp --------------------- */
+export const verifyOtp = createAsyncThunk("auth/verify-user-otp", async ({email, otp}, thunkAPI) => {
+  try {
+    const response = await apiClient.post(`/api/user/verify-user-otp/${email}`, {otp})
+    return response;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response?.data?.message || "otp verification failed")
+  }
+})
+
+ /* ----------------- change password --------------------- */
+ export const changePassword = createAsyncThunk("auth/change-password", async ({email, newPassword, confirmPassword}, thunkAPI) => {
+  try {
+    const response = await apiClient.post(`/api/user/change-password/${email}`, {newPassword, confirmPassword})
+
+    return response;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response?.data?.message || "chane password failed")
+  }
+ })
+
 /* ------------- Slice -------------- */
 const authSlice = createSlice({
   name: "auth",
@@ -153,6 +184,56 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
     })
 
+    /* ----------------- ForgotPassword --------------------- */
+    builder.addCase(forgotPassword.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    
+    builder.addCase(forgotPassword.fulfilled, (state, action) => {
+      state.loading = false;
+      state.message = action.payload.message;
+    });
+    
+    builder.addCase(forgotPassword.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
+    /* ----------------- verify otp --------------------- */
+    builder.addCase(verifyOtp.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    
+    builder.addCase(verifyOtp.fulfilled, (state, action) => {
+      state.loading = false;
+      state.otpVerified = true;
+      state.message = action.payload.message;
+    });
+    
+    builder.addCase(verifyOtp.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
+    /* ----------------- change password --------------------- */
+    builder.addCase(changePassword.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    
+    builder.addCase(changePassword.fulfilled, (state, action) => {
+      state.loading = false;
+      state.passwordChanged = true;
+      state.message = action.payload.message;
+    });
+    
+    builder.addCase(changePassword.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+    
   }
 })
 
