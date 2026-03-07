@@ -2,7 +2,6 @@ import './App.css'
 // import Header from './components/Header'
 import Register from './pages/auth/Register'
 import {Routes, Route } from 'react-router-dom'
-
 import About from './pages/localPages/About'
 import VerifyEmail from './pages/localPages/VerifyEmail'
 import Verify from './pages/localPages/Verify'

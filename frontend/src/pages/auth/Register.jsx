@@ -56,6 +56,7 @@ function Register() {
     if (avatar) data.append("avatar", avatar);
 
     dispatch(register(data));
+    console.log(avatar);
   };
 
   useEffect(() => {

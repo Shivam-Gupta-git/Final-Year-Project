@@ -20,7 +20,13 @@ const initialState = {
 /* -------------- User Registration ------------------- */
 export const register = createAsyncThunk("auth/register", async (data, thunkAPI) => {
   try {
-    const response = await apiClient.post("/api/user/user-registration", data)
+    const response = await apiClient.post("/api/user/user-registration", data, 
+      {
+      headers:{
+        "Content-Type" : "multipart/data"
+      }
+    }
+    )
     return response.data
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response?.data?.message || "Registration failed")
@@ -65,7 +71,7 @@ export const userLogin = createAsyncThunk(
 /* ----------------- userLogout --------------------- */
 export const userLogout = createAsyncThunk("auth/userLogout", async (_, thunkAPI) => {
   try {
-     await apiClient.delete("/api/user/user-logout")
+    await apiClient.delete("/api/user/user-logout")
     localStorage.removeItem("token" )
     return true
   } catch (error) {
