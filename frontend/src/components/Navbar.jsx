@@ -1,26 +1,13 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import { userLogout } from "../features/auth/authSlice";
-
+import { Link } from "react-router-dom";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
 
-  const { token } = useSelector((state) => state.auth)
-
-  // console.log(token);
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  const handelUserLogout = async () => {
-    await dispatch(userLogout());
-    navigate("/");
-  };
-
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50">
+    <nav className="bg-white/90 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
 
@@ -74,27 +61,16 @@ function Navbar() {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center space-x-4">
-            {
-              !token ? (
-                <>
             <Link to="/login">
               <button className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
                 Login
               </button>
             </Link>
             <Link to="/signUp">
-              <button className="px-5 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">
+              <button className="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">
                 Register
               </button>
-            </Link>  
-                </>
-
-              ) : (
-                <button onClick={handelUserLogout} className="px-5 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">Logout</button>
-              )
-
-
-            }
+            </Link>
           </div>
 
           {/* Mobile hamburger button */}
@@ -166,9 +142,6 @@ function Navbar() {
               Travel Option
             </Link>
             <div className="border-t border-gray-200 pt-4 pb-3 mt-4">
-             {
-              !token ? (
-                <>
               <Link
                 to="/login"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
@@ -183,12 +156,6 @@ function Navbar() {
               >
                 Register
               </Link>
-                </>
-
-              ) : (
-                <button onClick={handelUserLogout} className="px-5 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">Logout</button>
-              )
-             }
             </div>
           </div>
         </div>
