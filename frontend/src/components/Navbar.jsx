@@ -11,12 +11,12 @@ function Navbar() {
 
   const { token } = useSelector((state) => state.auth)
 
-  console.log(token);
+  // console.log(token);
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const handelUserLogout = async () => {
     await dispatch(userLogout());
-    // navigate("/login");
+    navigate("/");
   };
 
   return (

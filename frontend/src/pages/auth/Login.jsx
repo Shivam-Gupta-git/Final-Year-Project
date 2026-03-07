@@ -80,7 +80,7 @@ function Login() {
               </label>
 
               <Link
-                to={"/forgotPassword"}
+                to={"/forgot-password"}
                 className="text-sm text-blue-500 hover:underline"
               >
                 Forgot password?
