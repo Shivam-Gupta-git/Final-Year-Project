@@ -1,11 +1,28 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { userLogout } from "../features/auth/authSlice";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
+  const { token } = useSelector((state) => state.auth)
+  
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  const handelLogout = async (e) => {
+    e.preventDefault()
+    try {
+      const result = await dispatch(userLogout())
+      if(result.success){
+        navigate('/')
+      }
+    } catch (error) {
+      
+    }
+  }
   return (
     <nav className="bg-white/90 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,16 +78,28 @@ function Navbar() {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center space-x-4">
+            {
+             !token ? (
+             <>
             <Link to="/login">
               <button className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
                 Login
               </button>
             </Link>
             <Link to="/signUp">
-              <button className="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">
+              <button className="px-5 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">
                 Register
               </button>
-            </Link>
+            </Link> 
+             </>
+             ) : (
+            <button onClick={handelLogout} className="px-5 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">
+                Logout
+              </button>
+             )
+
+            }
+            
           </div>
 
           {/* Mobile hamburger button */}
