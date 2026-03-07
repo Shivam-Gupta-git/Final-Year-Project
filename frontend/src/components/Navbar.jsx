@@ -166,6 +166,9 @@ function Navbar() {
               Travel Option
             </Link>
             <div className="border-t border-gray-200 pt-4 pb-3 mt-4">
+             {
+              !token ? (
+                <>
               <Link
                 to="/login"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
@@ -180,6 +183,12 @@ function Navbar() {
               >
                 Register
               </Link>
+                </>
+
+              ) : (
+                <button onClick={handelUserLogout} className="px-5 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">Logout</button>
+              )
+             }
             </div>
           </div>
         </div>
