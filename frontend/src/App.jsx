@@ -1,12 +1,11 @@
 import './App.css'
 // import Header from './components/Header'
 import Register from './pages/auth/Register'
-import {Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import About from './pages/localPages/About'
 import VerifyEmail from './pages/localPages/VerifyEmail'
 import Verify from './pages/localPages/Verify'
 import Login from './pages/auth/Login'
-
 import LandingPage from './pages/auth/landingPage'
 import Navbar from './components/Navbar'
 import ForgotPassword from './pages/auth/ForgotPassword'
