@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { userLogout } from "../features/auth/authSlice";
 import { getUserData } from "../features/user/userSlice";
 import { FaRegUserCircle } from "react-icons/fa";
@@ -18,6 +18,10 @@ function Navbar() {
   const { token } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.user);
   // console.log(user.location.state);
+  
+  const location = useLocation()
+  const dropdownRef = useRef(null)
+
 
   const getInitials = (name = "User") => {
     if (typeof name !== "string") return "U";
@@ -50,6 +54,22 @@ function Navbar() {
     }
   }, [token, dispatch]);
 
+  useEffect(()=> {
+   setProfileOpen(false)
+
+   function handleClickOutside(event) {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setProfileOpen(false);
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  }
+  },[location.pathname])
+
   useEffect(() => {
     if (darkmode) {
       document.documentElement.classList.add("dark");
@@ -60,7 +80,7 @@ function Navbar() {
 
   return (
     <>
-      <nav className="bg-white/90 dark:bg-gray-900 shadow-md sticky top-0 z-50">
+      <nav className="bg-white/90 dark:bg-gray-900 shadow-md sticky top-0 z-50" ref={dropdownRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             {/* Logo */}
