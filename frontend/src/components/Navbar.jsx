@@ -110,12 +110,7 @@ function Navbar() {
                     Register
                   </button>
                 </Link>
-                <button
-                    onClick={() => setDarkMode(!darkmode)}
-                    className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700"
-                  >
-                    {darkmode ? "🌙" : "☀️"}
-                  </button>
+                
               </>
             ) : (
               <div className="relative">
