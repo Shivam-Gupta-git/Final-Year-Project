@@ -1,17 +1,18 @@
 import './App.css'
 // import Header from './components/Header'
 import Register from './pages/auth/Register'
-import {Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import About from './pages/localPages/About'
 import VerifyEmail from './pages/localPages/VerifyEmail'
 import Verify from './pages/localPages/Verify'
 import Login from './pages/auth/Login'
-
 import LandingPage from './pages/auth/landingPage'
 import Navbar from './components/Navbar'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import VerifyOTP from './pages/auth/VerifyOTP'
 import ChangePassword from './pages/auth/ChangePassword'
+import UserProfile from './pages/localPages/UserProfile'
+import UserProtectedRouter from './components/protectedRouter/UserProtectedRouter'
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
       <Route path='/verify-otp/:email' element={<VerifyOTP/>}/>
       <Route path='/change-password/:email' element={<ChangePassword/>}/>
       <Route path='/login' element={<Login/>}/>
+      <Route path='/user-profile' element={<UserProtectedRouter><UserProfile/></UserProtectedRouter>} />
       <Route path='/about' element={<About/>}/>
     </Routes> 
     </>
