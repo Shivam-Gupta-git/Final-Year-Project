@@ -203,49 +203,8 @@ function Navbar() {
                 </div>
               )}
 
-            </div>
-
-            {/*SEARCH BAR */} 
-            {
-              user?.role === "user" ? (
-                <div className="relative w-96 mr-30">
-                <div className="flex items-center gap-3 bg-gray-100 px-3 py-2 rounded-xl">
-                  <FiSearch className="text-gray-500 text-lg" />
-  
-                  <input
-                    type="text"
-                    value={query}
-                    placeholder="Search for Cities, Hotels & more"
-                    className="bg-transparent outline-none text-sm flex-1"
-                    onFocus={() => setShowHistory(true)}
-                    onChange={(e) => dispatch(setQuery(e.target.value))}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleSearch(query);
-                      }
-                    }}
-                  />
-                </div>
-  
-                {showHistory && history.length > 0 && (
-                  <div className="absolute top-12 left-0 w-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-                    {history.map((item, index) => (
-                      <div
-                        key={index}
-                        onClick={() => handleSearch(item)}
-                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      >
-                        <FiSearch className="text-gray-400" />
-                        <span className="text-sm text-gray-700">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              ) : null
-            }          
+            </div>         
             
-
             {/* Desktop Auth */}
             <div className="hidden md:flex items-center space-x-4">
               {!token ? (
