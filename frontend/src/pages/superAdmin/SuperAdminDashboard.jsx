@@ -1,12 +1,11 @@
-import React, { use } from 'react'
-import { useSelector } from 'react-redux'
+import React from "react";
+
 
 function SuperAdminDashboard() {
-  const {superAdmin} = useSelector((state) => state.superAdminAuth)
-  console.log(superAdmin);
+
   return (
-    <div>SuperAdminDashboard</div>
-  )
+   <div>super admin dashboard</div>
+  );
 }
 
-export default SuperAdminDashboard
+export default SuperAdminDashboard;

@@ -13,6 +13,7 @@ import {
   setQuery,
 } from "../features/user/searchSlice";
 import { superAdminLogout } from "../features/auth/superAdminAuthSlice";
+import { getSuperAdminData } from "../features/user/superAdminSlice";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,12 +30,16 @@ function Navbar() {
   const { superAdminToken, loading, loginSuccess } = useSelector(
     (state) => state.superAdminAuth
   );
+  const {superAdmin} = useSelector((state) => state.superAdmin)
   const location = useLocation();
   const dropdownRef = useRef(null);
 
   // console.log("user: ", user?.role);
   // console.log(user);
   // console.log("superAdmin: ",superAdmin?.role);
+  // console.log("superAdmin: ",superAdmin);
+
+  const currentUser =  user || superAdmin
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -111,10 +116,15 @@ function Navbar() {
   };
 
   useEffect(() => {
+    /* ---- get User Data ---- */
     if (token) {
       dispatch(getUserData());
     }
-  }, [token, dispatch]);
+    /* ---- get Super Admin Data ---- */
+    if(superAdminToken){
+      dispatch(getSuperAdminData())
+     }
+  }, [token, dispatch, superAdminToken]);
 
   useEffect(() => {
     setProfileOpen(false);
@@ -230,10 +240,10 @@ function Navbar() {
                     onClick={() => setProfileOpen(!profileOpen)}
                     className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center border overflow-hidden"
                   >
-                    {user?.avatar ? (
+                    {currentUser?.avatar ? (
                       <img
-                        src={user.avatar}
-                        alt={user.userName || "User"}
+                        src={currentUser.avatar}
+                        alt={currentUser.userName || "User"}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -258,7 +268,7 @@ function Navbar() {
                           </Link>
                         ) : superAdminToken ? (
                           <Link
-                            to="#"
+                            to="/superAdmin/superAdminProfile"
                             className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-300"
                           >
                             <span className="bg-blue-400 rounded-full text-white">

@@ -18,6 +18,7 @@ import SuperAdminLogin from './pages/superAdmin/SuperAdminLogin'
 import SuperAdminDashboard from './pages/superAdmin/SuperAdminDashboard'
 import SuperAdminProtectedRouter from './components/protectedRouter/SuperAdminProtectedRouter'
 import Hotel from './components/Hotel'
+import SuperAdminProfile from './pages/superAdmin/SuperAdminProfile'
 
 
 
@@ -40,6 +41,7 @@ function App() {
       <Route path='/superAdmin/signUp' element={<SuperAdminRegister/>}/>
       <Route path='/superAdmin/login' element={<SuperAdminLogin/>}/>
       <Route path='/superAdmin/superAdminDashboard' element={<SuperAdminProtectedRouter><SuperAdminDashboard/></SuperAdminProtectedRouter>}/>
+      <Route path='/superAdmin/superAdminProfile' element={<SuperAdminProtectedRouter><SuperAdminProfile/></SuperAdminProtectedRouter>}/>
       <Route path='/about' element={<About/>}/>
     </Routes> 
     </>
