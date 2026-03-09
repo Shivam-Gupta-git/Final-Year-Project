@@ -6,23 +6,52 @@ import { getUserData } from "../features/user/userSlice";
 import { FaRegUserCircle } from "react-icons/fa";
 import { GrLocationPin } from "react-icons/gr";
 import UpdateUserLocation from "./UpdateUserLocation";
+import { FiSearch } from "react-icons/fi";
+import { addHistory, searchHotels, setQuery } from "../features/user/searchSlice";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [darkmode, setDarkMode] = useState(false);
   const [showLocationSection, setShowLocationSection] = useState(false);
+
+  //Search
+  const { query, history } = useSelector((state) => state.search);
+  const [showHistory, setShowHistory] = useState(false);
+  const searchRef = useRef(null);
+
+  const handleSearch = (search) => {
+  if (!search.trim()) return;
+
+  dispatch(searchHotels(search)); // fake backend call
+  dispatch(addHistory(search));   
+  dispatch(setQuery(search));    
+
+
+  setShowHistory(false);
+};
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
+
 
   const { token } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.user);
   // console.log(user.location.state);
-  console.log(user?.role);
-  
-  const location = useLocation()
-  const dropdownRef = useRef(null)
 
+  const location = useLocation();
+  const dropdownRef = useRef(null);
 
   const getInitials = (name = "User") => {
     if (typeof name !== "string") return "U";
@@ -55,97 +84,91 @@ function Navbar() {
     }
   }, [token, dispatch]);
 
-  useEffect(()=> {
-   setProfileOpen(false)
-
-   function handleClickOutside(event) {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setProfileOpen(false);
-    }
-  }
-
-  document.addEventListener("mousedown", handleClickOutside);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  }
-  },[location.pathname])
-
   useEffect(() => {
-    if (darkmode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+    setProfileOpen(false);
+
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
     }
-  }, [darkmode]);
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [location.pathname]);
 
   return (
     <>
-      <nav className="bg-white/90 dark:bg-gray-900 shadow-md sticky top-0 z-50 border" ref={dropdownRef}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            {/* Logo */}
-            <Link
-              to="/"
-              className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors duration-200"
-            >
-              NotDefine
-            </Link>
-
-            {/* location section */}
-            {token && (
-              <div className="flex items-center gap-2  px-3 py-1 rounded-lg">
-                <GrLocationPin style={{ fontSize: "22px", color: "red" }} />
-
-                <button
-                  onClick={() => setShowLocationSection(true)}
-                  className="text-sm font-medium text-blue-700 hover:text-blue-900 transition"
-                >
-                  {user?.location?.city
-                    ? `${user.location.city}, ${user.location.state}`
-                    : "Add Location"}
-                </button>
-              </div>
-            )}
-
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-8">
+      <nav
+        className="bg-white/90 dark:bg-gray-900 shadow-md sticky top-0 z-50"
+        ref={dropdownRef}
+      >
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* LEFT SIDE */}
+            <div className="flex items-center gap-2">
+              {/* Logo */}
               <Link
                 to="/"
-                className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-200"
+                className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors duration-200"
               >
-                Home
+                NotDefine
               </Link>
-              <Link
-                to="/cities"
-                className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-200"
-              >
-                Cities
-              </Link>
-              <Link
-                to="/places"
-                className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-200"
-              >
-                Places
-              </Link>
-              <Link
-                to="/hotels"
-                className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-200"
-              >
-                Hotels
-              </Link>
-              <Link
-                to="/restaurants"
-                className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-200"
-              >
-                Restaurants
-              </Link>
-              <Link
-                to="/travel"
-                className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-200"
-              >
-                Travel Option
-              </Link>
+
+              {/* Location */}
+              {token && (
+                <div className="flex items-center gap-1 px-3 py-1 rounded-lg">
+                  <GrLocationPin style={{ fontSize: "22px", color: "red" }} />
+
+                  <button
+                    onClick={() => setShowLocationSection(true)}
+                    className="text-sm font-medium text-blue-700 hover:text-blue-900 transition"
+                  >
+                    {user?.location?.city
+                      ? `${user.location.city}, ${user.location.state}`
+                      : "Add Location"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/*SEARCH BAR */}           
+            <div className="relative w-96 mr-30">
+              <div className="flex items-center gap-3 bg-gray-100 px-3 py-2 rounded-xl">
+                <FiSearch className="text-gray-500 text-lg" />
+
+                <input
+                  type="text"
+                  value={query}
+                  placeholder="Search for Cities, Hotels & more"
+                  className="bg-transparent outline-none text-sm flex-1"
+                  onFocus={() => setShowHistory(true)}
+                  onChange={(e) => dispatch(setQuery(e.target.value))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch(query);
+                    }
+                  }}
+                />
+              </div>
+
+              {showHistory && history.length > 0 && (
+                <div className="absolute top-12 left-0 w-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+                  {history.map((item, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSearch(item)}
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <FiSearch className="text-gray-400" />
+                      <span className="text-sm text-gray-700">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Desktop Auth */}
@@ -162,20 +185,14 @@ function Navbar() {
                       Register
                     </button>
                   </Link>
-                  <button
-                    onClick={() => setDarkMode(!darkmode)}
-                    className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700"
-                  >
-                    {darkmode ? "🌙" : "☀️"}
-                  </button>
                 </>
               ) : (
-                <div className="relative ">
+                <div className="relative">
                   {/* Avatar Button */}
                   <button
                     type="button"
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center border overflow-hidden cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center border overflow-hidden"
                   >
                     {user?.avatar ? (
                       <img
@@ -190,7 +207,7 @@ function Navbar() {
 
                   {/* Dropdown */}
                   {profileOpen && (
-                    <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300 ease-out animate-dropdown">
                       {/* Menu Items */}
                       <div className="py-2">
                         <Link
