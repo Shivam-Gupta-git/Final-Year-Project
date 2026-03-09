@@ -187,12 +187,12 @@ function Navbar() {
                   </Link>
                 </>
               ) : (
-                <div className="relative">
+                <div className="relative ">
                   {/* Avatar Button */}
                   <button
                     type="button"
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center border overflow-hidden"
+                    className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center border overflow-hidden cursor-pointer"
                   >
                     {user?.avatar ? (
                       <img
