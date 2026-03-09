@@ -131,5 +131,6 @@ const userSlice = createSlice({
   }
 });
 
+
 export const  { clearUserError, resetProfileUpdated } = userSlice.actions
 export default userSlice.reducer;
