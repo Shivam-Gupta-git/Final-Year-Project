@@ -37,10 +37,10 @@ function SuperAdminLogin() {
   };
 
   useEffect(() => {
-    if (token) {
+    if (loginSuccess) {
       navigate("/superAdmin/superAdminDashboard");
     }
-  }, [token, navigate]);
+  }, [loginSuccess, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-gray-200 p-4">

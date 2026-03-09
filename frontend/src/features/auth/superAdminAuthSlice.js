@@ -65,6 +65,7 @@ const superAdminAuthSlice = createSlice({
   reducers:{
     logout(state){
       state.superAdminToken = null,
+      state.superAdmin = null;
       state.isAuthenticated = false,
       state.role = null,
       localStorage.removeItem("superAdminToken")
