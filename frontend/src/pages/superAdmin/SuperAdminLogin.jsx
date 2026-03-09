@@ -10,7 +10,7 @@ function SuperAdminLogin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading, error, loginSuccess } = useSelector(
+  const { loading, error, loginSuccess, superAdminToken } = useSelector(
     (state) => state.superAdminAuth);
   const token = localStorage.getItem("superAdminToken");
 

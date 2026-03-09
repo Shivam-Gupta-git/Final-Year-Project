@@ -7,7 +7,12 @@ import { FaRegUserCircle } from "react-icons/fa";
 import { GrLocationPin } from "react-icons/gr";
 import UpdateUserLocation from "./UpdateUserLocation";
 import { FiSearch } from "react-icons/fi";
-import { addHistory, searchHotels, setQuery } from "../features/user/searchSlice";
+import {
+  addHistory,
+  searchHotels,
+  setQuery,
+} from "../features/user/searchSlice";
+import { superAdminLogout } from "../features/auth/superAdminAuthSlice";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,22 +26,16 @@ function Navbar() {
   const searchRef = useRef(null);
   const { token } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.user);
+  const { superAdminToken, loading, loginSuccess } = useSelector(
+    (state) => state.superAdminAuth
+  );
   const location = useLocation();
   const dropdownRef = useRef(null);
-  
-  console.log("user: ",user?.role);
-  console.log(user);
+
+  // console.log("user: ", user?.role);
+  // console.log(user);
   // console.log("superAdmin: ",superAdmin?.role);
 
-//   const handleSearch = (search) => {
-//   if (!search.trim()) return;
-
-//   dispatch(searchHotels(search)); // fake backend call
-//   dispatch(addHistory(search));   
-//   dispatch(setQuery(search));    
-//   setShowHistory(false);
-// };
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -48,18 +47,16 @@ function Navbar() {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
-
 
   const handleSearch = (search) => {
-  if (!search.trim()) return;
+    if (!search.trim()) return;
 
-  dispatch(searchHotels(search)); // fake backend call
-  dispatch(addHistory(search));   
-  dispatch(setQuery(search));    
+    dispatch(searchHotels(search)); // fake backend call
+    dispatch(addHistory(search));
+    dispatch(setQuery(search));
 
-
-  setShowHistory(false);
-};
+    setShowHistory(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -72,16 +69,6 @@ function Navbar() {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
-
-
-
-  // const { token } = useSelector((state) => state.auth);
-  // const { user } = useSelector((state) => state.user);
-  // // console.log(user.location.state);
-
-
-  // const location = useLocation();
-  // const dropdownRef = useRef(null);
 
   const getInitials = (name = "User") => {
     if (typeof name !== "string") return "U";
@@ -96,13 +83,28 @@ function Navbar() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  const handelLogout = async (e) => {
+  const handelUserLogout = async (e) => {
     e.preventDefault();
     try {
       const result = await dispatch(userLogout());
       if (result.success) {
         navigate("/");
       }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handeSuperAdminLogout = async (e) => {
+    e.preventDefault();
+  
+    try {
+      const result = await dispatch(superAdminLogout());
+      // console.log(result);
+      if (result.type === "auth/superAdminLogout/fulfilled") {
+        navigate("/");
+      }
+  
     } catch (error) {
       console.log(error);
     }
@@ -116,12 +118,12 @@ function Navbar() {
 
   useEffect(() => {
     setProfileOpen(false);
-    setShowHistory(false)
+    setShowHistory(false);
 
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setProfileOpen(false);
-        setShowHistory(false)
+        setShowHistory(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -129,9 +131,6 @@ function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [location.pathname]);
-
-
-
 
   return (
     <>
@@ -168,46 +167,49 @@ function Navbar() {
               )}
             </div>
 
-            {/*SEARCH BAR */}           
-            <div className="relative w-96 mr-30">
-              <div className="flex items-center gap-3 bg-gray-100 px-3 py-2 rounded-xl">
-                <FiSearch className="text-gray-500 text-lg" />
+            {/*SEARCH BAR */}
+            {(superAdminToken || loginSuccess) ? (
+              null
+            ) : (
+              <div className="relative w-96 mr-30">
+                <div className="flex items-center gap-3 bg-gray-100 px-3 py-2 rounded-xl">
+                  <FiSearch className="text-gray-500 text-lg" />
 
-                <input
-                  type="text"
-                  value={query}
-                  placeholder="Search for Cities, Hotels & more"
-                  className="bg-transparent outline-none text-sm flex-1"
-                  onFocus={() => setShowHistory(true)}
-                  onChange={(e) => dispatch(setQuery(e.target.value))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSearch(query);
-                    }
-                  }}
-                />
-              </div>
-
-              {showHistory && history.length > 0 && (
-                <div className="absolute top-12 left-0 w-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
-                  {history.map((item, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleSearch(item)}
-                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      <FiSearch className="text-gray-400" />
-                      <span className="text-sm text-gray-700">{item}</span>
-                    </div>
-                  ))}
+                  <input
+                    type="text"
+                    value={query}
+                    placeholder="Search for Cities, Hotels & more"
+                    className="bg-transparent outline-none text-sm flex-1"
+                    onFocus={() => setShowHistory(true)}
+                    onChange={(e) => dispatch(setQuery(e.target.value))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSearch(query);
+                      }
+                    }}
+                  />
                 </div>
-              )}
 
-            </div>         
-            
+                {showHistory && history.length > 0 && (
+                  <div className="absolute top-12 left-0 w-full bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+                    {history.map((item, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSearch(item)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        <FiSearch className="text-gray-400" />
+                        <span className="text-sm text-gray-700">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Desktop Auth */}
             <div className="hidden md:flex items-center space-x-4">
-              {!token ? (
+              {!token && !(superAdminToken || loginSuccess) ? (
                 <>
                   <Link to="/login">
                     <button className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
@@ -244,31 +246,45 @@ function Navbar() {
                     <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300 ease-out animate-dropdown">
                       {/* Menu Items */}
                       <div className="py-2">
-                        <Link
-                          to="/user-profile"
-                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-300"
-                        >
-                          <span className="bg-blue-400 rounded-full text-white">
-                            <FaRegUserCircle style={{ fontSize: "22px" }} />
-                          </span>
-                          My Profile
-                        </Link>
-
-                        <Link
-                          to="/trips"
-                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <span>🧳</span>
-                          My Trips
-                        </Link>
-
-                        <Link
-                          to="/wishlist"
-                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <span>❤️</span>
-                          Wishlist
-                        </Link>
+                        {token ? (
+                          <Link
+                            to="/user-profile"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-300"
+                          >
+                            <span className="bg-blue-400 rounded-full text-white">
+                              <FaRegUserCircle style={{ fontSize: "22px" }} />
+                            </span>
+                            User Profile
+                          </Link>
+                        ) : superAdminToken ? (
+                          <Link
+                            to="#"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-300"
+                          >
+                            <span className="bg-blue-400 rounded-full text-white">
+                              <FaRegUserCircle style={{ fontSize: "22px" }} />
+                            </span>
+                            Super Admin Profile
+                          </Link>
+                        ) : null}
+                        {token ? (
+                          <Link
+                            to="/trips"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <span>🧳</span>
+                            My Trips
+                          </Link>
+                        ) : null}
+                        {token ? (
+                          <Link
+                            to="/wishlist"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <span>❤️</span>
+                            Wishlist
+                          </Link>
+                        ) : null}
 
                         <Link
                           to="/settings"
@@ -285,7 +301,7 @@ function Navbar() {
                       {/* Logout */}
                       <button
                         type="button"
-                        onClick={handelLogout}
+                        onClick={token ? (handelUserLogout)  : superAdminToken ? (handeSuperAdminLogout) : null}
                         className="flex items-center gap-3 w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 transition-colors"
                       >
                         <span>🚪</span>
@@ -424,6 +440,5 @@ function Navbar() {
     </>
   );
 }
-
 
 export default Navbar;

@@ -35,27 +35,31 @@ export const superAdminLogin = createAsyncThunk(
   "auth/superAdminLogin",
   async (data, thunkAPI) => {
     try {
-
       const response = await apiClient.post(
         "/api/admin/super-admin-login",
         data
       );
-
       return {
         superAdminToken: response.accessToken,
         user: response.superAdmin,
       };
-      
-
     } catch (error) {
-
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Super admin login failed"
       );
-
     }
   }
 );
+
+/* -------- superAdminLogOut ---------- */
+export const superAdminLogout = createAsyncThunk("auth/superAdminLogout", async (_, thunkAPI) => {
+  try {
+   const response = await apiClient.delete("/api/admin/super-admin-logout");
+    return response
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response?.data?.message || "Super Admin Logout Failed")
+  }
+})
 
 /* ---------- Slice ------------- */
 const superAdminAuthSlice = createSlice({
@@ -64,11 +68,11 @@ const superAdminAuthSlice = createSlice({
 
   reducers:{
     logout(state){
-      state.superAdminToken = null,
+      state.superAdminToken = null;
       state.superAdmin = null;
-      state.isAuthenticated = false,
-      state.role = null,
-      localStorage.removeItem("superAdminToken")
+      state.isAuthenticated = false;
+      state.role = null;
+      localStorage.removeItem("superAdminToken");
     },
     clearAuthError(state){
       state.error = null
@@ -116,12 +120,23 @@ const superAdminAuthSlice = createSlice({
       state.superAdmin = action.payload.user;
     
       localStorage.setItem("superAdminToken", action.payload.superAdminToken);
+
     })
 
     .addCase(superAdminLogin.rejected, (state, action) => {
      state.loading = false,
      state.loginSuccess = false,
      state.error = action.payload
+    })
+
+    /* -------- superAdminLogOut ---------- */
+    builder
+    .addCase(superAdminLogout.fulfilled, (state) => {
+      state.token = null;
+      state.superAdmin = null;
+      state.isAuthenticated = false;
+    
+      localStorage.removeItem("superAdminToken");
     })
 
 

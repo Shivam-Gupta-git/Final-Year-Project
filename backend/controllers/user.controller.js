@@ -196,6 +196,20 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
+export const getSuperAdminProfile = async (req, res) => {
+  try {
+    const superAdminId = req.user.id;
+    if(!superAdminId){
+      return res.status(400).json({success: false, message: "superAdminId not found"})
+    }
+
+    const superAdmin = await User.findById(superAdminId).select("-password")
+    return res.status(200).json({success: true, superAdmin})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
+}
+
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user?.id;

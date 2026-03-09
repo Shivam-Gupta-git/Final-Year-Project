@@ -7,7 +7,7 @@ function SuperAdminProtectedRouter({ children }) {
   const { superAdminToken, superAdmin, loading } = useSelector(
     (state) => state.superAdminAuth
   );
-  console.log("token",superAdminToken);
+  console.log("superAdminToken: ",superAdminToken);
   console.log("superAdmin", superAdmin);
   // wait until login process finishes
   if (loading) {
