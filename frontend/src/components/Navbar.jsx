@@ -28,10 +28,11 @@ function Navbar() {
   const searchRef = useRef(null);
   const { token } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.user);
-  const { superAdminToken, loading, loginSuccess } = useSelector(
+  const { superAdminToken, loginSuccess } = useSelector(
     (state) => state.superAdminAuth
   );
   const {superAdmin} = useSelector((state) => state.superAdmin)
+  const {adminToken} = useSelector((state) => state.adminAuth);
   const location = useLocation();
   const dropdownRef = useRef(null);
 
@@ -39,6 +40,7 @@ function Navbar() {
   // console.log(user);
   // console.log("superAdmin: ",superAdmin?.role);
   // console.log("superAdmin: ",superAdmin);
+  console.log("adminToken ", adminToken);
 
   const currentUser =  user || superAdmin
 
@@ -222,7 +224,7 @@ function Navbar() {
             <div className="hidden md:flex items-center space-x-4">
               {!token && !(superAdminToken || loginSuccess) ? (
                 <>
-                  <Link to="/login">
+                  <Link to="/loginPage">
                     <button className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
                       Login
                     </button>

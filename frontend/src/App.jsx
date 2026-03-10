@@ -20,6 +20,9 @@ import SuperAdminProtectedRouter from './components/protectedRouter/SuperAdminPr
 import Hotel from './components/Hotel'
 import SuperAdminProfile from './pages/superAdmin/SuperAdminProfile'
 import AdminApprovalPage from './pages/admin/AdminApprovalPage'
+import AdminLogin from './pages/admin/AdminLogin'
+import LoginPage from './pages/localPages/LoginPage'
+import AdminDashboard from './pages/admin/AdminDashboard'
 
 
 
@@ -45,6 +48,9 @@ function App() {
       <Route path='/superAdmin/superAdminProfile' element={<SuperAdminProtectedRouter><SuperAdminProfile/></SuperAdminProtectedRouter>}/>
       <Route path='/superadmin/adminApprovel' element={<SuperAdminProtectedRouter><AdminApprovalPage/></SuperAdminProtectedRouter>}/>
       <Route path='/about' element={<About/>}/>
+      <Route path='/admin/login' element={<AdminLogin/>}/>
+      <Route path='/loginPage' element={<LoginPage/>}/>
+      <Route path='/admin/adminDashboard' element={<AdminDashboard/>}/>
     </Routes> 
     </>
   

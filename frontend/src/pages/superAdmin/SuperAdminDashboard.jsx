@@ -11,10 +11,7 @@ function SuperAdminDashboard() {
   const dispatch = useDispatch();
   const { superAdmin } = useSelector((state) => state.superAdmin);
   const { admins } = useSelector((state) => state.adminAuth);
-  const [showAdminForm, setShowAdminForm] = useState(false);
- 
-
-  console.log(admins);
+  const [showAdminForm, setShowAdminForm] = useState(false); 
 
   const getInitials = (name) => {
     if (!name) return "SA";

@@ -44,8 +44,8 @@ function Login() {
 
   return (
     
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-100 via-white to-gray-200 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+    <div className="flex items-center justify-center bg-linear-to-br from-blue-100 via-white to-gray-200 px-4 ">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-300 ">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
           Welcome Back
         </h2>
