@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
 // import authApi from "./authApi";
-import apiClient from "../../services/apiClient";
+import apiClient from "../../pages/services/apiClient";
 import axios from "axios";
 
 /* -------------- Initial State ---------------- */
