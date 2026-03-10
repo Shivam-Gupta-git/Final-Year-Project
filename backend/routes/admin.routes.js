@@ -11,6 +11,7 @@ import {
   updateSuperAdminProfile,
   updateAdminProfile,
   getSuperAdminProfile,
+  getAllAdmins,
 } from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { approveCity, getPendingCities, rejectCity } from "../controllers/city.controller.js";
@@ -58,6 +59,9 @@ adminRouter.post(
   authorize("super_admin"),
   createAdminRegistration
 );
+
+// get all admins
+adminRouter.get("/getAllAdmins", isAuthenticated, authorize("super_admin"), getAllAdmins)
 
 // Verification of Admin Account by Super Admin
 adminRouter.patch(

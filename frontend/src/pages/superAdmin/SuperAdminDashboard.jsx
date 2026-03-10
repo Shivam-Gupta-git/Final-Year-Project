@@ -1,12 +1,20 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useState, useEffect } from "react";
 import AdminRegisterForm from "../admin/AdminRegisterForm";
-
+import { Link } from "react-router-dom";
+import { getAllAdmin } from "../../features/auth/adminAuthSlice";
+import { FaUserShield } from "react-icons/fa";
+import { FaUsers, FaServer, FaUserCheck } from "react-icons/fa";
 
 function SuperAdminDashboard() {
+  const dispatch = useDispatch();
   const { superAdmin } = useSelector((state) => state.superAdmin);
+  const { admins } = useSelector((state) => state.adminAuth);
   const [showAdminForm, setShowAdminForm] = useState(false);
+ 
+
+  console.log(admins);
 
   const getInitials = (name) => {
     if (!name) return "SA";
@@ -16,6 +24,12 @@ function SuperAdminDashboard() {
       .join("")
       .toUpperCase();
   };
+
+  useEffect(() => {
+    dispatch(getAllAdmin());
+  }, [dispatch]);
+
+
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
@@ -83,35 +97,78 @@ function SuperAdminDashboard() {
 
       {/* Dashboard Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Card 1 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow hover:shadow-lg transition">
-          <h3 className="text-gray-500 text-sm">Total Users</h3>
-          <p className="text-2xl font-bold text-gray-800 dark:text-white mt-2">
-            0
-          </p>
+        {/* Total Users */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-xl transition flex items-center justify-between">
+          <div>
+            <h3 className="text-gray-500 text-sm">Total Users</h3>
+            <p className="text-3xl font-bold text-gray-800 dark:text-white mt-2">
+              0
+            </p>
+          </div>
+
+          <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
+            <FaUsers className="text-xl text-blue-600 dark:text-blue-300" />
+          </div>
         </div>
 
-        {/* Card 2 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow hover:shadow-lg transition">
-          <h3 className="text-gray-500 text-sm">Total Admins</h3>
-          <p className="text-2xl font-bold text-gray-800 dark:text-white mt-2">
-            0
-          </p>
+        {/* Total Admins */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-xl transition flex items-center justify-between">
+          <div>
+            <h3 className="text-gray-500 text-sm">Total Admins</h3>
+            <p className="text-3xl font-bold text-gray-800 dark:text-white mt-2">
+              {admins?.length}
+            </p>
+          </div>
+
+          <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
+            <FaUserCheck className="text-xl text-purple-600 dark:text-purple-300" />
+          </div>
         </div>
 
-        {/* Card 3 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow hover:shadow-lg transition">
-          <h3 className="text-gray-500 text-sm">Active Sessions</h3>
-          <p className="text-2xl font-bold text-gray-800 dark:text-white mt-2">
-            0
-          </p>
+        {/* Active Sessions */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-xl transition flex items-center justify-between">
+          <div>
+            <h3 className="text-gray-500 text-sm">Active Sessions</h3>
+            <p className="text-3xl font-bold text-gray-800 dark:text-white mt-2">
+              0
+            </p>
+          </div>
+
+          <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
+            <FaUsers className="text-xl text-yellow-600 dark:text-yellow-300" />
+          </div>
         </div>
 
-        {/* Card 4 */}
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow hover:shadow-lg transition">
-          <h3 className="text-gray-500 text-sm">System Status</h3>
-          <p className="text-lg font-semibold text-green-500 mt-2">Running</p>
+        {/* System Status */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-xl transition flex items-center justify-between">
+          <div>
+            <h3 className="text-gray-500 text-sm">System Status</h3>
+            <p className="text-lg font-semibold text-green-500 mt-2">Running</p>
+          </div>
+
+          <div className="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+            <FaServer className="text-xl text-green-600 dark:text-green-300" />
+          </div>
         </div>
+
+        {/* Admin Approval Card */}
+        <Link
+          to="/superadmin/adminApprovel"
+          className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-xl transition flex items-center justify-between hover:-translate-y-1"
+        >
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+              Admin Approval
+            </h3>
+            <p className="text-sm text-gray-500">
+              Approve or reject admin accounts
+            </p>
+          </div>
+
+          <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
+            <FaUserShield className="text-xl text-blue-600 dark:text-blue-300" />
+          </div>
+        </Link>
       </div>
     </div>
   );
