@@ -6,15 +6,29 @@ import {
   rejectCityById,
 } from "../../../features/user/citySlice";
 
-function SuperAdminCityList() {
+function SuperAdminApprovealCityList() {
   const dispatch = useDispatch();
   const { cities = [], loading } = useSelector((state) => state.city);
-
+   console.log(cities);
   const [selectedCity, setSelectedCity] = useState(null);
 
   useEffect(() => {
     dispatch(getPendingCities());
   }, [dispatch]);
+
+  const handleApprove = (e, id) => {
+    e.stopPropagation();
+    dispatch(approveCityById(id));
+  };
+
+  const handleReject = (e, id) => {
+    e.stopPropagation();
+    dispatch(rejectCityById(id));
+  };
+
+  const closeModal = () => {
+    setSelectedCity(null);
+  };
 
   return (
     <div className="p-6">
@@ -53,10 +67,7 @@ function SuperAdminCityList() {
               {city.status === "pending" && (
                 <div className="flex gap-2">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dispatch(approveCityById(city._id));
-                    }}
+                    onClick={(e) => handleApprove(e, city._id)}
                     disabled={loading}
                     className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                   >
@@ -64,10 +75,7 @@ function SuperAdminCityList() {
                   </button>
 
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dispatch(rejectCityById(city._id));
-                    }}
+                    onClick={(e) => handleReject(e, city._id)}
                     disabled={loading}
                     className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
                   >
@@ -86,10 +94,10 @@ function SuperAdminCityList() {
       {selectedCity && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg w-[90%] md:w-150 p-6 relative max-h-[90vh] overflow-y-auto">
-            
+
             {/* Close Button */}
             <button
-              onClick={() => setSelectedCity(null)}
+              onClick={closeModal}
               className="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-lg"
             >
               ✕
@@ -99,11 +107,26 @@ function SuperAdminCityList() {
               {selectedCity.name} Details
             </h2>
 
-            <p><strong>State:</strong> {selectedCity.state}</p>
-            <p><strong>Country:</strong> {selectedCity.country}</p>
-            <p><strong>Description:</strong> {selectedCity.description}</p>
-            <p><strong>Best Time To Visit:</strong> {selectedCity.bestTimeToVisit}</p>
-            <p><strong>Avg Budget:</strong> ₹{selectedCity.avgDailyBudget}</p>
+            <p>
+              <strong>State:</strong> {selectedCity.state}
+            </p>
+
+            <p>
+              <strong>Country:</strong> {selectedCity.country}
+            </p>
+
+            <p>
+              <strong>Description:</strong> {selectedCity.description}
+            </p>
+
+            <p>
+              <strong>Best Time To Visit:</strong>{" "}
+              {selectedCity.bestTimeToVisit}
+            </p>
+
+            <p>
+              <strong>Avg Budget:</strong> ₹{selectedCity.avgDailyBudget}
+            </p>
 
             <p>
               <strong>Famous For:</strong>{" "}
@@ -123,6 +146,7 @@ function SuperAdminCityList() {
                 />
               ))}
             </div>
+
           </div>
         </div>
       )}
@@ -130,4 +154,4 @@ function SuperAdminCityList() {
   );
 }
 
-export default SuperAdminCityList;
+export default SuperAdminApprovealCityList;

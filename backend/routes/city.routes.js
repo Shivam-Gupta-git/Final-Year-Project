@@ -3,6 +3,7 @@ import {
   createCity,
   deleteCity,
   getActiveCities,
+  getAllCities,
   getCityById,
   getNearbyCities,
   updateCity,
@@ -25,7 +26,7 @@ cityRouter.post(
 cityRouter.put(
   "/updatecity/:id",
   isAuthenticated,
-  authorize("admin"),
+  authorize("super_admin"),
   upload.array("images", 5),
   updateCity,
 );
@@ -39,7 +40,7 @@ cityRouter.delete(
 );
 
 /* ------------ PUBLIC ROUTES ------------ */
-
+cityRouter.get("/get-allcities", getAllCities);
 cityRouter.get("/activecity", getActiveCities);
 cityRouter.get("/nearby", getNearbyCities);
 cityRouter.get("/getcity/:id", getCityById);

@@ -1,13 +1,17 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaCity } from "react-icons/fa";
+// import { getCityById } from "../../../features/user/citySlice";
 
 
 function CityDashboard() {
+  const dispatch = useDispatch()
   const [showAdminForm, setShowAdminForm] = useState(false); 
   const { superAdmin } = useSelector((state) => state.superAdmin);
+  const { city } = useSelector((state) => state.city)
+
 
 
   return (
@@ -60,16 +64,49 @@ function CityDashboard() {
           </div>
         )}
       </div>
-
+    <div className="w-full flex flex-row gap-4">
   <div className="flex mt-6">
   <Link
-    to="/superAdmin/superAdminCityList"
+    to="/superAdmin/SuperAdminApprovealCityList"
     className="w-60 p-5 bg-gray-100 rounded-xl shadow hover:shadow-lg hover:scale-105 transition flex flex-col items-center"
   >
     <span className="text-3xl mb-2 bg-amber-400 p-1 rounded-sm text-white"><FaCity /></span>
     <span className="font-semibold text-gray-700">City Approval List</span>
   </Link>
 </div>
+
+  <div className="flex mt-6">
+  <Link
+    to="/superAdmin/get-all-cities"
+    className="w-60 p-5 bg-gray-100 rounded-xl shadow hover:shadow-lg hover:scale-105 transition flex flex-col items-center"
+  >
+    <span className="text-3xl mb-2 bg-blue-400 p-1 rounded-sm text-white">
+      <FaCity />
+    </span>
+
+    <span className="font-semibold text-gray-700">
+      Show All Cities
+    </span>
+  </Link>
+</div>
+
+  <div className="flex mt-6">
+  <Link
+    to="/superAdmin/get-all-active-cities"
+    className="w-60 p-5 bg-gray-100 rounded-xl shadow hover:shadow-lg hover:scale-105 transition flex flex-col items-center"
+  >
+    <span className="text-3xl mb-2 bg-green-400 p-1 rounded-sm text-white">
+      <FaCity />
+    </span>
+
+    <span className="font-semibold text-gray-700">
+      Show All Active Cities
+    </span>
+  </Link>
+</div>
+
+    </div>
+
     </div>
   );
 }

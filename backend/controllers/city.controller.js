@@ -138,6 +138,51 @@ export const rejectCity = async (req, res) => {
   }
 };
 
+export const getPendingCities = async (req, res) => {
+  try {
+    const cities = await City.find({ status: "pending" }).populate(
+      "createdBy",
+      "userName email role",
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: cities,
+      count: cities.length,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getAllCities = async (req, res) => {
+  try {
+
+    const cities = await City.find();
+
+    if (!cities.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No cities found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: cities,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const getActiveCities = async (req, res) => {
   try {
     const cities = await City.find({ status: "active" });
@@ -309,22 +354,4 @@ export const getNearbyCities = async (req, res) => {
   }
 };
 
-export const getPendingCities = async (req, res) => {
-  try {
-    const cities = await City.find({ status: "pending" }).populate(
-      "createdBy",
-      "userName email role",
-    );
 
-    return res.status(200).json({
-      success: true,
-      data: cities,
-      count: cities.length,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
