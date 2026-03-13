@@ -17,7 +17,7 @@ import SuperAdminRegister from './pages/superAdmin/SuperAdminRegister'
 import SuperAdminLogin from './pages/superAdmin/SuperAdminLogin'
 import SuperAdminDashboard from './pages/superAdmin/SuperAdminDashboard'
 import SuperAdminProtectedRouter from './components/protectedRouter/SuperAdminProtectedRouter'
-import Hotel from './components/Hotel'
+// import Hotel from './components/Hotel'
 import SuperAdminProfile from './pages/superAdmin/SuperAdminProfile'
 import AdminApprovalPage from './pages/admin/AdminApprovalPage'
 import AdminLogin from './pages/admin/AdminLogin'
@@ -28,11 +28,12 @@ import AdminProtectedRouter from './components/protectedRouter/AdminProtectedRou
 import AddCityDetails from './pages/superAdmin/city/AddCityDetails'
 import CityDashboard from './pages/superAdmin/city/CityDashboard'
 import UpdateCityDetails from './pages/superAdmin/city/UpdateCityDetails'
-import SuperAdminCityList from './pages/superAdmin/city/SuperAdminApprovealCityList'
+// import SuperAdminCityList from './pages/superAdmin/city/SuperAdminApprovealCityList'
 import GetCityById from './pages/superAdmin/city/GetCityById'
 import SuperAdminApprovealCityList from './pages/superAdmin/city/SuperAdminApprovealCityList'
 import GetAllCities from './pages/superAdmin/city/GetAllCities'
 import GetAllActiveCities from './pages/superAdmin/city/GetAllActiveCities'
+
 
 
 function App() {
@@ -42,7 +43,6 @@ function App() {
     <Navbar/>
     <Routes>
       <Route path='/' element={<LandingPage/>}/>
-      <Route path='/hotels' element={<Hotel/>}/>
       <Route path='/signUp' element={<Register/>}/>
       <Route path='/verifyEmail' element={<VerifyEmail/>}/>
       <Route path='/verify/:token' element={<Verify/>}/>
