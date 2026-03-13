@@ -96,8 +96,6 @@ export const approveCity = async (req, res) => {
   try {
     const city = await City.findById(req.params.id);
 
-    
-
     if (!city) {
       return res.status(404).json({ message: "City not found" });
     }
@@ -118,9 +116,6 @@ export const approveCity = async (req, res) => {
 export const rejectCity = async (req, res) => {
   try {
     const city = await City.findById(req.params.id);
-
-    
-
     if (!city) {
       return res.status(404).json({ message: "City not found" });
     }
@@ -138,11 +133,34 @@ export const rejectCity = async (req, res) => {
   }
 };
 
+export const inactiveCity = async (req, res) => {
+  try {
+    const cityId = req.params.id;
+    const city = await City.findById(cityId);
+    if (!city) {
+      return res
+        .status(400)
+        .json({ success: false, message: "city not found" });
+    }
+
+    city.status = "inactive";
+    city.approvedBy = null;
+    await city.save();
+
+    return res.status(200).json({ success: true, message: "city inactive" });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const getPendingCities = async (req, res) => {
   try {
     const cities = await City.find({ status: "pending" }).populate(
       "createdBy",
-      "userName email role",
+      "userName email role"
     );
 
     return res.status(200).json({
@@ -160,7 +178,6 @@ export const getPendingCities = async (req, res) => {
 
 export const getAllCities = async (req, res) => {
   try {
-
     const cities = await City.find();
 
     if (!cities.length) {
@@ -174,7 +191,6 @@ export const getAllCities = async (req, res) => {
       success: true,
       data: cities,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -186,7 +202,7 @@ export const getAllCities = async (req, res) => {
 export const getActiveCities = async (req, res) => {
   try {
     const cities = await City.find({ status: "active" });
-    console.log("cities", cities);
+    // console.log("cities", cities);
 
     return res.status(200).json({
       success: true,
@@ -198,6 +214,21 @@ export const getActiveCities = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+export const getInactiveCities = async (req, res) => {
+  try {
+    const cities = await City.find({ status: "inactive" });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "get inactive cities successfully",
+        data: cities,
+      });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -300,10 +331,10 @@ export const deleteCity = async (req, res) => {
       });
     }
 
-    const city = await City.findByIdAndUpdate(
+    const city = await City.findByIdAndDelete(
       id,
       { status: "inactive" },
-      { returnDocument: "after", runValidators: true },
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!city) {
@@ -353,5 +384,3 @@ export const getNearbyCities = async (req, res) => {
     });
   }
 };
-
-

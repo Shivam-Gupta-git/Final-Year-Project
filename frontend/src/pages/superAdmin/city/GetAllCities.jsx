@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllCities } from "../../../features/user/citySlice";
+import { Link } from "react-router-dom";
 
 function GetAllCities() {
   const dispatch = useDispatch();
@@ -156,8 +157,8 @@ function GetAllCities() {
             <div className="mt-6">
               <h3 className="font-semibold text-lg mb-2">Famous For</h3>
 
-              <div className="flex flex-wrap gap-2">
-
+              <div className="flex flex-wrap gap-2 ">
+ 
                 {Array.isArray(selectedCity.famousFor)
                   ? selectedCity.famousFor.map((item, i) => (
                       <span
@@ -172,8 +173,8 @@ function GetAllCities() {
                       {selectedCity.famousFor}
                     </span>
                   )}
+                </div>
 
-              </div>
             </div>
 
           </div>

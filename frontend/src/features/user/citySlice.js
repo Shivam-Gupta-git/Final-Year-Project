@@ -74,6 +74,28 @@ export const rejectCityById = createAsyncThunk(
   }
 );
 
+/* -------- inactive City -------- */
+export const inactiveCity = createAsyncThunk(
+  "city/inactiveCity",
+  async (cityId, thunkAPI) => {
+    try {
+      const superAdminToken = localStorage.getItem("superAdminToken");
+      const response = await apiClient.patch(
+        `/api/admin/city/${cityId}/inactive`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${superAdminToken}` },
+        }
+      );
+      return { cityId, message: response.data.message };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "City rejection failed"
+      );
+    }
+  }
+);
+
 /* -------- pending City -------- */
 export const getPendingCities = createAsyncThunk(
   "city/getPendingCities",
@@ -127,6 +149,24 @@ export const getActiveCities = createAsyncThunk(
   }
 );
 
+/* -------- get All Inactive Cities -------- */
+export const getAllInactiveCities = createAsyncThunk(
+  "city/getAllInactiveCities",
+  async (_, thunkAPI) => {
+    try {
+      const superAdminToken = localStorage.getItem("superAdminToken");
+      const response = await apiClient.get("/api/city/inactive-cities", {
+        headers: {
+          Authorization: `Bearer ${superAdminToken}`,
+        },
+      });
+      return response.data; // return inactive cities data
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message);
+    }
+  }
+);
+
 /* ------ getCityById ------- */
 export const getCityById = createAsyncThunk(
   "city/getCityById",
@@ -142,10 +182,54 @@ export const getCityById = createAsyncThunk(
   }
 );
 
+/* ------ update city ------- */
+export const updateCity = createAsyncThunk(
+  "city/updateCity",
+  async ({ id, data }, thunkAPI) => {
+    try {
+      const response = await apiClient.put(`/api/city/updatecity/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data; // updated city
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "city update failed"
+      );
+    }
+  }
+);
+
+/* ------ delete city ------- */
+export const deleteCity = createAsyncThunk(
+  "city/deleteCity",
+  async (id, thunkAPI) => {
+    try {
+      const superAdminToken = localStorage.getItem("superAdminToken");
+      const response = await apiClient.delete(`/api/city/deletecity/${id}`,{
+        headers: {
+          Authorization: `Bearer ${superAdminToken}`,
+        },
+      });
+      console.log("RESPONSE: ", response);
+      return { id, ...response.data };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "city delete failde"
+      );
+    }
+  }
+);
+
 const citySlice = createSlice({
   name: "city",
   initialState,
-  reducers: {},
+  reducers: {
+    clearCity: (state) => {
+      state.city = null;
+      state.error = null;
+      state.success = false;
+    },
+  },
 
   extraReducers: (builder) => {
     /* -------- Create City -------- */
@@ -199,6 +283,25 @@ const citySlice = createSlice({
         state.error = action.payload;
       });
 
+    /* -------- Inactive City (Soft Delete) -------- */
+    builder
+      .addCase(inactiveCity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(inactiveCity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        const city = state.cities.find((c) => c._id === action.payload.cityId);
+        if (city) city.status = "inactive";
+      })
+      .addCase(inactiveCity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+
     /* -------- pending City -------- */
     builder
       .addCase(getPendingCities.pending, (state) => {
@@ -234,35 +337,90 @@ const citySlice = createSlice({
 
     /* -------- get All Active Cities -------- */
     builder
-    .addCase(getActiveCities.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(getActiveCities.fulfilled, (state, action) => {
-      state.loading = false;
-      state.cities = action.payload;
-    })
-    .addCase(getActiveCities.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });  
+      .addCase(getActiveCities.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getActiveCities.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cities = action.payload;
+      })
+      .addCase(getActiveCities.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    /* -------- get All Inactive Cities -------- */
+    builder
+      .addCase(getAllInactiveCities.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllInactiveCities.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cities = action.payload;
+      })
+      .addCase(getAllInactiveCities.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
     /* ------ getCityById ------- */
     builder
       .addCase(getCityById.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-
       .addCase(getCityById.fulfilled, (state, action) => {
         state.loading = false;
         state.city = action.payload;
       })
-
       .addCase(getCityById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
+
+    /* ------ update city ------- */
+    builder
+      .addCase(updateCity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateCity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.city = action.payload;
+        state.success = true;
+      })
+      .addCase(updateCity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+
+    /* ------ delete city ------- */
+    builder
+    .addCase(deleteCity.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(deleteCity.fulfilled, (state, action) => {
+      state.loading = false;
+  
+      const city = state.cities.find(
+        (c) => c._id === action.payload.id
+      );
+  
+      if (city) {
+        city.status = "inactive";   // ⭐ IMPORTANT
+      }
+    })
+    .addCase(deleteCity.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
   },
 });
 
+export const { clearCity } = citySlice.actions;
 export default citySlice.reducer;

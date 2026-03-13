@@ -7,8 +7,7 @@ import { Place } from "../model/place.model.js";
 
 export const createHotel = async (req, res) => {
   try {
-    const { name, city, address, pricePerNight, facilities, totalRooms } =
-      req.body;
+    const { name, city, address, description, facilities } = req.body;
 
     let location;
     try {
@@ -20,30 +19,31 @@ export const createHotel = async (req, res) => {
       });
     }
 
-    if (
-      !name ||
-      !city ||
-      !address ||
-      !pricePerNight ||
-      !location ||
-      !totalRooms
-    ) {
+    if (!name || !city || !address || !location) {
       return res.status(400).json({
         success: false,
         message: "All required fields are mandatory",
       });
     }
 
-    //it will check city is active or not
-    const exitingCity = await City.findOne({
+    const existingCity = await City.findOne({
       _id: city,
       status: "active",
     });
 
-    if (!exitingCity) {
+    if (!existingCity) {
       return res.status(400).json({
         success: false,
         message: "Invalid or inactive city",
+      });
+    }
+
+    const existingHotel = await Hotel.findOne({ name, city });
+
+    if (existingHotel) {
+      return res.status(409).json({
+        success: false,
+        message: "Hotel already exists in this city",
       });
     }
 
@@ -54,64 +54,32 @@ export const createHotel = async (req, res) => {
 
     let imageUrls = [];
 
-    if (req.files && req.files.length > 0) {
+    if (req.files?.length > 0) {
       for (const file of req.files) {
         const uploadResult = await uploadCloudinary(file.path, "hotels");
         imageUrls.push(uploadResult.secure_url);
-
-        if (fs.existsSync(file.path)) {
-          fs.unlinkSync(file.path);
-        }
+        // fs.unlinkSync(file.path);
       }
-    }
-
-    //it will check if hotel is created at same place, means duplicate , if you find any problem to creating hotel you can comment this part of code then it works
-    const existingHotel = await Hotel.findOne({
-      "location.coordinates": location.coordinates,
-    });
-
-    if (existingHotel) {
-      return res.status(400).json({
-        success: false,
-        message: "A hotel already exists at this location",
-      });
-    }
-
-    const totalRoomsNumber = Number(totalRooms);
-    if (isNaN(totalRoomsNumber) || totalRoomsNumber <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Total rooms must be a valid number greater than 0",
-      });
     }
 
     const hotel = await Hotel.create({
       name,
       city,
       address,
-      pricePerNight,
-      totalRooms : totalRoomsNumber,
+      description,
       facilities: facilitiesArray,
       images: imageUrls,
       location,
       status: "pending",
-      // createdBy: req.user?._id,
+      createdBy: req.user._id,
     });
-    console.log(hotel);
 
     return res.status(201).json({
       success: true,
-      message: "Hotel created Successfully and pending approval",
+      message: "Hotel created & pending approval",
       data: hotel,
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(409).json({
-        success: false,
-        message: "Hotel already exists at this location",
-      });
-    }
-
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -339,10 +307,9 @@ export const getActiveHotels = async (req, res) => {
 
 export const getPendingHotels = async (req, res) => {
   try {
-    const hotels = await Hotel.find({ status: "pending" }).populate(
-      "createdBy",
-      "userName email role",
-    );
+    const hotels = await Hotel.find({ status: "pending" })
+  .populate("city", "name state country")
+  .populate("createdBy", "name email");
 
     return res.status(200).json({
       success: true,

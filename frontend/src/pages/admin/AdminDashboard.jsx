@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FaUserSecret } from "react-icons/fa";
 import AddHotelDetails from "./hotel/AddHotelDetails";
+import { Link } from "react-router-dom";
 
 function AdminDashboard() {
   const [showAddHotemForm, setShowAddHotelForm] = useState(false)
@@ -65,7 +66,7 @@ function AdminDashboard() {
       </div>
       {/* right side */}
       <div className="w-[50%]  flex flex-col items-end justify-end gap-3">
-       <button onClick={() => setShowAddHotelForm(true)} className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition text-[13px]">+ Add Hotel Details</button>
+       <Link to="/admin/create-hotel" className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition text-[13px]">+ Add Hotel Details</Link>
        <button onClick={() => setShowUpdateHotelForm(true)} className="px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md transition text-[13px]">update Hotel Details</button>
       </div>
       </div>

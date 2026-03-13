@@ -34,6 +34,11 @@ import GetAllCities from './pages/superAdmin/city/GetAllCities'
 import GetAllActiveCities from './pages/superAdmin/city/GetAllActiveCities'
 import Hotel from './components/Hotel'
 import CityDetails from './pages/auth/CityPage'
+import GetAllInactiveCities from './pages/superAdmin/city/GetAllInactiveCities'
+import AddHotelDetails from './pages/admin/hotel/AddHotelDetails'
+import SuperAdminApprovealHoteList from './pages/superAdmin/Hotel/SuperAdminApprovealHoteList'
+import HotelDashboard from './pages/superAdmin/Hotel/HotelDashboard'
+
 
 
 
@@ -66,11 +71,15 @@ function App() {
       <Route path='/admin/adminProfile' element={<AdminProtectedRouter><AdminProfile/></AdminProtectedRouter>}/>
       <Route path='/superAdmin/cityDashboard' element={<SuperAdminProtectedRouter><CityDashboard/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/createCity' element={<SuperAdminProtectedRouter><AddCityDetails/></SuperAdminProtectedRouter>}/>
-      <Route path='/superAdmin/updateCity' element={<SuperAdminProtectedRouter><UpdateCityDetails/></SuperAdminProtectedRouter>}/>
+      <Route path='/superAdmin/updateCityDetails/:id' element={<SuperAdminProtectedRouter><UpdateCityDetails/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/SuperAdminApprovealCityList' element={<SuperAdminProtectedRouter><SuperAdminApprovealCityList/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/getCityById/:id' element={<SuperAdminProtectedRouter><GetCityById/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/get-all-cities' element={<SuperAdminProtectedRouter><GetAllCities/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/get-all-active-cities' element={<SuperAdminProtectedRouter><GetAllActiveCities/></SuperAdminProtectedRouter>}/>
+      <Route path='/superAdmin/get-all-inactive-cities' element={<SuperAdminProtectedRouter><GetAllInactiveCities/></SuperAdminProtectedRouter>} />
+      <Route path='/admin/create-hotel' element={<AdminProtectedRouter><AddHotelDetails/></AdminProtectedRouter>}/>
+      <Route path='/superAdmin/hotelDashboard' element={<SuperAdminProtectedRouter><HotelDashboard/></SuperAdminProtectedRouter>}/>
+      <Route path='/superAdmin/SuperAdminApprovealHotelList' element={<SuperAdminProtectedRouter><SuperAdminApprovealHoteList/></SuperAdminProtectedRouter>}/>
 
     </Routes> 
     </>

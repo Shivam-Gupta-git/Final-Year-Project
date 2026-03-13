@@ -40,8 +40,6 @@ function CityDashboard() {
           {/* Right Side Button */}
           <div className="flex flex-col gap-2">
             <Link to="/superAdmin/createCity" className=" text-center py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition text-[15px]"> Create City</Link>
-
-            <Link to="/superAdmin/updateCity" className="text-center py-2 px-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md transition text-[15px]"> Update City</Link>
           </div>
         </div>
 
@@ -101,6 +99,21 @@ function CityDashboard() {
 
     <span className="font-semibold text-gray-700">
       Show All Active Cities
+    </span>
+  </Link>
+</div>
+
+  <div className="flex mt-6">
+  <Link
+    to="/superAdmin/get-all-inactive-cities"
+    className="w-60 p-5 bg-gray-100 rounded-xl shadow hover:shadow-lg hover:scale-105 transition flex flex-col items-center"
+  >
+    <span className="text-3xl mb-2 bg-orange-700 p-1 rounded-sm text-white">
+      <FaCity />
+    </span>
+
+    <span className="font-semibold text-gray-700">
+      Show All Inactive Cities
     </span>
   </Link>
 </div>

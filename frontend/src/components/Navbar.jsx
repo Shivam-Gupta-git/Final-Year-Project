@@ -195,6 +195,13 @@ function Navbar() {
                     City
                   </Link>
 
+                  <Link
+                    to="/superAdmin/hotelDashboard"
+                    className="text-gray-700 font-medium hover:text-blue-600"
+                  >
+                    Hotel
+                  </Link>
+
                   <div className="flex flex-row items-center justify-center gap-1 border-2 border-blue-500 p-1 rounded-2xl hover:bg-blue-500 group cursor-pointer">
                     <FaUserShield className="text-xl text-blue-600 dark:text-blue-300 group-hover:text-white transition-colors duration-200" />
                     <Link
