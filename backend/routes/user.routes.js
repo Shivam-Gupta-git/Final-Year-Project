@@ -19,6 +19,11 @@ import { isAuthenticated, authorize } from "../middleware/auth.middleware.js";
 
 const userRouter = express.Router();
 
+// app.use((req, res, next) => {
+//   res.set("Cache-Control", "no-store");
+//   next();
+// });
+
 userRouter.post(
   "/user-registration",
   upload.fields([
