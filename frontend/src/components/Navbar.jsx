@@ -50,18 +50,6 @@ function Navbar() {
 
   const currentUser = user || superAdmin || admin;
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowHistory(false);
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
-
   const handleSearch = (search) => {
     if (!search.trim()) return;
 
@@ -189,8 +177,8 @@ function Navbar() {
               </Link>
 
               {/* Location */}
-              {token ||
-                (adminToken && (
+              {
+                (token || adminToken) && (
                   <div className="flex items-center gap-1 px-3 py-1 rounded-lg">
                     <GrLocationPin style={{ fontSize: "22px", color: "red" }} />
 
@@ -203,7 +191,7 @@ function Navbar() {
                         : "Add Location"}
                     </button>
                   </div>
-                ))}
+                )}
             </div>
 
             {/* SUPER ADMIN NAV LINKS */}

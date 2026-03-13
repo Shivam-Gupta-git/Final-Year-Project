@@ -5,6 +5,9 @@ function HeroSection() {
   const [activeTab, setActiveTab] = useState("hotels");
   const navigate = useNavigate();
 
+  //search 
+  
+
   const [formData, setFormData] = useState({
     city: "",
     checkIn: "",
