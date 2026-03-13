@@ -1,6 +1,10 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllInactiveCities } from "../../../features/user/citySlice";
+import {
+  approveCityById,
+  deleteCity,
+  getAllInactiveCities,
+} from "../../../features/user/citySlice";
 import { Link } from "react-router-dom";
 
 function GetAllInactiveCities() {
@@ -11,11 +15,17 @@ function GetAllInactiveCities() {
     dispatch(getAllInactiveCities());
   }, [dispatch]);
 
+  const handelActiveButtton = (cityId) => {
+    dispatch(approveCityById(cityId));
+  };
+
+  const handelDeleteCityButton = (cityId) => {
+   dispatch(deleteCity(cityId))
+  }
+
   return (
     <div className="p-6">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800">
-        Inactive Cities
-      </h2>
+      <h2 className="text-3xl font-bold mb-6 text-gray-800">Inactive Cities</h2>
 
       {loading ? (
         <p className="text-gray-500">Loading inactive cities...</p>
@@ -66,12 +76,24 @@ function GetAllInactiveCities() {
                     ₹{city.avgDailyBudget}/day
                   </span>
 
-                  <Link
-                    to={`/superAdmin/updateCityDetails/${city._id}`}
-                    className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition"
+                  <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => handelActiveButtton(city._id)}
+                    disabled={loading}
+                    className="flex items-center gap-1 text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded transition disabled:opacity-50"
                   >
-                    Update
-                  </Link>
+                    {loading ? "Restoring..." : "Activate"}
+                  </button>
+                  <button
+                    onClick={() => handelDeleteCityButton(city._id)}
+                    disabled={loading}
+                    className="flex items-center gap-1 text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition disabled:opacity-50"
+                  >
+                    {loading ? "Restoring..." : "Delete"}
+                  </button>
+
+
+                  </div>
                 </div>
               </div>
             </div>

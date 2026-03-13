@@ -12,6 +12,7 @@ import restaurantRouter from "./routes/restaurant.routes.js";
 import reviewRouter from "./routes/review.routes.js";
 import { driverRouter } from "./routes/driver.routes.js";
 import  cors  from 'cors'
+import roomRouter from "./routes/room.routes.js";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter)
 app.use("/api/city", cityRouter);
 app.use("/api/hotel" , hotelRouter)
+app.use("/api/room", roomRouter)
 app.use("/api/place", placeRouter)
 app.use("/api/travelOption", travelOptionRouter)
 app.use("/api/resturant", restaurantRouter)

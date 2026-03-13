@@ -331,7 +331,7 @@ export const deleteCity = async (req, res) => {
       });
     }
 
-    const city = await City.findByIdAndUpdate(
+    const city = await City.findByIdAndDelete(
       id,
       { status: "inactive" },
       { returnDocument: "after", runValidators: true }

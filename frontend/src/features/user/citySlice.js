@@ -204,8 +204,14 @@ export const deleteCity = createAsyncThunk(
   "city/deleteCity",
   async (id, thunkAPI) => {
     try {
-      const response = await apiClient.delete(`/api/city/deletecity/${id}`);
-      return response;
+      const superAdminToken = localStorage.getItem("superAdminToken");
+      const response = await apiClient.delete(`/api/city/deletecity/${id}`,{
+        headers: {
+          Authorization: `Bearer ${superAdminToken}`,
+        },
+      });
+      console.log("RESPONSE: ", response);
+      return { id, ...response.data };
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "city delete failde"
@@ -394,19 +400,25 @@ const citySlice = createSlice({
 
     /* ------ delete city ------- */
     builder
-      .addCase(deleteCity.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteCity.fulfilled, (state, action) => {
-        state.loading = false;
-        // Remove the deleted city from the cities array
-        state.cities = state.cities.filter((c) => c._id !== action.meta.arg);
-      })
-      .addCase(deleteCity.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+    .addCase(deleteCity.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(deleteCity.fulfilled, (state, action) => {
+      state.loading = false;
+  
+      const city = state.cities.find(
+        (c) => c._id === action.payload.id
+      );
+  
+      if (city) {
+        city.status = "inactive";   // ⭐ IMPORTANT
+      }
+    })
+    .addCase(deleteCity.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
   },
 });
 
