@@ -90,7 +90,7 @@ export const inactiveCity = createAsyncThunk(
       return { cityId, message: response.data.message };
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "City rejection failed"
+        error.response?.data?.message || "City Inactive failed"
       );
     }
   }
