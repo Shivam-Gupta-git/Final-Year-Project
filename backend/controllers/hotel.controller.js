@@ -202,6 +202,7 @@ export const updateHotel = async (req, res) => {
 export const deleteHotel = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -210,7 +211,7 @@ export const deleteHotel = async (req, res) => {
       });
     }
 
-    const deletedHotel = await Place.findByIdAndDelete(id);
+    const deletedHotel = await Hotel.findByIdAndDelete(id);
 
     if (!deletedHotel) {
       return res.status(404).json({
@@ -278,17 +279,8 @@ export const rejectHotel = async (req, res) => {
 
 export const getActiveHotels = async (req, res) => {
   try {
-    const { cityId } = req.query;
-
-    if (!cityId) {
-      return res.status(400).json({
-        success: false,
-        message: "cityId is required",
-      });
-    }
 
     const hotels = await Hotel.find({
-      city: cityId,
       status: "active",
     }).populate("city", "name state");
 
@@ -346,3 +338,39 @@ export const getAllHotels = async (req, res) => {
     });
   }
 } 
+
+export const inactiveHotel = async (req, res) => {
+  try {
+    const hotelId = req.params.id;
+    const hotel = await Hotel.findById(hotelId)
+    if(!hotel){
+      return res.status(400).json({success: false, message: "hotel not found"})
+    }
+
+    hotel.status = "inactive";
+    hotel.approvedBy = null;
+    await hotel.save();
+
+    return res.status(200).json({success: true, message: "hotel inactive successfully"})
+  } catch (error) {
+    return res.status(500).json({success: false, message: error.message})
+  }
+}
+
+export const getInactiveHotels = async (req, res) => {
+  try {
+    const hotels = await Hotel.find({status: 'inactive'})
+    return res.status(200).json({success: true, message: "get Inactive Hotels", data: hotels})
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+export const getRejectedHotel = async (req, res) => {
+  try {
+    const hotel = await Hotel.find({status: "rejected"})
+    return res.status(200).json({success: true, message: "get rejected hotel", data: hotel})
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+}

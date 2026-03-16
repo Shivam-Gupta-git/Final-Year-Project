@@ -98,6 +98,100 @@ export const getAllHotels = createAsyncThunk(
   }
 );
 
+/* -------- get All Active Hotels -------- */
+export const getAllActiveHotels = createAsyncThunk("hotel/getAllActiveHotels", async (_, thunkAPI) => {
+  try {
+    const response = await apiClient.get("/api/hotel/activehotel")
+    return response.data
+  } catch (error) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message || "Failed to fetch active cities"
+    );
+  }
+})
+
+/* -------- inactive Hotel -------- */
+export const inactiveHotel = createAsyncThunk("hotel/inactiveHotel", async(hotelId, thunkAPI) => {
+  try {
+    const superAdminToken = localStorage.getItem("superAdminToken");
+
+    const response = await apiClient.patch(`/api/admin/hotel/${hotelId}/inactive`, {}, {
+      headers: { Authorization: `Bearer ${superAdminToken}` },
+    })
+
+    return { hotelId, message: response.data.message };
+  } catch (error) {
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message || "Hotel Inactive failed"
+    );
+  }
+})
+
+/* -------- get All Inactive Hotels -------- */
+export const getAllInactiveHotels = createAsyncThunk(
+  "hotel/getAllInactiveHotels",
+  async (_, thunkAPI) => {
+    try {
+      const superAdminToken = localStorage.getItem("superAdminToken");
+      const response = await apiClient.get("/api/hotel/get-all-Inactive-hotels", {
+        headers: {
+          Authorization: `Bearer ${superAdminToken}`,
+        },
+      });
+      return response.data; // return inactive hotels data
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message);
+    }
+  }
+);
+
+/* -------- get All Rejected Hotels -------- */
+export const getAllRejectedHotels = createAsyncThunk("hotel/getAllRejectedHotel", async (_, thunkAPI) => {
+  try {
+    const superAdminToken = localStorage.getItem("superAdminToken");
+
+    const response = await apiClient.get("/api/admin/hotels/rejected", {
+      headers: {
+        Authorization: `Bearer ${superAdminToken}`,
+      },
+    })
+
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response?.data?.message);
+  }
+})
+
+/* ------ delete Hotel ------- */
+export const deleteHotel = createAsyncThunk(
+  "hotel/deleteHotel",
+  async (id, thunkAPI) => {
+    try {
+      const superAdminToken = localStorage.getItem("superAdminToken");
+      const response = await apiClient.delete(`/api/hotel/delete-hotel/${id}`,{
+        headers: {
+          Authorization: `Bearer ${superAdminToken}`,
+        },
+      });
+      console.log("RESPONSE: ", response);
+      return { id, ...response.data };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "hotel delete failde"
+      );
+    }
+  }
+);
+
+/* ------ update Hotel ------- */
+export const updateHotel = createAsyncThunk("/hotel/updateHotel", async({hotelId, data}, thunkAPI) => {
+  try {
+    
+  } catch (error) {
+    
+  }
+})
+
 const hotelSlice = createSlice({
   name: "hotel",
   initialState,
@@ -184,7 +278,92 @@ const hotelSlice = createSlice({
   .addCase(getAllHotels.rejected, (state, action) => {
     state.loading = false;
     state.error = action.payload;
-  }); 
+  });
+  
+  /* -------- get All Active Hotels -------- */
+  builder
+  .addCase(getAllActiveHotels.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(getAllActiveHotels.fulfilled, (state, action) => {
+    state.loading = false;
+    state.hotels = action.payload;
+  })
+  .addCase(getAllActiveHotels.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  });
+
+  /* -------- Inactive Hotel (Soft Delete) -------- */
+  builder
+  .addCase(inactiveHotel.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+    state.success = false;
+  })
+  .addCase(inactiveHotel.fulfilled, (state, action) => {
+    state.loading = false;
+    state.success = true;
+    const hotel = state.hotels.find((c) => c._id === action.payload.hotelId);
+    if (hotel) hotel.status = "inactive";
+  })
+  .addCase(inactiveHotel.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+    state.success = false;
+  });
+
+      /* -------- get All Inactive Hotels -------- */
+      builder
+      .addCase(getAllInactiveHotels.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllInactiveHotels.fulfilled, (state, action) => {
+        state.loading = false;
+        state.hotels = action.payload;
+      })
+      .addCase(getAllInactiveHotels.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+  /* -------- get All Rejected Hotels -------- */
+  builder
+  .addCase(getAllRejectedHotels.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(getAllRejectedHotels.fulfilled, (state, action) => {
+    state.loading = false;
+    state.hotels = action.payload;
+  })
+  .addCase(getAllRejectedHotels.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  });    
+
+      /* ------ delete city ------- */
+      builder
+      .addCase(deleteHotel.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteHotel.fulfilled, (state, action) => {
+        state.loading = false;
+    
+        const hotel = state.hotels.find(
+          (c) => c._id === action.payload.id
+        );
+    
+        if (hotel) {
+          hotel.status = "inactive";   // ⭐ IMPORTANT
+        }
+      })
+      .addCase(deleteHotel.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });    
 
 
   },

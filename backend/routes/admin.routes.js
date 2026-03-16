@@ -16,7 +16,7 @@ import {
 } from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { approveCity, getPendingCities, inactiveCity, rejectCity } from "../controllers/city.controller.js";
-import { approveHotel, getPendingHotels, rejectHotel } from "../controllers/hotel.controller.js";
+import { approveHotel, getPendingHotels, getRejectedHotel, inactiveHotel, rejectHotel } from "../controllers/hotel.controller.js";
 import { approvePlace, pendingPlace, rejectPlace } from "../controllers/place.controller.js";
 import { allPendingResturant, approveResturant, rejectResturant } from "../controllers/restaurant.controller.js";
 import { approveTravelOptions, getPendingTravelOptions, rejectTravelOption } from "../controllers/travelOption.controller.js";
@@ -119,5 +119,10 @@ adminRouter.get("/resturant/pending", isAuthenticated , authorize("super_admin")
 
 // inactive
 adminRouter.patch("/city/:id/inactive", isAuthenticated, authorize("super_admin"), inactiveCity)
+adminRouter.patch("/hotel/:id/inactive", isAuthenticated, authorize("super_admin"), inactiveHotel)
+
+
+// get rejected hotels
+adminRouter.get("/hotels/rejected", isAuthenticated, authorize("super_admin"), getRejectedHotel)
 
 export { adminRouter };
