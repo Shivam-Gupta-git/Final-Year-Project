@@ -170,7 +170,7 @@ function HeroSection() {
                   {label}
                 </span>
                 {activeTab === key && (
-                  <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 h-2 w-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full shadow-lg" />
+                  <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 h-2 w-8 bg-linear-to-r from-orange-500 to-amber-500 rounded-full shadow-lg" />
                 )}
               </button>
             ))}
