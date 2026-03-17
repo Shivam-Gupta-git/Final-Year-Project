@@ -294,6 +294,9 @@ export const getActiveHotels = async (req, res) => {
     .populate("city", "name state")
     .populate("createdBy", "name email");
     
+    const hotels = await Hotel.find({
+      status: "active",
+    }).populate("city", "name state");
 
     return res.status(200).json({
       success: true,
@@ -311,8 +314,8 @@ export const getActiveHotels = async (req, res) => {
 export const getPendingHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find({ status: "pending" })
-  .populate("city", "name state country")
-  .populate("createdBy", "name email");
+      .populate("city", "name state country")
+      .populate("createdBy", "name email");
 
     return res.status(200).json({
       success: true,
@@ -329,9 +332,8 @@ export const getPendingHotels = async (req, res) => {
 
 export const getAllHotels = async (req, res) => {
   try {
-    const hotels = await Hotel.find().
-    populate("city", "name state country")
-    if(!hotels.length){
+    const hotels = await Hotel.find().populate("city", "name state country");
+    if (!hotels.length) {
       return res.status(404).json({
         success: false,
         message: "No hotels found",
@@ -348,42 +350,51 @@ export const getAllHotels = async (req, res) => {
       message: error.message,
     });
   }
-} 
+};
 
 export const inactiveHotel = async (req, res) => {
   try {
     const hotelId = req.params.id;
-    const hotel = await Hotel.findById(hotelId)
-    if(!hotel){
-      return res.status(400).json({success: false, message: "hotel not found"})
+    const hotel = await Hotel.findById(hotelId);
+    if (!hotel) {
+      return res
+        .status(400)
+        .json({ success: false, message: "hotel not found" });
     }
 
     hotel.status = "inactive";
     hotel.approvedBy = null;
     await hotel.save();
 
-    return res.status(200).json({success: true, message: "hotel inactive successfully"})
+    return res
+      .status(200)
+      .json({ success: true, message: "hotel inactive successfully" });
   } catch (error) {
-    return res.status(500).json({success: false, message: error.message})
+    return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const getInactiveHotels = async (req, res) => {
   try {
-    const hotels = await Hotel.find({status: 'inactive'})
-    return res.status(200).json({success: true, message: "get Inactive Hotels", data: hotels})
+    const hotels = await Hotel.find({ status: "inactive" });
+    return res
+      .status(200)
+      .json({ success: true, message: "get Inactive Hotels", data: hotels });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const getRejectedHotel = async (req, res) => {
   try {
-    const hotel = await Hotel.find({status: "rejected"})
-    return res.status(200).json({success: true, message: "get rejected hotel", data: hotel})
+    const hotel = await Hotel.find({ status: "rejected" });
+    return res
+      .status(200)
+      .json({ success: true, message: "get rejected hotel", data: hotel });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
+  
 }
 
 export const getPublicActiveHotels = async (req, res) => {
