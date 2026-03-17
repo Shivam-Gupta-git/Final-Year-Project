@@ -128,7 +128,7 @@ export const updateHotel = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid city ID",
+        message: "Invalid hotel ID",
       });
     }
 
@@ -176,7 +176,7 @@ export const updateHotel = async (req, res) => {
       id,
       updateData,
       { new: true, runValidators: true }, //this is use to validate data
-    );
+    ).populate("city").populate("createdBy", "name email");
     console.log(updatehotel);
 
     if (!updatehotel) {
@@ -279,10 +279,21 @@ export const rejectHotel = async (req, res) => {
 
 export const getActiveHotels = async (req, res) => {
   try {
+   let filter = { status: "active"};
+   if (req.user.role === "admin") {
+    // admin → only own hotels
+    filter.createdBy = req.user.id;
+  }
 
-    const hotels = await Hotel.find({
-      status: "active",
-    }).populate("city", "name state");
+  if (req.user.role === "user") {
+    // user → only approved active hotels
+    filter.isApproved = true;
+  }
+
+    const hotels = await Hotel.find(filter)
+    .populate("city", "name state")
+    .populate("createdBy", "name email");
+    
 
     return res.status(200).json({
       success: true,
@@ -374,3 +385,22 @@ export const getRejectedHotel = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 }
+
+export const getPublicActiveHotels = async (req, res) => {
+  try {
+    const hotels = await Hotel.find({
+      status: "active",
+    }).populate("city", "name state");
+
+    res.status(200).json({
+      success: true,
+      data: hotels,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

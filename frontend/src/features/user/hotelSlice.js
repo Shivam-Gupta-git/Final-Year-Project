@@ -5,7 +5,8 @@ const initialState = {
   hotels: [],
   loading: false,
   error: null,
-  createSuccess: false
+  createSuccess: false,
+  hotel: null,
 };
 
 /* -------- Create Hotel -------- */
@@ -46,19 +47,26 @@ export const getPendingHotels = createAsyncThunk(
 );
 
 /* -------- approve Hotel -------- */
-export const approveHotelById = createAsyncThunk("hotel/approveHotel", async (hotelId, thunkAPI) => {
-  try {
-     const superAdminToken = localStorage.getItem("superAdminToken");
-    const response = await apiClient.patch(`/api/admin/hotel/${hotelId}/approve`, {}, {
-      headers: { Authorization: `Bearer ${superAdminToken}` },
-    })
-    return { hotelId, message: response.data.message };
-  } catch (error) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "City approval failed"
-    );
+export const approveHotelById = createAsyncThunk(
+  "hotel/approveHotel",
+  async (hotelId, thunkAPI) => {
+    try {
+      const superAdminToken = localStorage.getItem("superAdminToken");
+      const response = await apiClient.patch(
+        `/api/admin/hotel/${hotelId}/approve`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${superAdminToken}` },
+        }
+      );
+      return { hotelId, message: response.data.message };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "City approval failed"
+      );
+    }
   }
-})
+);
 
 /* -------- Rejected Hotel -------- */
 export const rejectHotelById = createAsyncThunk(
@@ -99,33 +107,43 @@ export const getAllHotels = createAsyncThunk(
 );
 
 /* -------- get All Active Hotels -------- */
-export const getAllActiveHotels = createAsyncThunk("hotel/getAllActiveHotels", async (_, thunkAPI) => {
-  try {
-    const response = await apiClient.get("/api/hotel/activehotel")
-    return response.data
-  } catch (error) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Failed to fetch active cities"
-    );
+export const getAllActiveHotels = createAsyncThunk(
+  "hotel/getAllActiveHotels",
+  async (_, thunkAPI) => {
+    try {
+      const response = await apiClient.get("/api/hotel/activehotel");
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch active cities"
+      );
+    }
   }
-})
+);
 
 /* -------- inactive Hotel -------- */
-export const inactiveHotel = createAsyncThunk("hotel/inactiveHotel", async(hotelId, thunkAPI) => {
-  try {
-    const superAdminToken = localStorage.getItem("superAdminToken");
+export const inactiveHotel = createAsyncThunk(
+  "hotel/inactiveHotel",
+  async (hotelId, thunkAPI) => {
+    try {
+      const superAdminToken = localStorage.getItem("superAdminToken");
 
-    const response = await apiClient.patch(`/api/admin/hotel/${hotelId}/inactive`, {}, {
-      headers: { Authorization: `Bearer ${superAdminToken}` },
-    })
+      const response = await apiClient.patch(
+        `/api/admin/hotel/${hotelId}/inactive`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${superAdminToken}` },
+        }
+      );
 
-    return { hotelId, message: response.data.message };
-  } catch (error) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Hotel Inactive failed"
-    );
+      return { hotelId, message: response.data.message };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Hotel Inactive failed"
+      );
+    }
   }
-})
+);
 
 /* -------- get All Inactive Hotels -------- */
 export const getAllInactiveHotels = createAsyncThunk(
@@ -133,11 +151,14 @@ export const getAllInactiveHotels = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const superAdminToken = localStorage.getItem("superAdminToken");
-      const response = await apiClient.get("/api/hotel/get-all-Inactive-hotels", {
-        headers: {
-          Authorization: `Bearer ${superAdminToken}`,
-        },
-      });
+      const response = await apiClient.get(
+        "/api/hotel/get-all-Inactive-hotels",
+        {
+          headers: {
+            Authorization: `Bearer ${superAdminToken}`,
+          },
+        }
+      );
       return response.data; // return inactive hotels data
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
@@ -146,21 +167,24 @@ export const getAllInactiveHotels = createAsyncThunk(
 );
 
 /* -------- get All Rejected Hotels -------- */
-export const getAllRejectedHotels = createAsyncThunk("hotel/getAllRejectedHotel", async (_, thunkAPI) => {
-  try {
-    const superAdminToken = localStorage.getItem("superAdminToken");
+export const getAllRejectedHotels = createAsyncThunk(
+  "hotel/getAllRejectedHotel",
+  async (_, thunkAPI) => {
+    try {
+      const superAdminToken = localStorage.getItem("superAdminToken");
 
-    const response = await apiClient.get("/api/admin/hotels/rejected", {
-      headers: {
-        Authorization: `Bearer ${superAdminToken}`,
-      },
-    })
+      const response = await apiClient.get("/api/admin/hotels/rejected", {
+        headers: {
+          Authorization: `Bearer ${superAdminToken}`,
+        },
+      });
 
-    return response.data;
-  } catch (error) {
-    return thunkAPI.rejectWithValue(error.response?.data?.message);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message);
+    }
   }
-})
+);
 
 /* ------ delete Hotel ------- */
 export const deleteHotel = createAsyncThunk(
@@ -168,7 +192,7 @@ export const deleteHotel = createAsyncThunk(
   async (id, thunkAPI) => {
     try {
       const superAdminToken = localStorage.getItem("superAdminToken");
-      const response = await apiClient.delete(`/api/hotel/delete-hotel/${id}`,{
+      const response = await apiClient.delete(`/api/hotel/delete-hotel/${id}`, {
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
         },
@@ -184,13 +208,65 @@ export const deleteHotel = createAsyncThunk(
 );
 
 /* ------ update Hotel ------- */
-export const updateHotel = createAsyncThunk("/hotel/updateHotel", async({hotelId, data}, thunkAPI) => {
-  try {
-    
-  } catch (error) {
-    
+export const updateHotel = createAsyncThunk(
+  "/hotel/updateHotel",
+  async ({ hotelId, data }, thunkAPI) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await apiClient.put(
+        `/api/hotel/updateHotel/${hotelId}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "hotel update failed"
+      );
+    }
   }
-})
+);
+
+/* -------- get All Active Public Hotels -------- */
+export const getPublicActiveHotels = createAsyncThunk(
+  "hotel/getPublicAvtiveHotel",
+  async (_, thunkAPI) => {
+    try {
+      const response = await apiClient.get("/api/hotel/public/hotels");
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch public active hotels"
+      );
+    }
+  }
+);
+
+/* ------ get hotel by ID ------- */
+export const getHotelById = createAsyncThunk(
+  "hotel/getHotelById",
+  async (id, thunkAPI) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+
+      const response = await apiClient.get(`/api/hotel/get-hotel-by-id/${id}`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+        },
+      });
+
+      return response.data; // IMPORTANT
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch hotel"
+      );
+    }
+  }
+);
 
 const hotelSlice = createSlice({
   name: "hotel",
@@ -218,104 +294,110 @@ const hotelSlice = createSlice({
 
     /* -------- get all pending Hotel -------- */
     builder
-    .addCase(getPendingHotels.pending, (state) => {
-      state.loading = true;
-    })
+      .addCase(getPendingHotels.pending, (state) => {
+        state.loading = true;
+      })
 
-    .addCase(getPendingHotels.fulfilled, (state, action) => {
-      state.loading = false;
-      state.hotels = action.payload;
-    })
+      .addCase(getPendingHotels.fulfilled, (state, action) => {
+        state.loading = false;
+        state.hotels = action.payload;
+      })
 
-    .addCase(getPendingHotels.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    }); 
-    
-  /* -------- approve Hotel -------- */  
-  builder
+      .addCase(getPendingHotels.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    /* -------- approve Hotel -------- */
+    builder
       .addCase(approveHotelById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(approveHotelById.fulfilled, (state, action) => {
         state.loading = false;
-        const hotel = state.hotels.find((c) => c._id === action.payload.hotelId);
+        const hotel = state.hotels.find(
+          (c) => c._id === action.payload.hotelId
+        );
         if (hotel) hotel.status = "active";
       })
       .addCase(approveHotelById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
-    
-    /* -------- Rejected Hotel -------- */  
+
+    /* -------- Rejected Hotel -------- */
     builder
-    .addCase(rejectHotelById.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(rejectHotelById.fulfilled, (state, action) => {
-      state.loading = false;
-      const hotel = state.hotels.find((c) => c._id === action.payload.hotelId);
-      if (hotel) hotel.status = "rejected";
-    })
-    .addCase(rejectHotelById.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
-  /* -------- get All Hotels -------- */ 
-  builder
+      .addCase(rejectHotelById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(rejectHotelById.fulfilled, (state, action) => {
+        state.loading = false;
+        const hotel = state.hotels.find(
+          (c) => c._id === action.payload.hotelId
+        );
+        if (hotel) hotel.status = "rejected";
+      })
+      .addCase(rejectHotelById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+    /* -------- get All Hotels -------- */
+    builder
 
-  .addCase(getAllHotels.pending, (state) => {
-    state.loading = true;
-  })
+      .addCase(getAllHotels.pending, (state) => {
+        state.loading = true;
+      })
 
-  .addCase(getAllHotels.fulfilled, (state, action) => {
-    state.loading = false;
-    state.hotels = action.payload;
-  })
+      .addCase(getAllHotels.fulfilled, (state, action) => {
+        state.loading = false;
+        state.hotels = action.payload;
+      })
 
-  .addCase(getAllHotels.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  });
-  
-  /* -------- get All Active Hotels -------- */
-  builder
-  .addCase(getAllActiveHotels.pending, (state) => {
-    state.loading = true;
-    state.error = null;
-  })
-  .addCase(getAllActiveHotels.fulfilled, (state, action) => {
-    state.loading = false;
-    state.hotels = action.payload;
-  })
-  .addCase(getAllActiveHotels.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  });
+      .addCase(getAllHotels.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
-  /* -------- Inactive Hotel (Soft Delete) -------- */
-  builder
-  .addCase(inactiveHotel.pending, (state) => {
-    state.loading = true;
-    state.error = null;
-    state.success = false;
-  })
-  .addCase(inactiveHotel.fulfilled, (state, action) => {
-    state.loading = false;
-    state.success = true;
-    const hotel = state.hotels.find((c) => c._id === action.payload.hotelId);
-    if (hotel) hotel.status = "inactive";
-  })
-  .addCase(inactiveHotel.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-    state.success = false;
-  });
+    /* -------- get All Active Hotels -------- */
+    builder
+      .addCase(getAllActiveHotels.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllActiveHotels.fulfilled, (state, action) => {
+        state.loading = false;
+        state.hotels = action.payload;
+      })
+      .addCase(getAllActiveHotels.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
-      /* -------- get All Inactive Hotels -------- */
-      builder
+    /* -------- Inactive Hotel (Soft Delete) -------- */
+    builder
+      .addCase(inactiveHotel.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(inactiveHotel.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        const hotel = state.hotels.find(
+          (c) => c._id === action.payload.hotelId
+        );
+        if (hotel) hotel.status = "inactive";
+      })
+      .addCase(inactiveHotel.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+
+    /* -------- get All Inactive Hotels -------- */
+    builder
       .addCase(getAllInactiveHotels.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -329,44 +411,98 @@ const hotelSlice = createSlice({
         state.error = action.payload;
       });
 
-  /* -------- get All Rejected Hotels -------- */
-  builder
-  .addCase(getAllRejectedHotels.pending, (state) => {
-    state.loading = true;
-    state.error = null;
-  })
-  .addCase(getAllRejectedHotels.fulfilled, (state, action) => {
-    state.loading = false;
-    state.hotels = action.payload;
-  })
-  .addCase(getAllRejectedHotels.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  });    
+    /* -------- get All Rejected Hotels -------- */
+    builder
+      .addCase(getAllRejectedHotels.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllRejectedHotels.fulfilled, (state, action) => {
+        state.loading = false;
+        state.hotels = action.payload;
+      })
+      .addCase(getAllRejectedHotels.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
-      /* ------ delete city ------- */
-      builder
+    /* ------ delete city ------- */
+    builder
       .addCase(deleteHotel.pending, (state) => {
         state.loading = true;
       })
       .addCase(deleteHotel.fulfilled, (state, action) => {
         state.loading = false;
-    
-        const hotel = state.hotels.find(
-          (c) => c._id === action.payload.id
-        );
-    
+
+        const hotel = state.hotels.find((c) => c._id === action.payload.id);
+
         if (hotel) {
-          hotel.status = "inactive";   // ⭐ IMPORTANT
+          hotel.status = "inactive"; // ⭐ IMPORTANT
         }
       })
       .addCase(deleteHotel.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });    
+      });
 
+    /* ------ update hotel ------- */
+    builder
+      .addCase(updateHotel.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateHotel.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
 
+        const index = state.hotels.findIndex(
+          (h) => h._id === action.payload._id
+        );
+
+        if (index !== -1) {
+          state.hotels[index] = action.payload;
+        }
+      })
+      .addCase(updateHotel.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+
+    builder
+
+      // GET HOTEL BY ID
+      .addCase(getHotelById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(getHotelById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.hotel = action.payload;
+      })
+
+      .addCase(getHotelById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    /* -------- get All Active Public Hotels -------- */
+    builder
+      .addCase(getPublicActiveHotels.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getPublicActiveHotels.fulfilled, (state, action) => {
+        state.loading = false;
+        state.publicHotels = action.payload;
+      })
+      .addCase(getPublicActiveHotels.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
-}); 
+});
 
 export default hotelSlice.reducer;

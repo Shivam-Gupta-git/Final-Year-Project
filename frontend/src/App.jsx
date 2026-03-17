@@ -39,6 +39,10 @@ import SuperAdminApprovealHoteList from './pages/superAdmin/Hotel/SuperAdminAppr
 import HotelDashboard from './pages/superAdmin/Hotel/HotelDashboard'
 import GetAllHotels from './pages/superAdmin/Hotel/GetAllHotels'
 import GetAllActiveHotels from './pages/superAdmin/Hotel/GetAllActiveHotels'
+import GetAllInactiveHotels from './pages/superAdmin/Hotel/GetAllInactiveHotels'
+import GetAllRejectedHotels from './pages/superAdmin/Hotel/GetAllRejectedHotels'
+import UpdateHotelDetails from './pages/admin/hotel/UpdateHotelDetails'
+
 
 
 
@@ -50,7 +54,7 @@ function App() {
     <Navbar/>
     <Routes>
       <Route path='/' element={<LandingPage/>}/>
-      <Route path='hotels' element={<HotelPage />}/>
+      {/* <Route path='hotels' element={<HotelPage />}/> */}
       <Route path='/city/:id' element={<CityDetails />}/>
       <Route path='/signUp' element={<Register/>}/>
       <Route path='/verifyEmail' element={<VerifyEmail/>}/>
@@ -85,6 +89,7 @@ function App() {
       <Route path='/superAdmin/get-all-active-hotels' element={<SuperAdminProtectedRouter><GetAllActiveHotels/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/get-all-Inactive-hotels' element={<SuperAdminProtectedRouter><GetAllInactiveHotels/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/get-all-rejected-hotels' element={<SuperAdminProtectedRouter><GetAllRejectedHotels/></SuperAdminProtectedRouter>}/>
+      <Route path='/admin/update-hotel-details/:id' element={<AdminProtectedRouter><UpdateHotelDetails/></AdminProtectedRouter>}/>
 
     </Routes> 
     </>
