@@ -16,7 +16,7 @@ const HeroSearch = () => {
   };
 
   const getTomorrow = () => {
-    const tomorrow = new Date(2026, 2, 19); 
+    const tomorrow = new Date(2026, 2, 19);
     return tomorrow.toISOString().split("T")[0];
   };
 
@@ -110,7 +110,7 @@ const HeroSearch = () => {
           <button
             type="button"
             onClick={toggleGuests}
-            className="w-full flex items-center justify-between px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:shadow-md transition-all duration-200 bg-gradient-to-r from-gray-50 to-white"
+            className="w-full flex items-center justify-between px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:shadow-md transition-all duration-200 bg-linear-to-r from-gray-50 to-white"
           >
             <div className="flex items-center">
               <FaUsers className="text-gray-400 text-lg mr-2 group-focus-within:text-blue-600" />
@@ -167,7 +167,7 @@ const HeroSearch = () => {
         {/* Search Button */}
         <button
           onClick={handleSearch}
-          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center whitespace-nowrap min-w-[100px] lg:min-w-[120px]"
+          className="bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center whitespace-nowrap min-w-25 lg:min-w-30"
         >
           <FaSearch className="mr-2" />
           SEARCH
