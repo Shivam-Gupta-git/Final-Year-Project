@@ -20,9 +20,7 @@ import {
   FaPercent,
 } from "react-icons/fa";
 import { MdOutlineLocalOffer, MdAir, MdSpa } from "react-icons/md";
-import { getAllActiveHotels } from "../../features/user/hotelSlice";
-
-// import { fetchActiveHotels } from "../../redux/slices/hotelSlice";
+import { getAllActiveHotels, getPublicActiveHotels } from "../../features/user/hotelSlice";
 
 const AMENITY_ICONS = {
   wifi: <FaWifi />,
@@ -217,11 +215,13 @@ function HotelPage() {
 
   // ── Replace these with Redux when backend ready ─────────────────────────
   // const { hotels, loading, totalCount } = useSelector(s => s.hotel);
-  const { hotels, loading } = useSelector((s) => s.hotel);
+  const { hotels = [], loading } = useSelector((s) => s.hotel);
   const totalCount = hotels?.length || 0;
+  console.log(hotels);
+  
 
   useEffect(() => {
-    dispatch(getAllActiveHotels());
+    dispatch(getPublicActiveHotels());
   }, [dispatch]);
 
   const [filters, setFilters] = useState({});

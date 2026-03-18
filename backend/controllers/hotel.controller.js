@@ -294,9 +294,6 @@ export const getActiveHotels = async (req, res) => {
     .populate("city", "name state")
     .populate("createdBy", "name email");
     
-    const hotels = await Hotel.find({
-      status: "active",
-    }).populate("city", "name state");
 
     return res.status(200).json({
       success: true,
