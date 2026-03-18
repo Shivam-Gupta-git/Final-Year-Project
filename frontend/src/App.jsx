@@ -43,6 +43,8 @@ import GetAllRejectedHotels from './pages/superAdmin/Hotel/GetAllRejectedHotels'
 import UpdateHotelDetails from './pages/admin/hotel/UpdateHotelDetails'
 import HotelPage from './pages/auth/HotelPage'
 import GetAllInactiveHotels from './pages/superAdmin/Hotel/GetAllInactiveHotels'
+import AdminHotelDashBoard from './pages/admin/hotel/AdminHotelDashBoard'
+import ShowHotelStatus from './pages/admin/hotel/ShowHotelStatus'
 
 
 
@@ -93,6 +95,8 @@ function App() {
       <Route path='/superAdmin/get-all-Inactive-hotels' element={<SuperAdminProtectedRouter><GetAllInactiveHotels/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/get-all-rejected-hotels' element={<SuperAdminProtectedRouter><GetAllRejectedHotels/></SuperAdminProtectedRouter>}/>
       <Route path='/admin/update-hotel-details/:id' element={<AdminProtectedRouter><UpdateHotelDetails/></AdminProtectedRouter>}/>
+      <Route path='/admin/hotel-dashboard' element={<AdminProtectedRouter><AdminHotelDashBoard/></AdminProtectedRouter>}/>
+      <Route path='/admin/show-hotel-status' element={<AdminProtectedRouter><ShowHotelStatus/></AdminProtectedRouter>}/>
 
     </Routes> 
     </>

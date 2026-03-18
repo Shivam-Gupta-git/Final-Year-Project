@@ -14,10 +14,10 @@ export const createHotel = createAsyncThunk(
   "hotel/createHotel",
   async (data, thunkAPI) => {
     try {
-      const response = await apiClient.post("/api/hotel/create-hotel", data,{
+      const response = await apiClient.post("/api/hotel/create-hotel", data, {
         headers: {
-          "Content-Type": "multipart/form-data"
-        }
+          "Content-Type": "multipart/form-data",
+        },
       });
       return response.hotel;
     } catch (error) {
@@ -134,7 +134,6 @@ export const inactiveHotel = createAsyncThunk(
         `/api/admin/hotel/${hotelId}/inactive`
       );
       return { hotelId, message: response.data.message };
-
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Hotel inactive failed"
@@ -284,7 +283,30 @@ export const inactiveHotelByAdmin = createAsyncThunk(
       );
 
       return { hotelId, message: response.data.message };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to inactive hotel"
+      );
+    }
+  }
+);
 
+/* ------  getHotelsByStatus ------- */
+export const getHotelsStatus = createAsyncThunk(
+  "hotel/getHotelsStatus",
+  async (status, thunkAPI) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await apiClient.get(
+        `/api/hotel/get-hotel-status?status=${status}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+          },
+        }
+      );
+      return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Failed to inactive hotel"
@@ -528,30 +550,45 @@ const hotelSlice = createSlice({
         state.error = action.payload;
       });
 
-  /* ------ inactive Hotel by admin ------- */
-  
-  builder
-    .addCase(inactiveHotelByAdmin.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
+    /* ------ inactive Hotel by admin ------- */
 
-    .addCase(inactiveHotelByAdmin.fulfilled, (state, action) => {
-      state.loading = false;
+    builder
+      .addCase(inactiveHotelByAdmin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-      const id = action.payload.hotelId;
+      .addCase(inactiveHotelByAdmin.fulfilled, (state, action) => {
+        state.loading = false;
 
-      // ⭐ remove from active list
-      state.hotels = state.hotels.filter(h => h._id !== id);
+        const id = action.payload.hotelId;
 
-    })
+        // ⭐ remove from active list
+        state.hotels = state.hotels.filter((h) => h._id !== id);
+      })
 
-    .addCase(inactiveHotelByAdmin.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
-    
-    
+      .addCase(inactiveHotelByAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    /* ------  getHotelsByStatus ------- */
+
+    builder
+      .addCase(getHotelsStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(getHotelsStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.hotels = action.payload; // hotels array
+      })
+
+      .addCase(getHotelsStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

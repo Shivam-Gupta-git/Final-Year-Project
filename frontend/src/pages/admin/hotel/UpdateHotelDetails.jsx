@@ -103,7 +103,7 @@ function UpdateHotelDetails() {
 
     dispatch(updateHotel({ hotelId, data }));
     alert("Hotel Updated Successfully");
-    navigate("/admin/adminDashboard");
+    navigate("/admin/hotel-dashboard");
   };
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;

@@ -5,6 +5,7 @@ import {
   getActiveHotels,
   getAllHotels,
   getHotelbyid,
+  getHotelsByStatus,
   getInactiveHotels,
   getPublicActiveHotels,
   updateHotel,
@@ -22,8 +23,7 @@ hotelRouter.get("/get-all-Inactive-hotels", isAuthenticated, authorize("super_ad
 hotelRouter.get("/get-hotel-by-id/:id",isAuthenticated, authorize("admin"), getHotelbyid);
 hotelRouter.get("/activehotel",isAuthenticated, getActiveHotels)
 hotelRouter.get("/get-all-hotels",isAuthenticated, getAllHotels)
-
-
+hotelRouter.get("/get-hotel-status", isAuthenticated, authorize("admin"), getHotelsByStatus)
 
 //public routes 
 hotelRouter.get("/public/hotels", getPublicActiveHotels)
