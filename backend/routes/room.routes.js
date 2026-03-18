@@ -1,5 +1,5 @@
 import express from 'express'
-import { createRoom, getAllRoomsByID } from '../controllers/room.controller.js';
+import { createRoom, getAllRoomsByID, getSingleRoom, updateRoom } from '../controllers/room.controller.js';
 import { authorize, isAuthenticated } from '../middleware/auth.middleware.js';
 import { upload } from '../middleware/multer.middleware.js';
 
@@ -19,6 +19,21 @@ roomRouter.get(
   isAuthenticated,
   authorize("admin"),
   getAllRoomsByID
+);
+
+roomRouter.get(
+  "/single-room/:roomId",
+  isAuthenticated,
+  authorize("admin"),
+  getSingleRoom
+);
+
+roomRouter.put(
+  "/update-room/:roomId",
+  isAuthenticated,
+  authorize("admin"),
+  upload.array("images", 5),
+  updateRoom
 );
 
 export default roomRouter

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllRoomsByID } from "../../../features/user/roomSlice";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 function GetAllRooms() {
   const dispatch = useDispatch();
@@ -20,6 +20,23 @@ function GetAllRooms() {
 
       {loading ? (
         <p>Loading...</p>
+      ) : rooms.length === 0 ? (
+        <div className="flex flex-col items-center justify-center mt-24 text-center">
+          <div className="text-6xl mb-4">🏨</div>
+
+          <h2 className="text-2xl font-semibold text-gray-700">
+            No Rooms Found
+          </h2>
+
+          <p className="text-gray-500 mt-2 max-w-md">
+            This hotel does not have any rooms yet. Please create rooms to make
+            this hotel available for bookings.
+          </p>
+
+          <Link to="/admin/create-room" className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+            Add Room
+          </Link>
+        </div>
       ) : (
         <div className="grid md:grid-cols-3 gap-6">
           {rooms.map((room) => (
@@ -37,9 +54,7 @@ function GetAllRooms() {
                 <h3 className="text-xl font-semibold capitalize">
                   {room.roomType}
                 </h3>
-                <p className="text-gray-500">
-                  Capacity: {room.capacity}
-                </p>
+                <p className="text-gray-500">Capacity: {room.capacity}</p>
                 <p className="font-bold text-blue-600">
                   ₹{room.pricePerNight} / night
                 </p>
@@ -53,7 +68,6 @@ function GetAllRooms() {
       {selectedRoom && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
           <div className="bg-white rounded-2xl w-175 p-6 relative animate-fadeIn">
-
             <button
               onClick={() => setSelectedRoom(null)}
               className="absolute top-3 right-3 text-xl"
@@ -70,12 +84,9 @@ function GetAllRooms() {
               {selectedRoom.roomType}
             </h2>
 
-            <p className="text-gray-600 mt-2">
-              {selectedRoom.description}
-            </p>
+            <p className="text-gray-600 mt-2">{selectedRoom.description}</p>
 
             <div className="grid grid-cols-3 gap-4 mt-4">
-
               <div className="bg-gray-100 p-3 rounded">
                 <p className="text-sm">Price</p>
                 <p className="font-bold">₹{selectedRoom.pricePerNight}</p>
@@ -90,7 +101,6 @@ function GetAllRooms() {
                 <p className="text-sm">Total Rooms</p>
                 <p className="font-bold">{selectedRoom.totalRooms}</p>
               </div>
-
             </div>
 
             {/* Amenities */}
@@ -107,9 +117,14 @@ function GetAllRooms() {
                 ))}
               </div>
             </div>
-
+            {/* buttons */}
+            <div className="w-full bg-gray-100 h-13 mt-5 rounded-2xl flex items-center justify-end p-2">
+              
+              <Link to={`/admin/update-room/${selectedRoom._id}`} className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg">Update Room</Link>
+            </div>
           </div>
         </div>
+        
       )}
     </div>
   );

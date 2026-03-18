@@ -6,43 +6,97 @@ const initialState = {
   loading: false,
   error: null,
   createSuccess: false,
-  room: null
-}
+  room: null,
+};
 
 /* -------- Create room -------- */
-export const createRoom = createAsyncThunk("room/createRoom", async (data, thunkAPI) => {
-  try {
-    const adminToken = localStorage.getItem("adminToken");
-    const response = await apiClient.post("/api/room/create-room",data, {
-      headers: {
-        Authorization: `Bearer ${adminToken}`,
-        "Content-Type": "multipart/form-data",
-      }
-    })
-    return response.data
-  } catch (error) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Create room failed"
-    );
+export const createRoom = createAsyncThunk(
+  "room/createRoom",
+  async (data, thunkAPI) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await apiClient.post("/api/room/create-room", data, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Create room failed"
+      );
+    }
   }
-})
+);
 
 /* -------- getAllRoomsByID -------- */
-export const getAllRoomsByID = createAsyncThunk("room/getAllRoomsBYID", async (hotelId, thunkAPI) => {
-  try {
-    const adminToken = localStorage.getItem("adminToken");
-    const response = await apiClient.get(`/api/room/admin/rooms/${hotelId}`, {
-      headers: {
-        Authorization: `Bearer ${adminToken}`
-      }
-    })
-    return response.data; // important
-  } catch (error) {
-    return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Failed to fetch rooms"
-    );
+export const getAllRoomsByID = createAsyncThunk(
+  "room/getAllRoomsBYID",
+  async (hotelId, thunkAPI) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await apiClient.get(`/api/room/admin/rooms/${hotelId}`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+        },
+      });
+      return response.data; // important
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch rooms"
+      );
+    }
   }
-})
+);
+
+/* -------- get Single room room -------- */
+export const getSingleRoom = createAsyncThunk(
+  "room/getSingleRoom",
+  async (roomId, thunkAPI) => {
+    try {
+      if (!roomId) throw new Error("roomId is required"); // safety check
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await apiClient.get(`/api/room/single-room/${roomId}`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+        },
+      });
+      return response.data; // { success, data }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
+/* -------- update room -------- */
+export const updateRoom = createAsyncThunk(
+  "room/updateRoom",
+  async ({ roomId, formData }, thunkAPI) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+
+      const response = await apiClient.put(
+        `/api/room/update-room/${roomId}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Update failed"
+      );
+    }
+  }
+);
 
 const roomSlice = createSlice({
   name: "room",
@@ -50,43 +104,77 @@ const roomSlice = createSlice({
   reducers: {},
 
   extraReducers: (builder) => {
-
     /* -------- Create room -------- */
     builder
-    .addCase(createRoom.pending, (state) => {
+      .addCase(createRoom.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(createRoom.fulfilled, (state, action) => {
+        state.loading = false;
+        state.createSuccess = true;
+        state.rooms.push(action.payload.data);
+      })
+
+      .addCase(createRoom.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    /* -------- getAllRoomsByID -------- */
+    builder
+      .addCase(getAllRoomsByID.pending, (state) => {
+        state.loading = true;
+      })
+
+      .addCase(getAllRoomsByID.fulfilled, (state, action) => {
+        state.loading = false;
+        state.rooms = action.payload;
+      })
+
+      .addCase(getAllRoomsByID.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    /* -------- update room -------- */
+    builder
+      .addCase(updateRoom.pending, (state) => {
+        state.loading = true;
+      })
+
+      .addCase(updateRoom.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const index = state.rooms.findIndex(
+          (r) => r._id === action.payload._id
+        );
+
+        if (index !== -1) {
+          state.rooms[index] = action.payload;
+        }
+      })
+
+      .addCase(updateRoom.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    /* -------- get Single room room -------- */
+    builder
+    .addCase(getSingleRoom.pending, (state) => {
       state.loading = true;
-      state.error = null;
     })
-
-    .addCase(createRoom.fulfilled, (state, action) => {
+    .addCase(getSingleRoom.fulfilled, (state, action) => {
       state.loading = false;
-      state.createSuccess = true;
-      state.rooms.push(action.payload.data);
+      state.room = action.payload; 
     })
-
-    .addCase(createRoom.rejected, (state, action) => {
+    .addCase(getSingleRoom.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload;
     });
-
-  /* -------- getAllRoomsByID -------- */
-  builder
-  .addCase(getAllRoomsByID.pending, (state) => {
-    state.loading = true;
-  })
-
-  .addCase(getAllRoomsByID.fulfilled, (state, action) => {
-    state.loading = false;
-    state.rooms = action.payload;
-  })
-
-  .addCase(getAllRoomsByID.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  });  
-
-
-  }
-})
+  },
+});
 
 export default roomSlice.reducer;

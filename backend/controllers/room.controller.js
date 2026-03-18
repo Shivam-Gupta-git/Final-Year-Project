@@ -175,3 +175,118 @@ export const getAllRoomsByID = async (req, res) => {
     });
   }
 };
+
+export const getSingleRoom = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+
+    const room = await Room.findById(roomId);
+
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: room,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateRoom = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+
+    const {
+      roomType,
+      pricePerNight,
+      capacity,
+      totalRooms,
+      amenities,
+      description,
+      status,
+    } = req.body;
+
+    // Find room
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found",
+      });
+    }
+
+    // Find hotel
+    const hotel = await Hotel.findById(room.hotelId);
+
+    // ADMIN OWNERSHIP CHECK
+    if (
+      req.user.role === "admin" &&
+      !hotel.createdBy.equals(req.user.id)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You cannot update other admin room",
+      });
+    }
+
+    // ENUM VALIDATION SAFE
+    const allowedTypes = ["standard", "deluxe", "suite", "family"];
+    if (roomType && !allowedTypes.includes(roomType.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid room type",
+      });
+    }
+
+    // Amenities convert
+    const amenitiesArray =
+      typeof amenities === "string"
+        ? amenities.split(",").map((a) => a.trim())
+        : amenities;
+
+    // IMAGE UPLOAD
+    let imageUrls = room.images;
+
+    if (req.files?.length > 0) {
+      imageUrls = [];
+      for (const file of req.files) {
+        const upload = await uploadCloudinary(file.path, "rooms");
+        imageUrls.push(upload.secure_url);
+      }
+    }
+
+    // UPDATE
+    room.roomType = roomType || room.roomType;
+    room.pricePerNight = pricePerNight || room.pricePerNight;
+    room.capacity = capacity || room.capacity;
+    room.totalRooms = totalRooms || room.totalRooms;
+    room.amenities = amenitiesArray || room.amenities;
+    room.description = description || room.description;
+    room.status = status || room.status;
+    room.images = imageUrls;
+
+    await room.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Room updated successfully",
+      data: room,
+    });
+
+  } catch (error) {
+    console.log("UPDATE ROOM ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
