@@ -82,7 +82,7 @@ function AdminDashboard() {
             <FaCity />
           </span>
           <span className="font-semibold text-gray-700">
-            Show All Active Hotels
+            Show All Hotels
           </span>
         </Link>
 

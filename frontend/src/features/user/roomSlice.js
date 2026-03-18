@@ -98,6 +98,50 @@ export const updateRoom = createAsyncThunk(
   }
 );
 
+/* -------- active room -------- */
+export const activeRoomAction = createAsyncThunk(
+  "room/activeRoom",
+  async (roomId, thunkAPI) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await apiClient.patch(
+        `/api/room/active-room/${roomId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${adminToken}` },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to inactivate room"
+      );
+    }
+  }
+);
+
+/* -------- Inactive room -------- */
+export const inactiveRoomAction = createAsyncThunk(
+  "room/inactiveRoom",
+  async (roomId, thunkAPI) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const response = await apiClient.patch(
+        `/api/room/inactive-room/${roomId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${adminToken}` },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to inactivate room"
+      );
+    }
+  }
+);
+
 const roomSlice = createSlice({
   name: "room",
   initialState,
@@ -174,6 +218,51 @@ const roomSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     });
+
+  /* -------- active room -------- */
+  builder
+  .addCase(activeRoomAction.pending, (state) => {
+    state.loading = true;
+  })
+  .addCase(activeRoomAction.fulfilled, (state, action) => {
+    state.loading = false;
+    const room = action.payload;
+     console.log(room);
+    if (!room) return; // prevent crash
+
+    const index = state.rooms.findIndex(r => r._id === room._id);
+    if (index !== -1) {
+      state.rooms[index] = room;
+    }
+  })
+  builder
+  .addCase(activeRoomAction.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload || "Failed to activate room";
+  });
+
+  /* -------- Inactive room -------- */
+  builder
+  .addCase(inactiveRoomAction.pending, (state) => {
+    state.loading = true;
+  })
+  .addCase(inactiveRoomAction.fulfilled, (state, action) => {
+    state.loading = false;
+    const room = action.payload;
+    if (!room) return; // prevent crash
+
+    const index = state.rooms.findIndex(r => r._id === room._id);
+    if (index !== -1) {
+      state.rooms[index] = room;
+    }
+  })
+  builder
+  .addCase(inactiveRoomAction.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload || "Failed to inactivate room";
+  });
+  
+  
   },
 });
 

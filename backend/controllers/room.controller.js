@@ -4,8 +4,8 @@ import { uploadCloudinary } from "../config/cloudinary.config.js";
 
 export const createRoom = async (req, res) => {
   try {
-    console.log("Controller reached");
-    console.log("Logged Admin:", req.user?.id);
+    // console.log("Controller reached");
+    // console.log("Logged Admin:", req.user?.id);
 
     const {
       hotelId,
@@ -284,6 +284,82 @@ export const updateRoom = async (req, res) => {
 
   } catch (error) {
     console.log("UPDATE ROOM ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const activeRoom = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+
+    if (!roomId) {
+      return res.status(400).json({
+        success: false,
+        message: "Room ID is required",
+      });
+    }
+
+    // Find the room
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found",
+      });
+    }
+
+    // Mark room as inactive
+    room.status = "active";
+    await room.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Room has been deactivated successfully",
+      data: room,
+    });
+  } catch (error) {
+    console.error("INACTIVATE ROOM ERROR:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const inactiveRoom = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+
+    if (!roomId) {
+      return res.status(400).json({
+        success: false,
+        message: "Room ID is required",
+      });
+    }
+
+    // Find the room
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found",
+      });
+    }
+
+    // Mark room as inactive
+    room.status = "inactive";
+    await room.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Room has been deactivated successfully",
+      data: room,
+    });
+  } catch (error) {
+    console.error("INACTIVATE ROOM ERROR:", error.message);
     return res.status(500).json({
       success: false,
       message: error.message,

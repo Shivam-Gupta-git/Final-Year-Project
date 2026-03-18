@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllRoomsByID } from "../../../features/user/roomSlice";
+import { activeRoomAction, getAllRoomsByID, inactiveRoomAction } from "../../../features/user/roomSlice";
 import { Link, useParams } from "react-router-dom";
 
 function GetAllRooms() {
@@ -13,6 +13,15 @@ function GetAllRooms() {
   useEffect(() => {
     if (id) dispatch(getAllRoomsByID(id));
   }, [dispatch, id]);
+
+  const handelActiveRoomButton = (roomId) => {
+    dispatch(activeRoomAction(roomId))
+  }
+  const handelInactiveRoomButton = (roomId) => {
+    dispatch(inactiveRoomAction(roomId))
+  }
+
+
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -45,10 +54,13 @@ function GetAllRooms() {
               onClick={() => setSelectedRoom(room)}
               className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl cursor-pointer transition"
             >
+              <div className="relative">
               <img
                 src={room.images?.[0]}
                 className="h-48 w-full object-cover"
               />
+              <div className={`absolute top-1 left-2 rounded-2xl text-white text-sm px-2 ${room.status === "inactive" ? "bg-red-600" : "bg-green-500"}`}>{room.status}</div>
+              </div>
 
               <div className="p-4">
                 <h3 className="text-xl font-semibold capitalize">
@@ -118,10 +130,20 @@ function GetAllRooms() {
               </div>
             </div>
             {/* buttons */}
-            <div className="w-full bg-gray-100 h-13 mt-5 rounded-2xl flex items-center justify-end p-2">
+            <div className="w-full bg-gray-100 h-13 mt-5 rounded-2xl flex items-center justify-end p-2 gap-3">
               
               <Link to={`/admin/update-room/${selectedRoom._id}`} className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg">Update Room</Link>
+              {
+                selectedRoom.status === "active" ? (
+                  <button onClick={() => handelInactiveRoomButton(selectedRoom._id)} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg">Inactive</button>
+                ) :
+                (
+                  <button onClick={() => handelActiveRoomButton(selectedRoom._id)} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg">Active</button>
+                )
+              }
+            
             </div>
+
           </div>
         </div>
         

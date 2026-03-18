@@ -1,5 +1,5 @@
 import express from 'express'
-import { createRoom, getAllRoomsByID, getSingleRoom, updateRoom } from '../controllers/room.controller.js';
+import { activeRoom, createRoom, getAllRoomsByID, getSingleRoom, inactiveRoom, updateRoom } from '../controllers/room.controller.js';
 import { authorize, isAuthenticated } from '../middleware/auth.middleware.js';
 import { upload } from '../middleware/multer.middleware.js';
 
@@ -35,5 +35,8 @@ roomRouter.put(
   upload.array("images", 5),
   updateRoom
 );
+
+roomRouter.patch("/active-room/:roomId", isAuthenticated, authorize("admin"), activeRoom);
+roomRouter.patch("/inactive-room/:roomId", isAuthenticated, authorize("admin"), inactiveRoom);
 
 export default roomRouter

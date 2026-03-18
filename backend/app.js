@@ -13,6 +13,7 @@ import reviewRouter from "./routes/review.routes.js";
 import { driverRouter } from "./routes/driver.routes.js";
 import  cors  from 'cors'
 import roomRouter from "./routes/room.routes.js";
+import hotelBookingRouter from "./routes/hotelBooking.routes.js";
 
 const app = express();
 
@@ -39,9 +40,8 @@ app.use("/api/room", roomRouter)
 app.use("/api/place", placeRouter)
 app.use("/api/travelOption", travelOptionRouter)
 app.use("/api/resturant", restaurantRouter)
-
+app.use("/api/hotelBooking", hotelBookingRouter)
 app.use("/api/review" , reviewRouter)
-
 app.use("/api/driver", driverRouter)
 
 
