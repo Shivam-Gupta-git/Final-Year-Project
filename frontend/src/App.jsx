@@ -43,6 +43,11 @@ import GetAllRejectedHotels from './pages/superAdmin/Hotel/GetAllRejectedHotels'
 import UpdateHotelDetails from './pages/admin/hotel/UpdateHotelDetails'
 import HotelPage from './pages/auth/HotelPage'
 import GetAllInactiveHotels from './pages/superAdmin/Hotel/GetAllInactiveHotels'
+import AdminHotelDashBoard from './pages/admin/hotel/AdminHotelDashBoard'
+import ShowHotelStatus from './pages/admin/hotel/ShowHotelStatus'
+import CreateRoom from './pages/admin/rooms/CreateRoom'
+import GetAllRooms from './pages/admin/rooms/GetAllRooms'
+import UpdateRoom from './pages/admin/rooms/UpdateRoom'
 
 
 
@@ -93,7 +98,11 @@ function App() {
       <Route path='/superAdmin/get-all-Inactive-hotels' element={<SuperAdminProtectedRouter><GetAllInactiveHotels/></SuperAdminProtectedRouter>}/>
       <Route path='/superAdmin/get-all-rejected-hotels' element={<SuperAdminProtectedRouter><GetAllRejectedHotels/></SuperAdminProtectedRouter>}/>
       <Route path='/admin/update-hotel-details/:id' element={<AdminProtectedRouter><UpdateHotelDetails/></AdminProtectedRouter>}/>
-
+      <Route path='/admin/hotel-dashboard' element={<AdminProtectedRouter><AdminHotelDashBoard/></AdminProtectedRouter>}/>
+      <Route path='/admin/show-hotel-status' element={<AdminProtectedRouter><ShowHotelStatus/></AdminProtectedRouter>}/>
+      <Route path='/admin/create-room' element={<AdminProtectedRouter><CreateRoom/></AdminProtectedRouter>}/>
+      <Route path='/admin/rooms/:id' element={<AdminProtectedRouter><GetAllRooms/></AdminProtectedRouter>}/>
+      <Route path='/admin/update-room/:roomId' element={<AdminProtectedRouter><UpdateRoom/></AdminProtectedRouter>}/>
     </Routes> 
     </>
   

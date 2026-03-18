@@ -38,7 +38,11 @@ const roomSchema = new Schema(
       default: [],
     },
 
-    images: [String],
+    images: [
+      {
+        type: String,
+      },
+    ],
 
     description: {
       type: String,

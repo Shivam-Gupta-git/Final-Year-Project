@@ -309,6 +309,39 @@ export const getActiveHotels = async (req, res) => {
   }
 };
 
+export const getHotelsByStatus = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let filter = {};
+
+    // SUPER ADMIN → see all
+    if (req.user.role === "super_admin") {
+      filter = status ? { status } : {};
+    }
+
+    // ADMIN → see own
+    if (req.user.role === "admin") {
+      filter = {
+        createdBy: req.user.id,
+        ...(status && { status }),
+      };
+    }
+
+    const hotels = await Hotel.find(filter).populate("city");
+
+    return res.status(200).json({
+      success: true,
+      data: hotels,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const getPendingHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find({ status: "pending" })
