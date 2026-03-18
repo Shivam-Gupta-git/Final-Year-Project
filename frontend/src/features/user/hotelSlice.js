@@ -521,7 +521,7 @@ const hotelSlice = createSlice({
       })
       .addCase(getPublicActiveHotels.fulfilled, (state, action) => {
         state.loading = false;
-        state.publicHotels = action.payload;
+        state.hotels = action.payload;
       })
       .addCase(getPublicActiveHotels.rejected, (state, action) => {
         state.loading = false;

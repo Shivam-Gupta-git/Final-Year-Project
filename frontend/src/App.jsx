@@ -39,10 +39,11 @@ import SuperAdminApprovealHoteList from './pages/superAdmin/Hotel/SuperAdminAppr
 import HotelDashboard from './pages/superAdmin/Hotel/HotelDashboard'
 import GetAllHotels from './pages/superAdmin/Hotel/GetAllHotels'
 import GetAllActiveHotels from './pages/superAdmin/Hotel/GetAllActiveHotels'
-import GetAllInactiveHotels from './pages/superAdmin/Hotel/GetAllInactiveHotels'
 import GetAllRejectedHotels from './pages/superAdmin/Hotel/GetAllRejectedHotels'
 import UpdateHotelDetails from './pages/admin/hotel/UpdateHotelDetails'
 import HotelPage from './pages/auth/HotelPage'
+import GetAllInactiveHotels from './pages/superAdmin/Hotel/GetAllInactiveHotels'
+
 
 
 
