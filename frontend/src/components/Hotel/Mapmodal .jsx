@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useSelector } from "react-redux";
 import {
   FaTimes,
   FaSearch,
@@ -7,7 +6,6 @@ import {
   FaMapMarkerAlt,
   FaChevronDown,
   FaChevronUp,
-  FaRupeeSign,
   FaSpinner,
 } from "react-icons/fa";
 import { MdMap } from "react-icons/md";

@@ -108,7 +108,7 @@ export const getRoomAvailability = async (req, res) => {
 
     const rooms = await Room.find({
       hotelId: hotelId, // as string
-      status: "active"
+      status: "active",
     });
 
     console.log("hotelId param:", hotelId);
@@ -131,7 +131,7 @@ export const getRoomAvailability = async (req, res) => {
           ...room._doc,
           availableRooms: room.totalRooms - bookedRooms,
         };
-      })
+      }),
     );
 
     res.json(availability);
@@ -142,19 +142,41 @@ export const getRoomAvailability = async (req, res) => {
 
 export const bookRoom = async (req, res) => {
   try {
-    const { hotelId, roomType, bookedRooms, checkIn, checkOut, guests, totalAmount } = req.body;
+    const {
+      hotelId,
+      roomType,
+      bookedRooms,
+      checkIn,
+      checkOut,
+      guests,
+      totalAmount,
+    } = req.body;
 
     // --- Basic input validation ---
-    if (!hotelId || !roomType || !bookedRooms || !checkIn || !checkOut || !guests || !totalAmount) {
-      return res.status(400).json({ message: "All booking details are required" });
+    if (
+      !hotelId ||
+      !roomType ||
+      !bookedRooms ||
+      !checkIn ||
+      !checkOut ||
+      !guests ||
+      !totalAmount
+    ) {
+      return res
+        .status(400)
+        .json({ message: "All booking details are required" });
     }
 
     if (bookedRooms <= 0 || guests <= 0) {
-      return res.status(400).json({ message: "Number of rooms and guests must be greater than 0" });
+      return res
+        .status(400)
+        .json({ message: "Number of rooms and guests must be greater than 0" });
     }
 
     if (new Date(checkIn) >= new Date(checkOut)) {
-      return res.status(400).json({ message: "Check-in must be before check-out" });
+      return res
+        .status(400)
+        .json({ message: "Check-in must be before check-out" });
     }
 
     // --- Fetch room and validate hotel ---
@@ -162,7 +184,9 @@ export const bookRoom = async (req, res) => {
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     if (room.hotelId.toString() !== hotelId) {
-      return res.status(400).json({ message: "Room does not belong to this hotel" });
+      return res
+        .status(400)
+        .json({ message: "Room does not belong to this hotel" });
     }
 
     // --- Check existing bookings for this room ---
@@ -195,12 +219,20 @@ export const bookRoom = async (req, res) => {
       bookingStatus: "pending",
     });
 
-    return res.status(201).json({ message: "Booking created successfully", booking });
-
+    return res
+      .status(201)
+      .json({ message: "Booking created successfully", booking });
   } catch (err) {
     console.error("Booking error:", err);
     return res.status(500).json({ message: "Server error: " + err.message });
   }
+
+};
+
+export const searchHotels = async(req , res) => {
+  
+}
+
 }
 
 export const getBookingsByHotel = async (req, res) => {
@@ -300,3 +332,4 @@ export const cancelBooking = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+

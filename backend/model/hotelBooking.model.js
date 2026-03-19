@@ -53,4 +53,6 @@ const hotelBookingSchema = new Schema(
   { timestamps: true }
 );
 
+
+
 export const HotelBooking = mongoose.model("HotelBooking", hotelBookingSchema);

@@ -175,7 +175,11 @@ export const updateHotel = async (req, res) => {
     const updatehotel = await Hotel.findByIdAndUpdate(
       id,
       updateData,
+
+      { new: true, runValidators: true }, //this is use to validate data
+
       { new: true, runValidators: true } //this is use to validate data
+
     )
       .populate("city")
       .populate("createdBy", "name email");
@@ -440,19 +444,34 @@ export const getRejectedHotel = async (req, res) => {
 
 export const getPublicActiveHotels = async (req, res) => {
   try {
-    const hotels = await Hotel.find({
-      status: "active",
-    }).populate("city", "name state");
+    const { city } = req.query; // ← read city from ?city=Delhi
+
+
+    let query = { status: "active" };
+
+    if (city && city.trim()) {
+      const cityDoc = await City.findOne({
+        name: { $regex: city.trim(), $options: "i" }, // case-insensitive match
+      });
+
+      if (!cityDoc) {
+        return res.status(200).json({ success: true, data: [] }); // no match = empty
+      }
+
+      query.city = cityDoc._id; // filter hotels by city id
+    }
+
+    const hotels = await Hotel.find(query).populate("city", "name state");
+
+    res.status(200).json({ success: true, data: hotels });
 
     res.status(200).json({
       success: true,
       data: hotels,
     });
+
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

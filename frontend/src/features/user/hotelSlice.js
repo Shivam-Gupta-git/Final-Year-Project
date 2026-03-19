@@ -243,9 +243,11 @@ export const updateHotel = createAsyncThunk(
 /* -------- get All Active Public Hotels -------- */
 export const getPublicActiveHotels = createAsyncThunk(
   "hotel/getPublicAvtiveHotel",
-  async (_, thunkAPI) => {
+  async (params = {}, thunkAPI) => {
     try {
-      const response = await apiClient.get("/api/hotel/public/hotels");
+      const response = await apiClient.get("/api/hotel/public/hotels", {
+        params,   // ← sends ?city=Delhi&checkIn=...&checkOut=...&guests=...
+      });
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

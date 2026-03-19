@@ -73,7 +73,8 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
     (filters.locality ? 1 : 0);
 
   return (
-    <div className="w-67 bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-100/70 overflow-hidden sticky top-4 max-h-[calc(100vh-90px)] flex flex-col">
+    // ── Fixed width only on lg+ screens ───────────────────────────────────
+    <div className="w-full lg:w-67 bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-100/70 overflow-hidden lg:sticky lg:top-4 lg:max-h-[calc(100vh-90px)] flex flex-col">
       {/* Header */}
       <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/60">
         <div className="flex items-center gap-2">
@@ -96,10 +97,10 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
 
       {/* Scrollable body */}
       <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
-        {/* Map */}
+        {/* Map button */}
         <div
           onClick={onMapOpen}
-          className="relative h-22 rounded-xl overflow-hidden cursor-pointer group shadow-sm"
+          className="relative h-24 rounded-xl overflow-hidden cursor-pointer group shadow-sm"
         >
           <img
             src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&q=80"
@@ -115,7 +116,7 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
           </div>
         </div>
 
-        {/* Search */}
+        {/* Locality search */}
         <div className="relative">
           <FaSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]" />
           <input
@@ -213,7 +214,7 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
 
         <div className="h-px bg-slate-100" />
 
-        {/* Amenities */}
+        {/* Amenities — values match backend facilities field */}
         <div>
           <SectionLabel dot="bg-violet-500">Amenities</SectionLabel>
           <div className="grid grid-cols-2 gap-1.5">
