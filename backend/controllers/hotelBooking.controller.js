@@ -226,8 +226,110 @@ export const bookRoom = async (req, res) => {
     console.error("Booking error:", err);
     return res.status(500).json({ message: "Server error: " + err.message });
   }
+
 };
 
 export const searchHotels = async(req , res) => {
   
 }
+
+}
+
+export const getBookingsByHotel = async (req, res) => {
+  try {
+    const { hotelId } = req.params;
+
+    const bookings = await HotelBooking.find({ hotel: hotelId })
+      .populate("user", "name email")
+      .populate("roomType", "roomType pricePerNight");
+
+    res.status(200).json({
+      success: true,
+      data: bookings,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateBookingStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { bookingStatus } = req.body;
+
+    const booking = await HotelBooking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    booking.bookingStatus = bookingStatus;
+    await booking.save();
+
+    res.json({
+      success: true,
+      message: "Booking status updated",
+      data: booking,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getMyBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const bookings = await HotelBooking.find({ user: userId })
+      .populate("hotel", "name")
+      .populate("roomType", "roomType pricePerNight")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: bookings,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const cancelBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    const booking = await HotelBooking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Only user can cancel their booking
+    if (booking.user.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    // Prevent cancelling already cancelled
+    if (booking.bookingStatus === "cancelled") {
+      return res.status(400).json({ message: "Already cancelled" });
+    }
+
+    booking.bookingStatus = "cancelled";
+    await booking.save();
+
+    res.json({
+      success: true,
+      message: "Booking cancelled successfully",
+      data: booking,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

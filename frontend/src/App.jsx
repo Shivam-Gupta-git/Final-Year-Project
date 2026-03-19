@@ -53,6 +53,7 @@ import UpdateRoom from "./pages/admin/rooms/UpdateRoom";
 function App() {
   return (
     <>
+
       <Navbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -248,6 +249,7 @@ function App() {
           }
         />
       </Routes>
+
     </>
   );
 }

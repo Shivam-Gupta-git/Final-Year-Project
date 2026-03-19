@@ -1,14 +1,10 @@
 import { useSelector } from "react-redux";
-import { FaUserSecret } from "react-icons/fa";
+import { FaUserSecret, FaCity } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { FaCity } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 function AdminDashboard() {
-
   const { admin } = useSelector((state) => state.admin);
-
-
-  // console.log(hotels);
 
   const getInitials = (name) => {
     if (!name) return "SA";
@@ -20,12 +16,16 @@ function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-        {/* Left side */}
-        <div className="w-[50%] flex items-center gap-5">
-          {/* Avatar */}
-          <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-6">
+      {/* Header Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl p-6 flex flex-col md:flex-row justify-between items-center gap-6 border border-gray-200 dark:border-gray-700"
+      >
+        {/* Left */}
+        <div className="flex items-center gap-5 w-full md:w-1/2">
+          <div className="w-16 h-16 rounded-full bg-linear-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden shadow-lg">
             {admin?.avatar ? (
               <img
                 src={admin.avatar}
@@ -37,78 +37,78 @@ function AdminDashboard() {
             )}
           </div>
 
-          {/* Info */}
           <div>
-            <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
               Welcome Back 👋
             </h1>
 
-            <p className="text-gray-600 dark:text-gray-300">
-              Hi <span className="font-medium">{admin?.userName}</span>, manage
-              your platform from here.
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
+              Hi <span className="font-semibold">{admin?.userName}</span>, manage your platform.
             </p>
 
-            <p className="flex items-center gap-1 text-gray-500">
-              <span className="text-black">Host:</span>
+            <p className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+              <span className="text-gray-700 dark:text-gray-300 font-medium">Host</span>
               <FaUserSecret className="text-orange-500" />
               {admin?.host || "N/A"}
             </p>
           </div>
         </div>
-        {/* right side */}
-        <div className="w-[50%]  flex flex-col items-end justify-end gap-3">
+
+        {/* Right */}
+        <div className="flex flex-col gap-3 w-full md:w-auto">
           <Link
             to="/admin/create-hotel"
-            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition text-[13px]"
+            className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg transition-all duration-300 text-sm text-center"
           >
-            + Add Hotel Details
+            + Add Hotel
           </Link>
 
           <Link
             to="/admin/create-room"
-            className="px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg shadow-md transition text-[13px]"
+            className="px-5 py-3 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-xl shadow-lg transition-all duration-300 text-sm text-center"
           >
-            + Add Room Details
+            + Add Room
           </Link>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="mt-5 flex flex-row gap-5">
-        <Link
-          to="/admin/hotel-dashboard"
-          className="w-60 p-5 bg-gray-100 rounded-xl shadow hover:shadow-lg hover:scale-105 transition flex flex-col items-center"
-        >
-          <span className="text-3xl mb-2 bg-purple-400 p-1 rounded-sm text-white">
-            <FaCity />
-          </span>
-          <span className="font-semibold text-gray-700">
-            Show All Hotels
-          </span>
+      {/* Cards Section */}
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Card */}
+        <Link to="/admin/hotel-dashboard">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
+          >
+            <div className="text-3xl mb-3 bg-purple-500 p-3 rounded-xl text-white shadow">
+              <FaCity />
+            </div>
+            <h2 className="font-semibold text-gray-800 dark:text-white">
+              All Hotels
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              View and manage all hotels
+            </p>
+          </motion.div>
         </Link>
 
-        <Link
-          to="/admin/show-hotel-status"
-          className="w-60 p-5 bg-gray-100 rounded-xl shadow hover:shadow-lg hover:scale-105 transition flex flex-col items-center"
-        >
-          <span className="text-3xl mb-2 bg-blue-400 p-1 rounded-sm text-white">
-            <FaCity />
-          </span>
-          <span className="font-semibold text-gray-700">
-            Show Hotels Status
-          </span>
+        {/* Card */}
+        <Link to="/admin/show-hotel-status">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
+          >
+            <div className="text-3xl mb-3 bg-blue-500 p-3 rounded-xl text-white shadow">
+              <FaCity />
+            </div>
+            <h2 className="font-semibold text-gray-800 dark:text-white">
+              Hotel Status
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Track approval & availability
+            </p>
+          </motion.div>
         </Link>
-
-        {/* <Link
-          to={`/admin/rooms`}
-          className="w-60 p-5 bg-gray-100 rounded-xl shadow hover:shadow-lg hover:scale-105 transition flex flex-col items-center"
-        >
-          <span className="text-3xl mb-2 bg-gray-400 p-1 rounded-sm text-white">
-            <FaCity />
-          </span>
-          <span className="font-semibold text-gray-700">
-            Show All Rooms
-          </span>
-        </Link> */}
       </div>
     </div>
   );
