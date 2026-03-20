@@ -84,7 +84,7 @@ function SuperAdminApprovealCityList() {
             <div
               key={city._id}
               onClick={() => setSelectedCity(city)}
-              className="flex flex-col md:flex-row md:items-center justify-between border p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition rounded-2xl"
+              className="flex flex-col md:flex-row md:items-center justify-between shadow-gray-500 p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition rounded-2xl shadow-sm"
             >
               <div>
                 <h3 className="font-semibold capitalize text-gray-800 dark:text-white">
