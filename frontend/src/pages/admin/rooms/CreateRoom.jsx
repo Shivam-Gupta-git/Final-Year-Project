@@ -69,21 +69,36 @@ function CreateRoom() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center p-8">
-      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl p-8">
-
-        <h1 className="text-3xl font-bold mb-8 text-gray-800">
-          Create Room
-        </h1>
-
+    <div className="min-h-screen bg-linear-to-br from-gray-100 via-white to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
+  
+      {/* HEADER */}
+      <div className="mb-8 p-6 rounded-2xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl shadow-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+        <div className="p-4 bg-linear-to-r from-indigo-500 to-blue-600 text-white rounded-xl text-xl shadow">
+          🏨
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+            Create Room
+          </h1>
+          <p className="text-gray-500">
+            Add new room details and assign to hotel
+          </p>
+        </div>
+      </div>
+  
+      {/* FORM CARD */}
+      <div className="bg-white dark:bg-gray-900 w-full max-w-5xl mx-auto rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white">
+  
         <form onSubmit={handleSubmit} className="space-y-6">
-
+  
           {/* HOTEL */}
           <div>
-            <label className="block mb-1 font-medium">Hotel</label>
+            <label className="text-sm text-gray-600 dark:text-gray-300">
+              Select Hotel
+            </label>
             <select
               name="hotelId"
-              className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500"
+              className="w-full border p-3 rounded-xl bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
               onChange={handleChange}
             >
               <option value="">Select Hotel</option>
@@ -94,13 +109,15 @@ function CreateRoom() {
               ))}
             </select>
           </div>
-
+  
           {/* ROOM TYPE */}
           <div>
-            <label className="block mb-1 font-medium">Room Type</label>
+            <label className="text-sm text-gray-600 dark:text-gray-300">
+              Room Type
+            </label>
             <select
               name="roomType"
-              className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500"
+              className="w-full border p-3 rounded-xl bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
               onChange={handleChange}
             >
               <option value="">Select Room Type</option>
@@ -110,9 +127,9 @@ function CreateRoom() {
               <option value="family">Family</option>
             </select>
           </div>
-
+  
           {/* PRICE + CAPACITY + TOTAL */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input
               type="number"
               name="pricePerNight"
@@ -135,19 +152,21 @@ function CreateRoom() {
               onChange={handleChange}
             />
           </div>
-
+  
           {/* AMENITIES */}
           <div>
-            <p className="font-medium mb-2">Amenities</p>
-            <div className="grid grid-cols-4 gap-3">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+              Amenities
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {amenitiesList.map((a) => (
                 <div
                   key={a}
                   onClick={() => toggleAmenity(a)}
-                  className={`cursor-pointer border rounded-xl p-3 text-center transition ${
+                  className={`cursor-pointer p-3 rounded-xl text-center transition ${
                     formData.amenities.includes(a)
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100"
+                      ? "bg-blue-600 text-white shadow"
+                      : "bg-gray-100 dark:bg-gray-800"
                   }`}
                 >
                   {a}
@@ -155,10 +174,12 @@ function CreateRoom() {
               ))}
             </div>
           </div>
-
+  
           {/* DESCRIPTION */}
           <div>
-            <label className="block mb-1 font-medium">Description</label>
+            <label className="text-sm text-gray-600 dark:text-gray-300">
+              Description
+            </label>
             <textarea
               name="description"
               rows="4"
@@ -166,18 +187,20 @@ function CreateRoom() {
               onChange={handleChange}
             />
           </div>
-
+  
           {/* IMAGES */}
           <div>
-            <label className="block mb-1 font-medium">Room Images</label>
+            <label className="text-sm text-gray-600 dark:text-gray-300">
+              Room Images
+            </label>
             <input
               type="file"
               multiple
               className="w-full border p-3 rounded-xl"
               onChange={handleImageChange}
             />
-
-            <div className="grid grid-cols-5 gap-3 mt-3">
+  
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3">
               {formData.images.map((img, i) => (
                 <img
                   key={i}
@@ -187,15 +210,15 @@ function CreateRoom() {
               ))}
             </div>
           </div>
-
+  
           {/* BUTTON */}
           <button
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-blue-700 transition"
+            className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl text-lg font-semibold hover:opacity-90 transition"
           >
             {loading ? "Creating..." : "Create Room"}
           </button>
-
+  
         </form>
       </div>
     </div>

@@ -222,6 +222,7 @@ export const updateHotel = createAsyncThunk(
   async ({ hotelId, data }, thunkAPI) => {
     try {
       const adminToken = localStorage.getItem("adminToken");
+
       const response = await apiClient.put(
         `/api/hotel/updateHotel/${hotelId}`,
         data,
@@ -229,15 +230,18 @@ export const updateHotel = createAsyncThunk(
           headers: {
             Authorization: `Bearer ${adminToken}`,
           },
-        },
+        }
       );
-      return response.data;
+
+      console.log("UPDATE RESPONSE:", response.data);
+
+      return response.data; 
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "hotel update failed",
+        error.response?.data?.message || "hotel update failed"
       );
     }
-  },
+  }
 );
 
 /* -------- get All Active Public Hotels -------- */
@@ -267,7 +271,7 @@ export const getHotelById = createAsyncThunk(
           Authorization: `Bearer ${adminToken}`,
         },
       });
-
+      // console.log("API RESPONSE:", response.data);
       return response.data; // IMPORTANT
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -496,7 +500,7 @@ const hotelSlice = createSlice({
         const hotel = state.hotels.find((c) => c._id === action.payload.id);
 
         if (hotel) {
-          hotel.status = "inactive"; // ⭐ IMPORTANT
+          hotel.status = "inactive"; 
         }
       })
       .addCase(deleteHotel.rejected, (state, action) => {
@@ -512,16 +516,25 @@ const hotelSlice = createSlice({
         state.success = false;
       })
       .addCase(updateHotel.fulfilled, (state, action) => {
+        console.log("FULL PAYLOAD:", action.payload); 
         state.loading = false;
         state.success = true;
-
-        const index = state.hotels.findIndex(
-          (h) => h._id === action.payload._id,
-        );
-
-        if (index !== -1) {
-          state.hotels[index] = action.payload;
+      
+        const updatedHotel = action.payload?.data || action.payload;
+        if (!updatedHotel || !updatedHotel._id) {
+          console.error("Updated hotel invalid:", updatedHotel);
+          return; 
         }
+      
+        const index = state.hotels.findIndex(
+          (h) => h._id === updatedHotel._id
+        );
+      
+        if (index !== -1) {
+          state.hotels[index] = updatedHotel;
+        }
+      
+        state.hotel = updatedHotel; // ✅ update current hotel also
       })
       .addCase(updateHotel.rejected, (state, action) => {
         state.loading = false;
@@ -539,7 +552,7 @@ const hotelSlice = createSlice({
 
       .addCase(getHotelById.fulfilled, (state, action) => {
         state.loading = false;
-        state.hotel = action.payload.data;
+        state.hotel = action.payload;
       })
 
       .addCase(getHotelById.rejected, (state, action) => {

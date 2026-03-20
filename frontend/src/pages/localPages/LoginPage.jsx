@@ -6,85 +6,118 @@ function LoginPage() {
   const [loginType, setLoginType] = useState("user");
 
   return (
-    <div className="min-h-screen flex">
-
-      {/* LEFT SIDE IMAGE */}
-      <div className="hidden lg:flex w-1/2 relative">
-
+    <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900">
+      {/* LEFT SIDE (BRANDING) */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden">
+        {/* IMAGE */}
         <img
           src="https://images.unsplash.com/photo-1551434678-e076c223a692"
           alt="dashboard"
           className="absolute inset-0 w-full h-full object-cover"
         />
 
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-blue-900/60 backdrop-blur-sm flex flex-col justify-center items-center text-white p-10">
+        {/* GRADIENT OVERLAY */}
+        <div className="absolute inset-0 bg-linear-to-br from-blue-900/80 via-indigo-800/70 to-black/70 backdrop-blur-sm"></div>
 
-          <h1 className="text-5xl font-bold mb-6 text-center">
-            Welcome Back
+        {/* CONTENT */}
+        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+          <h1 className="text-5xl font-bold leading-tight mb-6">
+            Manage Everything <br /> in One Place
           </h1>
 
-          <p className="text-lg text-center max-w-md opacity-90">
-            Manage your platform, users, and operations in one powerful dashboard.
+          <p className="text-lg opacity-90 max-w-md mb-10">
+            Control hotels, rooms, bookings and users with a powerful and modern
+            admin dashboard.
           </p>
 
+          {/* FEATURE POINTS */}
+          <div className="space-y-4 text-sm opacity-90">
+            <p>✔ Manage Hotels & Rooms</p>
+            <p>✔ Real-time Updates</p>
+            <p>✔ Secure Admin Access</p>
+          </div>
         </div>
       </div>
 
-      {/* RIGHT SIDE LOGIN */}
-<div className="w-full lg:w-1/2 flex items-center justify-center bg-linear-to-br from-gray-100 via-gray-50 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
+      {/* RIGHT SIDE (LOGIN) */}
+      <div className="w-full lg:w-[60%] flex items-center justify-center relative overflow-hidden p-6">
+        {/* BACKGROUND EFFECT */}
+        <div className="absolute inset-0 bg-linear-to-br from-blue-100 via-white to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
 
-  <div className="w-full max-w-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl shadow-xl rounded-3xl p-10 border border-gray-200 dark:border-gray-700">
+        {/* GLOW CIRCLES */}
+        <div className="absolute w-72 h-72 bg-blue-400/30 rounded-full blur-3xl top-10 left-10"></div>
+        <div className="absolute w-72 h-72 bg-indigo-400/30 rounded-full blur-3xl bottom-10 right-10"></div>
 
-    {/* Heading */}
-    <div className="text-center mb-8">
-      <h2 className="text-4xl font-bold text-gray-800 dark:text-white">
-        Welcome Back
-      </h2>
+        {/* CARD CONTAINER */}
+        <div className="relative w-full max-w-[85%]">
+          {/* FLOATING CARD */}
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl border border-white/40 dark:border-gray-700 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-10">
+            {/* HEADER */}
+            <div className="text-center mb-8">
+              <div className="w-10 h-10 mx-auto mb-4 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white text-2xl shadow-lg">
+                🔐
+              </div>
 
-      <p className="text-gray-500 dark:text-gray-400 mt-2">
-        Login to your account to continue
-      </p>
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white">
+                Sign In
+              </h2>
 
-      <div className="w-12 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
-    </div>
+              <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
+                Access your dashboard securely
+              </p>
+            </div>
 
-    {/* Toggle Buttons */}
-    <div className="flex bg-gray-100 dark:bg-gray-700 rounded-xl p-1 mb-8">
+            {/* TOGGLE */}
+            <div className="relative flex bg-gray-200 dark:bg-gray-700 rounded-xl p-1 mb-8">
+              {/* SLIDER EFFECT */}
+              <div
+                className={`absolute top-1 bottom-1 w-1/2 rounded-lg bg-blue-600 transition-all duration-300 ${
+                  loginType === "admin" ? "left-1/2" : "left-1"
+                }`}
+              ></div>
 
-      <button
-        onClick={() => setLoginType("user")}
-        className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
-          loginType === "user"
-            ? "bg-blue-600 text-white shadow-md"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-        }`}
-      >
-        User Login
-      </button>
+              <button
+                onClick={() => setLoginType("user")}
+                className={`relative z-10 flex-1 py-2.5 text-sm font-semibold transition ${
+                  loginType === "user"
+                    ? "text-white"
+                    : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                User
+              </button>
 
-      <button
-        onClick={() => setLoginType("admin")}
-        className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
-          loginType === "admin"
-            ? "bg-blue-600 text-white shadow-md"
-            : "text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-        }`}
-      >
-        Admin Login
-      </button>
+              <button
+                onClick={() => setLoginType("admin")}
+                className={`relative z-10 flex-1 py-2.5 text-sm font-semibold transition ${
+                  loginType === "admin"
+                    ? "text-white"
+                    : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                Admin
+              </button>
+            </div>
 
-    </div>
+            {/* FORM */}
+            <div className="transition-all duration-300">
+              {loginType === "user" ? <Login /> : <AdminLogin />}
+            </div>
 
-    {/* Login Form */}
-    <div className="transition-all duration-300">
-      {loginType === "user" ? <Login /> : <AdminLogin />}
-    </div>
+            {/* EXTRA */}
+            <div className="flex justify-between items-center mt-6 text-sm text-gray-500">
+              <span className="cursor-pointer hover:text-blue-600">
+                Forgot Password?
+              </span>
+              <span className="cursor-pointer hover:text-blue-600">Help</span>
+            </div>
+          </div>
 
-  </div>
-
-</div>
-
+          {/* FLOATING DECORATION */}
+          <div className="absolute -top-6 -right-6 w-20 h-20 bg-blue-500/20 rounded-full blur-2xl"></div>
+          <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-indigo-500/20 rounded-full blur-2xl"></div>
+        </div>
+      </div>
     </div>
   );
 }

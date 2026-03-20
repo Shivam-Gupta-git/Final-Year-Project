@@ -43,23 +43,38 @@ function Login() {
   }, [loginSuccess, navigate]);
 
   return (
-    
-    <div className="flex items-center justify-center bg-linear-to-br from-blue-100 via-white to-gray-200 px-4 ">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-300 ">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          Welcome Back
-        </h2>
-        <p className="text-sm text-gray-500 text-center mb-6">
-          Sign in to continue to your account
-        </p>
-
+    <div className=" flex items-center justify-center bg-linear-to-br from-gray-100 via-white to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 text-gray-800 dark:text-white">
+  
+      {/* BACKGROUND GLOW */}
+      <div className="absolute w-72 h-72 bg-blue-400/30 rounded-full blur-3xl top-10 left-10"></div>
+      <div className="absolute w-72 h-72 bg-indigo-400/30 rounded-full blur-3xl bottom-10 right-10"></div>
+  
+      {/* CARD */}
+      <div className="relative w-full max-w-md bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl shadow-2xl rounded-3xl p-8 border border-gray-200 dark:border-gray-700">
+  
+        {/* HEADER */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg">
+            👤
+          </div>
+  
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-white">
+            Welcome Back
+          </h2>
+  
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Sign in to continue to your account
+          </p>
+        </div>
+  
         <form onSubmit={handelFormSubmit} className="space-y-5">
-          {/* Email */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-600">
+  
+          {/* EMAIL */}
+          <div>
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
               Email Address
             </label>
-
+  
             <input
               type="email"
               name="email"
@@ -67,27 +82,25 @@ function Login() {
               placeholder="Enter your email"
               value={formData.email}
               onChange={handelChange}
-              className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-lg 
-          focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none
-          transition duration-200"
+              className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/60 dark:bg-gray-900/60 focus:ring-2 focus:ring-blue-500 outline-none transition"
             />
           </div>
-
-          {/* Password */}
-          <div className="relative flex flex-col">
+  
+          {/* PASSWORD */}
+          <div className="relative">
             <div className="flex justify-between items-center">
-              <label className="text-sm font-medium text-gray-600">
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
                 Password
               </label>
-
+  
               <Link
                 to={"/forgot-password"}
-                className="text-sm text-blue-600 hover:text-blue-700 hover:underline transition"
+                className="text-sm text-blue-600 hover:underline"
               >
-                Forgot password?
+                Forgot?
               </Link>
             </div>
-
+  
             <input
               type={showPassword ? "text" : "password"}
               name="password"
@@ -95,15 +108,13 @@ function Login() {
               placeholder="Enter your password"
               value={formData.password}
               onChange={handelChange}
-              className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-lg
-          focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none
-          transition duration-200 pr-10"
+              className="w-full mt-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/60 dark:bg-gray-900/60 focus:ring-2 focus:ring-blue-500 outline-none transition pr-10"
             />
-
+  
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 transition"
+              className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
             >
               {showPassword ? (
                 <IoEyeSharp size={18} />
@@ -112,20 +123,18 @@ function Login() {
               )}
             </button>
           </div>
-
-          {/* Button */}
+  
+          {/* BUTTON */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99]
-        text-white py-2.5 rounded-lg font-semibold tracking-wide
-        transition duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-xl hover:opacity-90 transition disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Sign In"}
           </button>
-
-          {/* Signup link */}
-          <p className="text-sm text-center text-gray-600">
+  
+          {/* SIGNUP */}
+          <p className="text-sm text-center text-gray-600 dark:text-gray-400">
             Don’t have an account?{" "}
             <Link
               to={"/signUp"}
@@ -134,10 +143,10 @@ function Login() {
               Sign up
             </Link>
           </p>
-
-          {/* Error */}
+  
+          {/* ERROR */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm text-center py-2 px-3 rounded-lg">
+            <div className="bg-red-100 text-red-600 text-sm text-center py-2 px-3 rounded-lg border border-red-200">
               {error}
             </div>
           )}

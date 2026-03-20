@@ -74,34 +74,47 @@ function Register() {
   }, [registerSuccess]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-gray-200 p-4">
-      <div className="w-full max-w-md bg-white shadow-2xl rounded-2xl p-8 border border-gray-200">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          Create Account
-        </h2>
-
-        <p className="text-center text-gray-500 text-sm mb-6">
-          Register your account to continue
-        </p>
-
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-100 via-white to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 text-gray-800 dark:text-white">
+  
+      {/* BACKGROUND GLOW */}
+      <div className="absolute w-72 h-72 bg-blue-400/30 rounded-full blur-3xl top-10 left-10"></div>
+      <div className="absolute w-72 h-72 bg-indigo-400/30 rounded-full blur-3xl bottom-10 right-10"></div>
+  
+      {/* CARD */}
+      <div className="relative w-full max-w-[60%] bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl shadow-2xl rounded-3xl p-8 border border-gray-200 dark:border-gray-700">
+  
+        {/* HEADER */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg">
+            📝
+          </div>
+  
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-white">
+            Create Account
+          </h2>
+  
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Register your account to continue
+          </p>
+        </div>
+  
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Avatar */}
+  
+          {/* AVATAR */}
           <div className="flex flex-col items-center">
-            <div className="w-28 h-28 rounded-full border-4 border-blue-500 overflow-hidden shadow-md mb-3">
+            <div className="w-28 h-28 rounded-full border-4 border-blue-500 overflow-hidden shadow-lg mb-3 bg-gray-100 flex items-center justify-center">
               {preview ? (
                 <img
-                  src={preview || "https://via.placeholder.com/100"}
+                  src={preview}
                   alt="preview"
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 text-sm">
-                  Avatar
-                </div>
+                <span className="text-gray-400 text-sm">Avatar</span>
               )}
             </div>
-
-            <label className="flex items-center gap-2 cursor-pointer text-sm text-blue-600 hover:text-blue-700">
+  
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-blue-600 hover:underline">
               <FiUpload />
               Upload Avatar
               <input
@@ -112,56 +125,56 @@ function Register() {
               />
             </label>
           </div>
-
-          {/* Name */}
+  
+          {/* NAME */}
           <div>
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm text-gray-600 dark:text-gray-300">
               Full Name
             </label>
-
+  
             <div className="relative mt-1">
               <FiUser className="absolute left-3 top-4 text-gray-400" />
-
+  
               <input
                 name="userName"
                 value={formData.userName}
                 onChange={handleChange}
                 placeholder="Enter your name"
                 required
-                className="w-full pl-10 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full pl-10 p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/60 dark:bg-gray-900/60 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
-
-          {/* Email */}
+  
+          {/* EMAIL */}
           <div>
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm text-gray-600 dark:text-gray-300">
               Email Address
             </label>
-
+  
             <div className="relative mt-1">
               <FiMail className="absolute left-3 top-4 text-gray-400" />
-
+  
               <input
                 name="email"
                 type="email"
                 onChange={handleChange}
                 placeholder="Enter your email"
                 required
-                className="w-full pl-10 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full pl-10 p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/60 dark:bg-gray-900/60 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
-
-          {/* Phone */}
+  
+          {/* PHONE */}
           <div>
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm text-gray-600 dark:text-gray-300">
               Contact Number
             </label>
-
+  
             <div className="relative mt-1">
               <FiPhone className="absolute left-3 top-4 text-gray-400" />
-
+  
               <input
                 name="contactNumber"
                 type="tel"
@@ -171,64 +184,65 @@ function Register() {
                 pattern="[0-9]{10}"
                 maxLength="10"
                 required
-                className="w-full pl-10 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full pl-10 p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/60 dark:bg-gray-900/60 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
-
-          {/* Password */}
+  
+          {/* PASSWORD */}
           <div>
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm text-gray-600 dark:text-gray-300">
               Password
             </label>
-
+  
             <div className="relative mt-1">
               <FiLock className="absolute left-3 top-4 text-gray-400" />
-
+  
               <input
                 name="password"
                 type={showPassword ? "text" : "password"}
                 onChange={handleChange}
                 placeholder="Enter password"
                 required
-                className="w-full pl-10 pr-10 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full pl-10 pr-10 p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white/60 dark:bg-gray-900/60 focus:ring-2 focus:ring-blue-500 outline-none"
               />
-
+  
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-4 text-gray-500"
+                className="absolute right-3 top-4 text-gray-500 hover:text-gray-700"
               >
                 {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
             </div>
           </div>
-
-          {/* Error */}
+  
+          {/* ERROR */}
           {error && (
-            <p className="text-red-500 text-sm text-center font-medium">
+            <div className="bg-red-100 text-red-600 text-sm text-center py-2 px-3 rounded-lg border border-red-200">
               {error}
-            </p>
+            </div>
           )}
-
-          {/* Button */}
+  
+          {/* BUTTON */}
           <button
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition"
+            className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-xl hover:opacity-90 transition"
           >
             {loading ? "Registering..." : "Register"}
           </button>
-
-          {/* Login */}
-          <p className="text-sm text-center text-gray-600">
+  
+          {/* LOGIN LINK */}
+          <p className="text-sm text-center text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-blue-600 font-medium hover:underline"
+              className="text-blue-600 font-semibold hover:underline"
             >
               Login
             </Link>
           </p>
+  
         </form>
       </div>
     </div>
