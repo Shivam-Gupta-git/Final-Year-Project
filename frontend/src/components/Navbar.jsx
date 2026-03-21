@@ -13,6 +13,7 @@ import { getSuperAdminData } from "../features/user/superAdminSlice";
 import { getAdminData } from "../features/user/adminSlice";
 import { adminLogout } from "../features/auth/adminAuthSlice";
 import { FaUserShield } from "react-icons/fa";
+import { NavLink } from "react-router-dom";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -127,12 +128,10 @@ function Navbar() {
 
   useEffect(() => {
     setProfileOpen(false);
-    
 
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setProfileOpen(false);
-        
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -160,61 +159,97 @@ function Navbar() {
               </Link>
 
               {/* Location */}
-              {
-                (token || adminToken) && (
-                  <div className="flex items-center gap-1 px-3 py-1 rounded-lg">
-                    <img 
+              {(token || adminToken) && (
+                <div className="flex items-center gap-1 px-3 py-1 rounded-lg">
+                  <img
                     className="w-5 mb-1"
-                    src="https://cdn-icons-png.flaticon.com/128/684/684908.png" alt="" />
-                    {/* <GrLocationPin style={{ fontSize: "22px", color: "red" }} /> */}
+                    src="https://cdn-icons-png.flaticon.com/128/684/684908.png"
+                    alt=""
+                  />
+                  {/* <GrLocationPin style={{ fontSize: "22px", color: "red" }} /> */}
 
-                    <button
-                      onClick={() => setShowLocationSection(true)}
-                      className="text-sm font-medium text-blue-700 hover:text-blue-900 transition"
-                    >
-                      {currentUser?.location?.city
-                        ? `${currentUser.location.city}, ${currentUser.location.state}`
-                        : "Add Location"}
-                    </button>
-                  </div>
-                )}
+                  <button
+                    onClick={() => setShowLocationSection(true)}
+                    className="text-sm font-medium text-blue-700 hover:text-blue-900 transition"
+                  >
+                    {currentUser?.location?.city
+                      ? `${currentUser.location.city}, ${currentUser.location.state}`
+                      : "Add Location"}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* SUPER ADMIN NAV LINKS */}
             <div>
               {superAdmin?.role === "super_admin" && (
-                <div className="flex items-center gap-6 ml-8">
-                  <Link
-                    to="/superAdmin/superAdminDashboard"
-                    className="text-gray-700 font-medium hover:text-blue-600"
-                  >
-                    Dashboard
-                  </Link>
+                <div className="flex items-center gap-8 ml-8">
 
-                  <Link
-                    to="/superAdmin/cityDashboard"
-                    className="text-gray-700 font-medium hover:text-blue-600"
-                  >
-                    City
-                  </Link>
+{/* Dashboard */}
+<NavLink
+  to="/superAdmin/superAdminDashboard"
+  className={({ isActive }) =>
+    `relative font-medium transition 
+    ${isActive 
+      ? "text-blue-600" 
+      : "text-gray-700 dark:text-gray-300 hover:text-blue-600"}`
+  }
+>
+  Dashboard
+  <span
+    className={({ isActive }) =>
+      `absolute left-0 -bottom-1 h-0.5 bg-blue-600 transition-all duration-300
+      ${isActive ? "w-full" : "w-0 group-hover:w-full"}`
+    }
+  ></span>
+</NavLink>
 
-                  <Link
-                    to="/superAdmin/hotelDashboard"
-                    className="text-gray-700 font-medium hover:text-blue-600"
-                  >
-                    Hotel
-                  </Link>
+{/* City */}
+<NavLink
+  to="/superAdmin/cityDashboard"
+  className={({ isActive }) =>
+    `relative font-medium transition 
+    ${isActive 
+      ? "text-blue-600" 
+      : "text-gray-700 dark:text-gray-300 hover:text-blue-600"}`
+  }
+>
+  City
+  <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+</NavLink>
 
-                  <div className="flex flex-row items-center justify-center gap-1 border-2 border-blue-500 p-1 rounded-2xl hover:bg-blue-500 group cursor-pointer">
-                    <FaUserShield className="text-xl text-blue-600 dark:text-blue-300 group-hover:text-white transition-colors duration-200" />
-                    <Link
-                      to="/superadmin/adminApprovel"
-                      className="text-gray-700 font-medium group-hover:text-white transition-colors duration-200"
-                    >
-                      Admin Approval
-                    </Link>
-                  </div>
-                </div>
+{/* Hotel */}
+<NavLink
+  to="/superAdmin/hotelDashboard"
+  className={({ isActive }) =>
+    `relative font-medium transition 
+    ${isActive 
+      ? "text-blue-600" 
+      : "text-gray-700 dark:text-gray-300 hover:text-blue-600"}`
+  }
+>
+  Hotel
+  <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+</NavLink>
+
+{/* Divider */}
+<div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+
+{/* Admin Approval CTA */}
+<NavLink
+  to="/superadmin/adminApprovel"
+  className={({ isActive }) =>
+    `flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300
+    ${isActive
+      ? "bg-blue-700 text-white"
+      : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"}`
+  }
+>
+  <FaUserShield className="text-lg" />
+  Admin Approval
+</NavLink>
+
+</div>
               )}
             </div>
 

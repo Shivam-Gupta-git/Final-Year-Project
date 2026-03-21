@@ -291,10 +291,38 @@ function App() {
             </AdminProtectedRouter>
           }
         />
-        <Route path="/superAdmin/admin-details" element={<SuperAdminProtectedRouter><AdminsDetails/></SuperAdminProtectedRouter>}/>
-        <Route path="/superAdmin/admin-products/:adminId" element={<SuperAdminProtectedRouter><AdminItemsDetailsByAdminId/></SuperAdminProtectedRouter>} />
-        <Route path="/admin/hotel-booking-dashboard" element={<AdminProtectedRouter><HotelBookingDashboard/></AdminProtectedRouter>}/>
-        <Route path="/admin/booked-hotels/:hotelId" element={<AdminProtectedRouter><BookedHotels/></AdminProtectedRouter>}/>
+        <Route
+          path="/superAdmin/admin-details"
+          element={
+            <SuperAdminProtectedRouter>
+              <AdminsDetails />
+            </SuperAdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/superAdmin/admin-products/:adminId"
+          element={
+            <SuperAdminProtectedRouter>
+              <AdminItemsDetailsByAdminId />
+            </SuperAdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/hotel-booking-dashboard"
+          element={
+            <AdminProtectedRouter>
+              <HotelBookingDashboard />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/booked-hotels/:hotelId"
+          element={
+            <AdminProtectedRouter>
+              <BookedHotels />
+            </AdminProtectedRouter>
+          }
+        />
       </Routes>
     </>
   );
