@@ -10,6 +10,9 @@ const initialState = {
   selectedAdminId: null,
   loadingAdmins: false,
   loadingHotels: false,
+  filterCounts: null,
+  filterCountsLoading: false,
+  bulkAvailability: {},
 };
 
 /* -------- Create Hotel -------- */
@@ -338,11 +341,54 @@ export const searchHotel = createAsyncThunk(
   "hotel/searchHotels",
   async (params = {}, thunkAPI) => {
     try {
-      const response = await apiClient.get("/api/hotelBooking/search", { params });
+      const response = await apiClient.get("/api/hotelBooking/search", {
+        params,
+      });
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Search failed",
+      );
+    }
+  },
+);
+
+/* ------ getFilterCounts ------- */
+export const getFilterCounts = createAsyncThunk(
+  "hotel/getFilterCounts",
+  async (city = "", thunkAPI) => {
+    try {
+      const response = await apiClient.get("/api/hotelBooking/filter-counts", {
+        params: city ? { city } : {},
+      });
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch filter counts",
+      );
+    }
+  },
+);
+
+/* ------ getRoomsAvailabilityBulk ------- */
+export const getRoomsAvailabilityBulk = createAsyncThunk(
+  "hotel/getRoomsAvailabilityBulk",
+  async ({ hotelIds, checkIn, checkOut }, thunkAPI) => {
+    try {
+      const response = await apiClient.get(
+        "/api/hotelBooking/rooms-availability",
+        {
+          params: {
+            hotelIds: hotelIds.join(","),
+            checkIn,
+            checkOut,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch availability",
       );
     }
   },
@@ -354,15 +400,20 @@ export const getAdminHotels = createAsyncThunk(
   async (adminId, thunkAPI) => {
     try {
       const token = localStorage.getItem("superAdminToken");
-      
-      const response = await apiClient.get(`/api/hotel/admin/${adminId}/hotels`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+
+      const response = await apiClient.get(
+        `/api/hotel/admin/${adminId}/hotels`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       return response.data; // returns hotel array
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || "Failed to fetch hotels");
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || "Failed to fetch hotels",
+      );
     }
-  }
+  },
 );
 
 const hotelSlice = createSlice({
@@ -634,7 +685,6 @@ const hotelSlice = createSlice({
         state.error = action.payload;
       });
 
-
     //  -----------------search Hotel --------------
     builder
       .addCase(searchHotel.pending, (state) => {
@@ -668,8 +718,8 @@ const hotelSlice = createSlice({
         state.error = action.payload;
       });
 
-      /* ------  Fetch active hotels by admin ------- */
-      builder
+    /* ------  Fetch active hotels by admin ------- */
+    builder
       .addCase(getAdminHotels.pending, (state) => {
         state.loadingHotels = true;
         state.error = null;
@@ -679,10 +729,27 @@ const hotelSlice = createSlice({
         state.hotels = action.payload;
       })
       .addCase(getAdminHotels.rejected, (state, action) => {
-        state.loadingHotels = false;
+        state.loadingHotels = false;  
         state.error = action.payload;
       });
 
+    /* ------ getFilterCounts ------- */
+    builder
+      .addCase(getFilterCounts.pending, (state) => {
+        state.filterCountsLoading = true;
+      })
+      .addCase(getFilterCounts.fulfilled, (state, action) => {
+        state.filterCountsLoading = false;
+        state.filterCounts = action.payload.data ?? null;
+      })
+      .addCase(getFilterCounts.rejected, (state) => {
+        state.filterCountsLoading = false;
+      });
+
+    /* ------ getRoomsAvailabilityBulk ------- */
+    builder.addCase(getRoomsAvailabilityBulk.fulfilled, (state, action) => {
+      state.bulkAvailability = action.payload.data ?? {};
+    });
   },
 });
 

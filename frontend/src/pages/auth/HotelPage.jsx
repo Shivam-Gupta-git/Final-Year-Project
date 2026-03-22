@@ -24,6 +24,7 @@ import {
 import { MdOutlineLocalOffer, MdAir, MdSpa } from "react-icons/md";
 import {
   getPublicActiveHotels,
+  getRoomsAvailabilityBulk,
   searchHotel,
 } from "../../features/user/hotelSlice";
 
@@ -78,8 +79,15 @@ const sortHotels = (hotels, sortBy) => {
 };
 
 // ── Filter ────────────────────────────────────────────────────────────────────
-const applyFilters = (hotels, filters) => {
+const applyFilters = (
+  hotels,
+  filters,
+  bulkAvailability = {},
+  requestedRooms = 0,
+  requestedAdults = 0,
+) => {
   let result = [...hotels];
+
   if (filters.locality) {
     const q = filters.locality.toLowerCase();
     result = result.filter(
@@ -104,12 +112,37 @@ const applyFilters = (hotels, filters) => {
       return filters.amenities.every((a) => fac.includes(a));
     });
   }
+  if (filters.stars?.length > 0) {
+    result = result.filter((h) => filters.stars.includes(h.starCategory));
+  }
+  // ── ROOMS + ADULTS FILTER ────────────────────────────────
+  if (requestedRooms > 0 || requestedAdults > 0) {
+    result = result.filter((h) => {
+      const hotelAvail = bulkAvailability[h._id];
+
+      // Agar availability data nahi hai — hotel dikhao (loading ho sakta hai)
+      if (!hotelAvail) return true;
+
+      const { availableRooms, maxCapacityPerRoom } = hotelAvail;
+
+      // Check 1: Enough rooms available?
+      if (requestedRooms > 0 && availableRooms < requestedRooms) return false;
+
+      // Check 2: Room capacity enough for adults?
+      if (requestedAdults > 0 && requestedRooms > 0) {
+        const adultsPerRoom = Math.ceil(requestedAdults / requestedRooms);
+        if (adultsPerRoom > maxCapacityPerRoom) return false;
+      }
+
+      return true;
+    });
+  }
   return result;
 };
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 const SkeletonCard = () => (
-  <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col sm:flex-row animate-pulse h-[180px] sm:h-[168px]">
+  <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col sm:flex-row animate-pulse h-45 sm:h-42">
     <div className="w-full sm:w-52 h-44 sm:h-full bg-slate-200 shrink-0" />
     <div className="flex-1 p-4 space-y-3">
       <div className="h-4 bg-slate-200 rounded w-2/3" />
@@ -140,7 +173,15 @@ const StarDisplay = ({ count }) => {
 };
 
 // ── Hotel Card ────────────────────────────────────────────────────────────────
-const HotelCard = ({ hotel, nights = 1 }) => {
+const HotelCard = ({
+  hotel,
+  nights = 1,
+  availableRooms,
+  maxCapacityPerRoom,
+  requestedRooms = 0,
+  requestedAdults = 0,
+}) => {
+  const isSoldOut = availableRooms === 0;
   const [wishlist, setWishlist] = useState(false);
   const navigate = useNavigate();
 
@@ -188,6 +229,14 @@ const HotelCard = ({ hotel, nights = 1 }) => {
             <FaRegHeart className="text-slate-500 text-xs" />
           )}
         </button>
+
+        {isSoldOut && (
+          <div className="absolute inset-0 bg-black/45 flex items-center justify-center z-10">
+            <span className="bg-white text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow">
+              Sold Out
+            </span>
+          </div>
+        )}
 
         {/* Discount badge */}
         {discount > 0 && (
@@ -263,6 +312,37 @@ const HotelCard = ({ hotel, nights = 1 }) => {
             </div>
           )}
 
+          {requestedAdults > 0 &&
+            requestedRooms > 0 &&
+            maxCapacityPerRoom &&
+            (() => {
+              const adultsPerRoom = Math.ceil(requestedAdults / requestedRooms);
+              if (adultsPerRoom > maxCapacityPerRoom) {
+                return (
+                  <p className="text-[10px] text-rose-500 mt-1">
+                    ⚠️ Room capacity: {maxCapacityPerRoom} adults max
+                  </p>
+                );
+              }
+              return null;
+            })()}
+
+          {availableRooms !== undefined &&
+            availableRooms > 0 &&
+            availableRooms <= 7 && (
+              <span
+                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border mt-1.5
+                  ${
+                    availableRooms <= 3
+                      ? "text-rose-600 bg-rose-50 border-rose-200 animate-pulse"
+                      : "text-amber-600 bg-amber-50 border-amber-200"
+                  }`}
+              >
+                {availableRooms <= 3 ? "🔥 " : ""}Only {availableRooms} rooms
+                left!
+              </span>
+            )}
+
           {/* Tags */}
           {hotel.tags?.length > 0 && (
             <div className="flex flex-wrap gap-1">
@@ -320,13 +400,19 @@ const HotelCard = ({ hotel, nights = 1 }) => {
             </span>
           )}
           <button
+            disabled={isSoldOut}
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/hotels/${hotel._id}`);
+              if (!isSoldOut) navigate(`/hotels/${hotel._id}`);
             }}
-            className="bg-[#1a3a6b] hover:bg-[#14305a] active:scale-95 text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow hover:shadow-md transition-all whitespace-nowrap"
+            className={`text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow transition-all whitespace-nowrap
+            ${
+              isSoldOut
+                ? "bg-slate-400 cursor-not-allowed"
+                : "bg-[#1a3a6b] hover:bg-[#14305a] active:scale-95 hover:shadow-md"
+            }`}
           >
-            Book Now
+            {isSoldOut ? "Sold Out" : "Book Now"}
           </button>
         </div>
       </div>
@@ -355,7 +441,11 @@ const EmptyState = ({ cityParam }) => (
 function HotelPage() {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  const { hotels = [], loading } = useSelector((s) => s.hotel);
+  const {
+    hotels = [],
+    loading,
+    bulkAvailability = {},
+  } = useSelector((s) => s.hotel);
 
   const cityParam = searchParams.get("city") || "";
   const checkInParam = searchParams.get("checkIn") || "";
@@ -392,6 +482,18 @@ function HotelPage() {
     dispatch,
   ]);
 
+  useEffect(() => {
+    if (hotels.length > 0 && checkInParam && checkOutParam) {
+      dispatch(
+        getRoomsAvailabilityBulk({
+          hotelIds: hotels.map((h) => h._id),
+          checkIn: checkInParam,
+          checkOut: checkOutParam,
+        }),
+      );
+    }
+  }, [hotels, checkInParam, checkOutParam, dispatch]);
+
   const [filters, setFilters] = useState({});
   const [sortBy, setSortBy] = useState("recommended");
   const [showSortMenu, setShowSortMenu] = useState(false);
@@ -399,10 +501,29 @@ function HotelPage() {
   const [mapOpen, setMapOpen] = useState(false);
   const [page, setPage] = useState(1);
   const PER_PAGE = 10;
+  const requestedRooms = Number(roomsParam) || 0;
+  const requestedAdults = Number(adultsParam) || 0;
 
   const processedHotels = useMemo(
-    () => sortHotels(applyFilters(hotels, filters), sortBy),
-    [hotels, filters, sortBy],
+    () =>
+      sortHotels(
+        applyFilters(
+          hotels,
+          filters,
+          bulkAvailability,
+          requestedRooms,
+          requestedAdults,
+        ),
+        sortBy,
+      ),
+    [
+      hotels,
+      filters,
+      sortBy,
+      bulkAvailability,
+      requestedRooms,
+      requestedAdults,
+    ],
   );
   const totalCount = processedHotels.length;
   const totalPages = Math.ceil(totalCount / PER_PAGE);
@@ -465,7 +586,7 @@ function HotelPage() {
                     <p className="text-[11px] text-slate-400 mt-0.5">
                       {checkInParam &&
                         checkOutParam &&
-                        `${checkInParam} → ${checkOutParam} · `}
+                        `${checkInParam && checkOutParam && `${new Date(checkInParam).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} → ${new Date(checkOutParam).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · `} · `}
                       {nights > 1 && `${nights} nights · `}
                       {roomsParam && `${roomsParam} Room · `}
                       {adultsParam && `${adultsParam} Adults`}
@@ -553,7 +674,17 @@ function HotelPage() {
               <EmptyState cityParam={cityParam} />
             ) : (
               pagedHotels.map((h) => (
-                <HotelCard key={h._id} hotel={h} nights={nights} />
+                <HotelCard
+                  key={h._id}
+                  hotel={h}
+                  nights={nights}
+                  availableRooms={bulkAvailability[h._id]?.availableRooms}
+                  maxCapacityPerRoom={
+                    bulkAvailability[h._id]?.maxCapacityPerRoom
+                  }
+                  requestedRooms={requestedRooms}
+                  requestedAdults={requestedAdults}
+                />
               ))
             )}
           </div>

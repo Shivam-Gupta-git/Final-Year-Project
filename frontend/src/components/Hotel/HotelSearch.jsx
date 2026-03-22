@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   FaSearch,
@@ -18,6 +18,7 @@ const getTomorrow = () => {
   d.setDate(d.getDate() + 1);
   return d.toISOString().split("T")[0];
 };
+
 
 const useDebounce = (value, delay) => {
   const [debounced, setDebounced] = useState(value);
@@ -170,6 +171,7 @@ const HeroSearch = () => {
   const onSearch = () => {
     if (!searchData.city.trim()) {
       setCityError("Enter a city or property");
+      cityInputRef.current?.focus(); 
       return;
     }
     const params = new URLSearchParams({
@@ -193,6 +195,8 @@ const HeroSearch = () => {
     if (e.key === "Escape") setShowSuggestions(false);
   };
 
+  const cityInputRef = useRef(null);
+
   return (
     <div className="w-full max-w-6xl mx-auto">
       <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 px-3 sm:px-4 py-3.5">
@@ -211,6 +215,7 @@ const HeroSearch = () => {
               />
               <input
                 type="text"
+                ref={cityInputRef}
                 placeholder="City, area or property"
                 value={searchData.city}
                 onChange={onCityChange}
@@ -269,6 +274,7 @@ const HeroSearch = () => {
             <Field icon={<FaCalendarAlt />} label="Check-in">
               <input
                 type="date"
+                ref={cityInputRef}
                 name="checkIn"
                 value={searchData.checkIn}
                 min={getToday()}
@@ -279,6 +285,7 @@ const HeroSearch = () => {
             <Field icon={<FaCalendarAlt />} label="Check-out">
               <input
                 type="date"
+                ref={cityInputRef}
                 name="checkOut"
                 value={searchData.checkOut}
                 min={searchData.checkIn}
@@ -314,7 +321,7 @@ const HeroSearch = () => {
                 </button>
 
                 {showGuests && (
-                  <div className="absolute top-full left-0 right-0 sm:min-w-[300px] mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                  <div className="absolute top-full left-0 right-0 sm:min-w-75 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
                     <div className="px-5 py-4">
                       <CounterRow
                         label="Rooms"
@@ -341,6 +348,7 @@ const HeroSearch = () => {
                       {/* Apply button triggers search if city is set */}
                       <button
                         type="button"
+
                         onClick={() => {
                           setShowGuests(false);
                           if (searchData.city.trim()) onSearch();
@@ -361,7 +369,7 @@ const HeroSearch = () => {
               </p>
               <button
                 onClick={onSearch}
-                className="h-[46px] px-6 sm:px-7 bg-[#1a3a6b] hover:bg-[#14305a] active:scale-95 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 whitespace-nowrap"
+                className="h-11.5 px-6 sm:px-7 bg-[#1a3a6b] hover:bg-[#14305a] active:scale-95 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 whitespace-nowrap"
               >
                 <FaSearch className="text-xs" />
                 <span className="hidden sm:inline">Search</span>

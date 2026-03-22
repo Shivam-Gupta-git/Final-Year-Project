@@ -120,12 +120,15 @@ function Navbar() {
       dispatch(getAdminData());
     }
 
-    /* ---- close location form section ---- */
-    if (loading === false) {
-      setShowLocationSection(false);
-    }
-  }, [token, dispatch, superAdminToken, setShowLocationSection, loading]);
+    
+  }, [token, dispatch, superAdminToken, adminToken]);
 
+  useEffect(() => {
+    if (loading == false) {
+      setShowLocationSection(false);
+
+    }
+  } , [loading])
   useEffect(() => {
     setProfileOpen(false);
 

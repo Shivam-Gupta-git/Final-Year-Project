@@ -14,10 +14,10 @@ const hotelSchema = new Schema(
       required: true,
     },
 
-    pricePerNight: { 
-      type: Number, 
-      default: 0, 
-      min: 0 
+    pricePerNight: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
 
     address: {
@@ -61,6 +61,8 @@ const hotelSchema = new Schema(
     //   min: 0,
     //   max: 5,
     // },
+
+    payAtHotel: { type: Boolean, default: false },
 
     averageRating: {
       type: Number,

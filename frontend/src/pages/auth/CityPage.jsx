@@ -19,16 +19,16 @@ function CityDetails() {
   if (!city) return <div className="p-20 text-center">City not found</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/20">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/20">
   {/* Hero Banner */}
-  <section className="relative h-[450px] overflow-hidden">
+  <section className="relative h-112.5 overflow-hidden">
     <img
       src={city.images?.[0] || "https://via.placeholder.com/1200x450?text=City+Hero"}
       alt={`${city.name} - Cityscape`}
       className="w-full h-full object-cover brightness-75 transition-all duration-700"
       loading="lazy"
     />
-    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/20" />
+    <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/40 to-black/20" />
     
     <div className="absolute inset-0 flex flex-col items-center justify-end p-8 lg:p-12 text-center text-white max-w-3xl mx-auto">
       <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-xl border border-white/40 mb-4">
@@ -49,10 +49,10 @@ function CityDetails() {
     {/* About Section */}
     <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white/60 p-8 lg:p-12 mb-16">
       <div className="text-center mb-12">
-        <h2 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-slate-800 bg-clip-text text-transparent mb-4">
+        <h2 className="text-3xl lg:text-4xl font-bold bg-linear-to-r from-gray-900 to-slate-800 bg-clip-text text-transparent mb-4">
           About {city.name}
         </h2>
-        <div className="w-20 h-1 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full mx-auto" />
+        <div className="w-20 h-1 bg-linear-to-r from-emerald-500 to-teal-600 rounded-full mx-auto" />
       </div>
       <p className="text-lg text-gray-700 leading-relaxed max-w-2xl mx-auto">{city.description}</p>
     </div>
@@ -61,7 +61,7 @@ function CityDetails() {
     <section className="mb-20">
       <div className="grid md:grid-cols-3 gap-6">
         <div className="group bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 border border-white/70 hover:border-emerald-200/50">
-          <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl group-hover:scale-105 transition-transform duration-300">
+          <div className="w-16 h-16 bg-linear-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl group-hover:scale-105 transition-transform duration-300">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
@@ -71,7 +71,7 @@ function CityDetails() {
         </div>
 
         <div className="group bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 border border-white/70 hover:border-amber-200/50">
-          <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mb-4 shadow-xl group-hover:scale-105 transition-transform duration-300">
+          <div className="w-16 h-16 bg-linear-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mb-4 shadow-xl group-hover:scale-105 transition-transform duration-300">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -81,7 +81,7 @@ function CityDetails() {
         </div>
 
         <div className="group bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 border border-white/70 hover:border-indigo-200/50">
-          <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl group-hover:scale-105 transition-transform duration-300">
+          <div className="w-16 h-16 bg-linear-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl group-hover:scale-105 transition-transform duration-300">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
             </svg>
@@ -96,10 +96,10 @@ function CityDetails() {
     {/* Explore Actions */}
     <section>
       <div className="text-center mb-16">
-        <h2 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-slate-800 bg-clip-text text-transparent mb-4">
+        <h2 className="text-3xl lg:text-4xl font-bold bg-linear-to-r from-gray-900 to-slate-800 bg-clip-text text-transparent mb-4">
           Explore {city.name}
         </h2>
-        <div className="w-20 h-1 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full mx-auto mb-4" />
+        <div className="w-20 h-1 bg-linear-to-r from-emerald-500 to-teal-600 rounded-full mx-auto mb-4" />
       </div>
       
       <div className="grid md:grid-cols-3 gap-6">
