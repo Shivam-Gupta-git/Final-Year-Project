@@ -142,7 +142,7 @@ const applyFilters = (
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 const SkeletonCard = () => (
-  <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col sm:flex-row animate-pulse h-45 sm:h-42">
+  <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col sm:flex-row animate-pulse min-h-80 sm:min-h-42.5">
     <div className="w-full sm:w-52 h-44 sm:h-full bg-slate-200 shrink-0" />
     <div className="flex-1 p-4 space-y-3">
       <div className="h-4 bg-slate-200 rounded w-2/3" />
@@ -368,8 +368,8 @@ const HotelCard = ({
       </div>
 
       {/* ── Price block ── */}
-      <div className="sm:w-44 p-4 border-t sm:border-t-0 sm:border-l border-slate-100 flex flex-row sm:flex-col justify-between sm:justify-start items-center sm:items-end gap-3">
-        <div className="text-right">
+      <div className="sm:w-44 p-4 border-t sm:border-t-0 sm:border-l border-slate-100 flex flex-row sm:flex-col justify-between sm:justify-start items-start sm:items-end gap-3">
+        <div className="text-left sm:text-right">
           {hotel.originalPrice && (
             <p className="text-[11px] text-slate-400 line-through">
               ₹{hotel.originalPrice.toLocaleString()}
@@ -393,7 +393,7 @@ const HotelCard = ({
           )}
         </div>
 
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
+        <div className="flex flex-col items-start sm:items-end gap-1.5 shrink-0">
           {hotel.freeCancellation && (
             <span className="hidden sm:flex items-center gap-1 text-emerald-600 text-[10px] font-semibold whitespace-nowrap">
               <FaShieldAlt className="text-[8px]" /> Free cancellation
@@ -405,7 +405,7 @@ const HotelCard = ({
               e.stopPropagation();
               if (!isSoldOut) navigate(`/hotels/${hotel._id}`);
             }}
-            className={`text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow transition-all whitespace-nowrap
+            className={`text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow transition-all whitespace-nowrap min-w-27.5
             ${
               isSoldOut
                 ? "bg-slate-400 cursor-not-allowed"
@@ -566,8 +566,8 @@ function HotelPage() {
 
         <main className="flex-1 min-w-0">
           {/* Results header */}
-          <div className="flex items-center justify-between mb-3 sm:mb-4 flex-wrap gap-2">
-            <div>
+          <div className="flex items-start sm:items-center justify-between mb-3 sm:mb-4 flex-wrap gap-2">
+            <div className="min-w-0">
               {loading ? (
                 <div className="h-5 w-40 bg-slate-200 rounded animate-pulse" />
               ) : (
@@ -583,7 +583,7 @@ function HotelPage() {
                   </h1>
                   {/* Guest & date summary */}
                   {cityParam && (checkInParam || adultsParam) && (
-                    <p className="text-[11px] text-slate-400 mt-0.5">
+                    <p className="text-[11px] text-slate-400 mt-0.5 wrap-break-word">
                       {checkInParam &&
                         checkOutParam &&
                         `${checkInParam && checkOutParam && `${new Date(checkInParam).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} → ${new Date(checkOutParam).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · `} · `}
@@ -602,7 +602,7 @@ function HotelPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               {/* Mobile filter */}
               <button
                 onClick={() => setShowMobileFilter(true)}
@@ -631,7 +631,7 @@ function HotelPage() {
                   />
                 </button>
                 {showSortMenu && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 w-44 py-1 overflow-hidden">
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 w-48 py-1 overflow-hidden">
                     {SORT_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
@@ -660,7 +660,7 @@ function HotelPage() {
             <div className="flex items-center gap-2 bg-amber-50 border border-amber-200/70 rounded-xl px-3 sm:px-4 py-2.5 mb-3 sm:mb-4 text-xs">
               <FaBolt className="text-amber-500 shrink-0" />
               <span className="font-bold text-amber-700">Flash Sale:</span>
-              <span className="text-slate-600 line-clamp-1">
+              <span className="text-slate-600 line-clamp-2 sm:line-clamp-1">
                 Up to 40% off on select properties today only!
               </span>
             </div>
@@ -699,15 +699,17 @@ function HotelPage() {
               >
                 ← Prev
               </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPage(i + 1)}
-                  className={`w-8 h-8 rounded-xl text-xs font-bold transition ${page === i + 1 ? "bg-[#1a3a6b] text-white shadow" : "border border-slate-200 text-slate-600 hover:bg-slate-50"}`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+              <div className="flex items-center gap-1.5 overflow-x-auto max-w-[55vw] sm:max-w-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i + 1)}
+                    className={`w-8 h-8 rounded-xl text-xs font-bold transition shrink-0 ${page === i + 1 ? "bg-[#1a3a6b] text-white shadow" : "border border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
