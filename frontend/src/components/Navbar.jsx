@@ -187,72 +187,94 @@ function Navbar() {
             <div>
               {superAdmin?.role === "super_admin" && (
                 <div className="flex items-center gap-8 ml-8">
-
-{/* Dashboard */}
-<NavLink
-  to="/superAdmin/superAdminDashboard"
-  className={({ isActive }) =>
-    `relative font-medium transition 
-    ${isActive 
-      ? "text-blue-600" 
-      : "text-gray-700 dark:text-gray-300 hover:text-blue-600"}`
-  }
->
-  Dashboard
-  <span
-    className={({ isActive }) =>
-      `absolute left-0 -bottom-1 h-0.5 bg-blue-600 transition-all duration-300
+                  {/* Dashboard */}
+                  <NavLink
+                    to="/superAdmin/superAdminDashboard"
+                    className={({ isActive }) =>
+                      `relative font-medium transition 
+    ${
+      isActive
+        ? "text-blue-600"
+        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+    }`
+                    }
+                  >
+                    Dashboard
+                    <span
+                      className={({ isActive }) =>
+                        `absolute left-0 -bottom-1 h-0.5 bg-blue-600 transition-all duration-300
       ${isActive ? "w-full" : "w-0 group-hover:w-full"}`
-    }
-  ></span>
-</NavLink>
+                      }
+                    ></span>
+                  </NavLink>
 
-{/* City */}
-<NavLink
-  to="/superAdmin/cityDashboard"
-  className={({ isActive }) =>
-    `relative font-medium transition 
-    ${isActive 
-      ? "text-blue-600" 
-      : "text-gray-700 dark:text-gray-300 hover:text-blue-600"}`
-  }
->
-  City
-  <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
-</NavLink>
+                  {/* City */}
+                  <NavLink
+                    to="/superAdmin/cityDashboard"
+                    className={({ isActive }) =>
+                      `relative font-medium transition 
+    ${
+      isActive
+        ? "text-blue-600"
+        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+    }`
+                    }
+                  >
+                    City
+                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  </NavLink>
 
-{/* Hotel */}
-<NavLink
-  to="/superAdmin/hotelDashboard"
-  className={({ isActive }) =>
-    `relative font-medium transition 
-    ${isActive 
-      ? "text-blue-600" 
-      : "text-gray-700 dark:text-gray-300 hover:text-blue-600"}`
-  }
->
-  Hotel
-  <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
-</NavLink>
+                  {/* Hotel */}
+                  <NavLink
+                    to="/superAdmin/hotelDashboard"
+                    className={({ isActive }) =>
+                      `relative font-medium transition 
+    ${
+      isActive
+        ? "text-blue-600"
+        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+    }`
+                    }
+                  >
+                    Hotel
+                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  </NavLink>
 
-{/* Divider */}
-<div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+                  {/* Place */}
+                  <NavLink
+                    to="/superAdmin/place-dashboard"
+                    className={({ isActive }) =>
+                      `relative font-medium transition 
+    ${
+      isActive
+        ? "text-blue-600"
+        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+    }`
+                    }
+                  >
+                    Place
+                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  </NavLink>
 
-{/* Admin Approval CTA */}
-<NavLink
-  to="/superadmin/adminApprovel"
-  className={({ isActive }) =>
-    `flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300
-    ${isActive
-      ? "bg-blue-700 text-white"
-      : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"}`
-  }
->
-  <FaUserShield className="text-lg" />
-  Admin Approval
-</NavLink>
+                  {/* Divider */}
+                  <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
 
-</div>
+                  {/* Admin Approval CTA */}
+                  <NavLink
+                    to="/superadmin/adminApprovel"
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300
+    ${
+      isActive
+        ? "bg-blue-700 text-white"
+        : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"
+    }`
+                    }
+                  >
+                    <FaUserShield className="text-lg" />
+                    Admin Approval
+                  </NavLink>
+                </div>
               )}
             </div>
 

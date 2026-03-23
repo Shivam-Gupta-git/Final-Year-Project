@@ -20,7 +20,6 @@ const placeSchema = new mongoose.Schema(
 
     category: {
       type: String,
-      enum: ["temple", "fort", "park", "market", "other"],
       required: true,
     },
 
@@ -40,7 +39,7 @@ const placeSchema = new mongoose.Schema(
     },
 
     isPopular: {
-      type: String,
+      type: Boolean,
       default: false,
     },
 

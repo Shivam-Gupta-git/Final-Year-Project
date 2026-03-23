@@ -17,7 +17,7 @@ import {
 import { upload } from "../middleware/multer.middleware.js";
 import { approveCity, getPendingCities, inactiveCity, rejectCity } from "../controllers/city.controller.js";
 import { approveHotel, getPendingHotels, getRejectedHotel, inactiveHotel, inactiveHotelByAdmin, rejectHotel } from "../controllers/hotel.controller.js";
-import { approvePlace, pendingPlace, rejectPlace } from "../controllers/place.controller.js";
+import { approvePlace, inactivePlace, pendingPlace, rejectPlace } from "../controllers/place.controller.js";
 import { allPendingResturant, approveResturant, rejectResturant } from "../controllers/restaurant.controller.js";
 import { approveTravelOptions, getPendingTravelOptions, rejectTravelOption } from "../controllers/travelOption.controller.js";
 import { approveReview, rejectReview } from "../controllers/review.controller.js";
@@ -113,13 +113,20 @@ adminRouter.patch("/review/:id/reject", isAuthenticated, authorize("super_admin"
 //get pending cities
 adminRouter.get("/cities/pending", isAuthenticated, authorize("super_admin"), getPendingCities)
 adminRouter.get("/hotels/pending", isAuthenticated, authorize("super_admin"), getPendingHotels)
-adminRouter.get("/place/pending", isAuthenticated, authorize("super_admin"), pendingPlace)
+adminRouter.get("/places/pending", isAuthenticated, authorize("super_admin"), pendingPlace)
 adminRouter.get("/travel-options", isAuthenticated, authorize("super_admin"), getPendingTravelOptions)
 adminRouter.get("/resturant/pending", isAuthenticated , authorize("super_admin"), allPendingResturant)
 
-// inactive by superAdmin
+// inactive by superAdmin......
+// SuperAdmin - inactiveCity
 adminRouter.patch("/city/:id/inactive", isAuthenticated, authorize("super_admin"), inactiveCity)
+
+// SuperAdmin - inactiveHotel
 adminRouter.patch("/hotel/:id/inactive", isAuthenticated, authorize("super_admin"), inactiveHotel)
+
+// SuperAdmin - inactivePlace
+adminRouter.patch("/place/:id/inactive",isAuthenticated, authorize("super_admin"), inactivePlace)
+
 
 // inactive by admin
 adminRouter.patch("/adminhotel/:id/inactive", isAuthenticated, authorize("admin"), inactiveHotelByAdmin)

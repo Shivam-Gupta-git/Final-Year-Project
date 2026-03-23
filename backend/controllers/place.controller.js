@@ -4,6 +4,8 @@ import { City } from "../model/city.model.js";
 import { Place } from "../model/place.model.js";
 import mongoose from "mongoose";
 
+
+// SuperAdmin - Create Place 
 export const createPlace = async (req, res) => {
   try {
     let {
@@ -17,7 +19,6 @@ export const createPlace = async (req, res) => {
       bestTimeToVisit,
     } = req.body;
 
-    //normalize text
     name = name?.trim().toLowerCase();
     category = category?.trim().toLowerCase();
     bestTimeToVisit = bestTimeToVisit?.trim();
@@ -31,7 +32,7 @@ export const createPlace = async (req, res) => {
         message: "Inavalid location format",
       });
     }
-    console.log(location);
+    // console.log(location);
 
     if (
       !name ||
@@ -40,7 +41,7 @@ export const createPlace = async (req, res) => {
       !category ||
       !timeRequired ||
       !entryfees ||
-      !isPopular ||
+      isPopular === undefined ||
       !bestTimeToVisit
     ) {
       return res.status(400).json({
@@ -57,7 +58,7 @@ export const createPlace = async (req, res) => {
         message: "wrong city id",
       });
     }
-    console.log(city);
+    // console.log(city);
 
     //verify place by city
     const existingPlace = await Place.findOne({
@@ -70,7 +71,7 @@ export const createPlace = async (req, res) => {
         message: "Place is already exits in this city ",
       });
     }
-    console.log(existingPlace);
+    // console.log(existingPlace);
 
     //privent location duplicate
     const exitinglocation = await Place.findOne({
@@ -87,6 +88,7 @@ export const createPlace = async (req, res) => {
     if (req.files?.length) {
       for (const file of req.files) {
         const result = await uploadCloudinary(file.path, "places");
+        console.log(result);
         imageUrl.push(result.secure_url);
         //unlink when upload to cloudnary
         try {
@@ -111,7 +113,7 @@ export const createPlace = async (req, res) => {
       images: imageUrl,
       location,
       status: "pending",
-      createdBy: req.user?._id,
+      createdBy: req.user?.id,
     });
     console.log(place);
 
@@ -121,6 +123,9 @@ export const createPlace = async (req, res) => {
       message: "place created successfully",
     });
   } catch (error) {
+    console.log("🔥 ERROR FULL:", error);
+    console.log("🔥 ERROR MESSAGE:", error.message);
+    console.log("🔥 ERROR STACK:", error.stack);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -128,6 +133,7 @@ export const createPlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Approve Place 
 export const approvePlace = async (req, res) => {
   try {
     const place = await Place.findById(req.params.id);
@@ -158,6 +164,7 @@ export const approvePlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Reject Place 
 export const rejectPlace = async (req, res) => {
   try {
     const place = await Place.findById(req.params.id);
@@ -180,12 +187,15 @@ export const rejectPlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Pending Place 
 export const pendingPlace = async (req, res) => {
   try {
     const place = await Place.find({ status: "pending" }).populate(
       "createdBy",
       "userName email role",
     );
+
+    console.log("Place: ", place);
 
     return res.status(200).json({
       success: true,
@@ -200,32 +210,61 @@ export const pendingPlace = async (req, res) => {
   }
 };
 
-export const getActivePlace = async (req, res) => {
+// SuperAdmin - Inactive Place
+export const inactivePlace = async (req, res) => {
   try {
-    const { cityId } = req.params;
-
-    if (!cityId) {
-      return res.status(400).json({
-        success: false,
-        message: "cityid not found",
-      });
-    }
-    if (!mongoose.Types.ObjectId.isValid(cityId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid city ID",
-      });
+    const placeId = req.params.id;
+    const place = await Place.findById(placeId);
+    if(!place){
+      return res.status(403).json({success: false, message: "place not found"})
     }
 
-    const place = await Place.find({
-      city: cityId,
-      status: "active",
-    }).populate("city", "name state");
+    place.status = "inactive"
+    place.approvedBy = null;
+    await place.save();
+
+    return res.status(200).json({success: true, message: "place inactive successfully"})
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+// SuperAdmin - Get All Place CityWise
+export const getPlacesCityWise = async (req, res) => {
+  try {
+    const places = await Place.aggregate([
+      {
+        $lookup: {
+          from: "cities", // collection name in MongoDB
+          localField: "city",
+          foreignField: "_id",
+          as: "cityDetails",
+        },
+      },
+      { $unwind: "$cityDetails" },
+
+      {
+        $group: {
+          _id: "$cityDetails._id",
+          cityName: { $first: "$cityDetails.name" },
+          places: { $push: "$$ROOT" },
+        },
+      },
+    ]);
+
+    if (!places.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No places found",
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      data: place,
-      message: "get Active place successfully",
+      data: places,
     });
   } catch (error) {
     return res.status(500).json({
@@ -235,6 +274,122 @@ export const getActivePlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Get Active Place CityWise
+export const getActivePlacesCityWise = async (req, res) => {
+  try {
+    const places = await Place.aggregate([
+      
+      // ✅ only active places
+      {
+        $match: { status: "active" }
+      },
+
+      // ✅ join city data
+      {
+        $lookup: {
+          from: "cities", // collection name (IMPORTANT ⚠️)
+          localField: "city",
+          foreignField: "_id",
+          as: "city"
+        }
+      },
+
+      // ✅ convert array → object
+      {
+        $unwind: "$city"
+      },
+
+      // ✅ group by city
+      {
+        $group: {
+          _id: "$city._id",
+          cityName: { $first: "$city.name" },
+          state: { $first: "$city.state" },
+
+          places: {
+            $push: {
+              _id: "$_id",
+              name: "$name",
+              category: "$category",
+              description: "$description",
+              images: "$images",
+              timeRequired: "$timeRequired",
+              entryfees: "$entryfees",
+              bestTimeToVisit: "$bestTimeToVisit",
+              location: "$location"
+            }
+          }
+        }
+      },
+
+      // ✅ optional sorting
+      {
+        $sort: { cityName: 1 }
+      }
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: places
+    });
+
+  } catch (error) {
+    console.log("ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// SuperAdmin - Get All Inactive Place CityWise 
+export const getInactivePlacesCityWise = async (req, res) => {
+  try {
+    const places = await Place.aggregate([
+      {
+        $match: { status: "inactive" }, // only inactive
+      },
+      {
+        $lookup: {
+          from: "cities",
+          localField: "city",
+          foreignField: "_id",
+          as: "cityData",
+        },
+      },
+      { $unwind: "$cityData" },
+
+      {
+        $group: {
+          _id: "$city",
+          cityName: { $first: "$cityData.name" },
+          places: { $push: "$$ROOT" },
+        },
+      },
+
+      {
+        $project: {
+          _id: 1,
+          cityName: 1,
+          places: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: places,
+      message: "Inactive places city-wise fetched successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// SuperAdmin - Get PlaceById
 export const getplacebyid = async (req, res) => {
   try {
     const { id } = req.params;
@@ -268,6 +423,7 @@ export const getplacebyid = async (req, res) => {
   }
 };
 
+// SuperAdmin - Update Place
 export const updatePlace = async (req, res) => {
   try {
     const { id } = req.params;
@@ -346,6 +502,7 @@ export const updatePlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Delete Place
 export const deletePlace = async (req, res) => {
   try {
     const { id } = req.params;
