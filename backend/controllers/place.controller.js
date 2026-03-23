@@ -5,6 +5,7 @@ import { Place } from "../model/place.model.js";
 import mongoose from "mongoose";
 
 
+// SuperAdmin - Create Place 
 export const createPlace = async (req, res) => {
   try {
     let {
@@ -132,6 +133,7 @@ export const createPlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Approve Place 
 export const approvePlace = async (req, res) => {
   try {
     const place = await Place.findById(req.params.id);
@@ -162,6 +164,7 @@ export const approvePlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Reject Place 
 export const rejectPlace = async (req, res) => {
   try {
     const place = await Place.findById(req.params.id);
@@ -184,6 +187,7 @@ export const rejectPlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Pending Place 
 export const pendingPlace = async (req, res) => {
   try {
     const place = await Place.find({ status: "pending" }).populate(
@@ -206,6 +210,29 @@ export const pendingPlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Inactive Place
+export const inactivePlace = async (req, res) => {
+  try {
+    const placeId = req.params.id;
+    const place = await Place.findById(placeId);
+    if(!place){
+      return res.status(403).json({success: false, message: "place not found"})
+    }
+
+    place.status = "inactive"
+    place.approvedBy = null;
+    await place.save();
+
+    return res.status(200).json({success: true, message: "place inactive successfully"})
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+// SuperAdmin - Get All Place CityWise
 export const getPlacesCityWise = async (req, res) => {
   try {
     const places = await Place.aggregate([
@@ -247,6 +274,7 @@ export const getPlacesCityWise = async (req, res) => {
   }
 };
 
+// SuperAdmin - Get Active Place CityWise
 export const getActivePlacesCityWise = async (req, res) => {
   try {
     const places = await Place.aggregate([
@@ -314,6 +342,54 @@ export const getActivePlacesCityWise = async (req, res) => {
   }
 };
 
+// SuperAdmin - Get All Inactive Place CityWise 
+export const getInactivePlacesCityWise = async (req, res) => {
+  try {
+    const places = await Place.aggregate([
+      {
+        $match: { status: "inactive" }, // only inactive
+      },
+      {
+        $lookup: {
+          from: "cities",
+          localField: "city",
+          foreignField: "_id",
+          as: "cityData",
+        },
+      },
+      { $unwind: "$cityData" },
+
+      {
+        $group: {
+          _id: "$city",
+          cityName: { $first: "$cityData.name" },
+          places: { $push: "$$ROOT" },
+        },
+      },
+
+      {
+        $project: {
+          _id: 1,
+          cityName: 1,
+          places: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: places,
+      message: "Inactive places city-wise fetched successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// SuperAdmin - Get PlaceById
 export const getplacebyid = async (req, res) => {
   try {
     const { id } = req.params;
@@ -347,6 +423,7 @@ export const getplacebyid = async (req, res) => {
   }
 };
 
+// SuperAdmin - Update Place
 export const updatePlace = async (req, res) => {
   try {
     const { id } = req.params;
@@ -425,6 +502,7 @@ export const updatePlace = async (req, res) => {
   }
 };
 
+// SuperAdmin - Delete Place
 export const deletePlace = async (req, res) => {
   try {
     const { id } = req.params;

@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getActivePlacesCityWise } from "../../../features/user/placeSlice";
+import {
+  getActivePlacesCityWise,
+  inactivePlace,
+} from "../../../features/user/placeSlice";
+import { Link } from "react-router-dom";
 
 function GetAllActivePlaceCityWise() {
   const dispatch = useDispatch();
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [activeCity, setActiveCity] = useState(null);
 
-  const { cityWisePlaces = [], loading } = useSelector(
-    (state) => state.place
-  );
+  const { cityWisePlaces = [], loading } = useSelector((state) => state.place);
+
+  const handelInactiveButton = (id) => {
+    dispatch(inactivePlace(id));
+    setSelectedPlace(null);
+  };
 
   useEffect(() => {
     dispatch(getActivePlacesCityWise());
@@ -24,7 +31,6 @@ function GetAllActivePlaceCityWise() {
 
   return (
     <div className="p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
-
       {/* HEADER */}
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white  px-3 py-5 rounded-2xl shadow-sm shadow-gray-500">
         Active Places City Wise 🌍
@@ -115,7 +121,6 @@ function GetAllActivePlaceCityWise() {
       {selectedPlace && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-[90%] md:w-150 max-h-[90vh] overflow-y-auto p-6 relative">
-
             {/* CLOSE */}
             <button
               onClick={() => setSelectedPlace(null)}
@@ -137,11 +142,21 @@ function GetAllActivePlaceCityWise() {
 
             {/* DETAILS */}
             <div className="space-y-2 text-gray-700 dark:text-gray-300">
-              <p><strong>Category:</strong> {selectedPlace.category}</p>
-              <p><strong>Description:</strong> {selectedPlace.description}</p>
-              <p><strong>Time Required:</strong> {selectedPlace.timeRequired}</p>
-              <p><strong>Entry Fees:</strong> ₹{selectedPlace.entryfees}</p>
-              <p><strong>Best Time:</strong> {selectedPlace.bestTimeToVisit}</p>
+              <p>
+                <strong>Category:</strong> {selectedPlace.category}
+              </p>
+              <p>
+                <strong>Description:</strong> {selectedPlace.description}
+              </p>
+              <p>
+                <strong>Time Required:</strong> {selectedPlace.timeRequired}
+              </p>
+              <p>
+                <strong>Entry Fees:</strong> ₹{selectedPlace.entryfees}
+              </p>
+              <p>
+                <strong>Best Time:</strong> {selectedPlace.bestTimeToVisit}
+              </p>
             </div>
 
             {/* EXTRA IMAGES */}
@@ -154,9 +169,23 @@ function GetAllActivePlaceCityWise() {
                 />
               ))}
             </div>
+            <div className="w-full flex p-2 items-center justify-end gap-3">
+              <Link
+                to={`/superAdmin/update-place-Details/${selectedPlace._id}`}
+                className="bg-blue-500 rounded-2xl px-2 py-1 hover:bg-blue-600 cursor-pointer"
+              >
+                Update
+              </Link>
+
+              <button
+                onClick={() => handelInactiveButton(selectedPlace._id)}
+                className="bg-red-500 rounded-2xl px-2 py-1 hover:bg-red-600 cursor-pointer"
+              >
+                Inactive
+              </button>
+            </div>
           </div>
-          <div>
-          </div>
+          <div></div>
         </div>
       )}
     </div>

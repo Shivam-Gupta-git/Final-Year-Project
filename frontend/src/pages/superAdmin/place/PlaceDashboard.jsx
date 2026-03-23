@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { FaCompass } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { FaCity } from "react-icons/fa";
+import { MdPlace } from "react-icons/md";
 
 function PlaceDashboard() {
   const { superAdmin } = useSelector((state) => state.superAdmin);
@@ -37,43 +37,55 @@ function PlaceDashboard() {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-      <Link
+        <Link
           to="/superAdmin/SuperAdminApprovealPlaceList"
           className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-md hover:shadow-xl hover:scale-105 transition p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
         >
-          <span className="text-3xl mb-2 bg-amber-400 p-2 rounded-sm text-white">
-            <FaCity />
+          <span className="text-3xl mb-2 bg-yellow-400 p-2 rounded-sm text-white">
+          <MdPlace />
           </span>
           <span className="font-semibold text-gray-700 dark:text-gray-100">
             Place Approval List
           </span>
         </Link>
 
-      <Link
+        <Link
           to="/superAdmin/get-placeCityWise"
           className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-md hover:shadow-xl hover:scale-105 transition p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
         >
-          <span className="text-3xl mb-2 bg-amber-400 p-2 rounded-sm text-white">
-            <FaCity />
+          <span className="text-3xl mb-2 bg-orange-400 p-2 rounded-sm text-white">
+          <MdPlace />
           </span>
           <span className="font-semibold text-gray-700 dark:text-gray-100">
             Show All Places
           </span>
         </Link>
 
-      <Link
+        <Link
           to="/superAdmin/get-all-active-placeCityWise"
           className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-md hover:shadow-xl hover:scale-105 transition p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
         >
-          <span className="text-3xl mb-2 bg-amber-400 p-2 rounded-sm text-white">
-            <FaCity />
+          <span className="text-3xl mb-2 bg-blue-400 p-2 rounded-sm text-white">
+          <MdPlace />
           </span>
           <span className="font-semibold text-gray-700 dark:text-gray-100">
             Show All Active Places
           </span>
         </Link>
-      </div>
 
+        <Link
+          to="/superAdmin/get-inactive-pLaceCityWise"
+          className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-md hover:shadow-xl hover:scale-105 transition p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
+        >
+          <span className="text-3xl mb-2 bg-gray-400 p-2 rounded-sm text-white">
+          <MdPlace />
+          </span>
+          <span className="font-semibold text-gray-700 dark:text-gray-100">
+            Show All Inactive Places
+          </span>
+        </Link>
+
+      </div>
     </div>
   );
 }
