@@ -38,7 +38,6 @@ import {
 } from "react-icons/md";
 import { getPublicActiveHotels } from "../../features/user/hotelSlice";
 import { getPublicRooms } from "../../features/user/roomSlice";
-
 import {
   addHotelReview,
   getHotelReviews,
@@ -49,10 +48,6 @@ import {
   getRoomAvailability,
   resetBookingState,
 } from "../../features/user/hotelBookingSlice";
-
-import { addHotelReview, getHotelReviews, resetReviewState } from "../../features/user/reviewSlice";
-import { bookRoom, getRoomAvailability } from "../../features/user/hotelBookingSlice";
-
 
 // ── Amenity icon map ──────────────────────────────────────────────────────────
 const AMENITY_MAP = {
@@ -424,16 +419,10 @@ const RoomImageSlider = ({ images }) => {
 };
 
 // ── Sticky Booking Widget ─────────────────────────────────────────────────────
-
 const BookingWidget = ({ hotel, onSelectRoom, selectedRoom }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { availability } = useSelector((s) => s.hotelBooking);
-
-const BookingWidget = ({ hotel, onSelectRoom, selectedRoom  }) => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch()
-
   const [checkIn, setCheckIn] = useState(getToday());
   const [checkOut, setCheckOut] = useState(getTomorrow());
   const [rooms, setRooms] = useState(1);
@@ -449,7 +438,6 @@ const BookingWidget = ({ hotel, onSelectRoom, selectedRoom  }) => {
   //     state: { hotel, checkIn, checkOut, rooms, guests, total: total + taxes },
   //   });
   // };
-
 
   const {
     loading: bookingLoading,
@@ -503,37 +491,6 @@ const BookingWidget = ({ hotel, onSelectRoom, selectedRoom  }) => {
   //     navigate("/my-bookings");
   //   }
   // }, [bookingSuccess]);
-
-  const { loading: bookingLoading, success: bookingSuccess, error: bookingError } = useSelector(s => s.hotelBooking);
-
-  const handleBook = () => {
-    if (!selectedRoom) {
-      alert("Please select a room first");
-      return;
-    }
-    dispatch(bookRoom({
-      hotelId: hotel._id,
-      roomType: selectedRoom._id,
-      bookedRooms: rooms,
-      checkIn,
-      checkOut,
-      guests,
-      totalAmount: total + taxes,
-    }));
-  };
-
-  useEffect(() => {
-  if (hotel?._id && checkIn && checkOut) {
-    dispatch(getRoomAvailability({ hotelId: hotel._id, checkIn, checkOut }));
-  }
-}, [checkIn, checkOut, hotel?._id]);
-
-  useEffect(() => {
-    if (bookingSuccess) {
-      navigate("/my-bookings"); 
-    }
-  }, [bookingSuccess]);
-
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 overflow-hidden lg:sticky lg:top-24">
@@ -702,17 +659,11 @@ const ReviewCard = ({ review }) => (
 const AddReviewForm = ({ hotelId }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const { submitLoading, submitSuccess, submitError } = useSelector(
     (s) => s.review,
   );
   const { user } = useSelector((s) => s.user);
   const [rating, setRating] = useState(0);
-
-  const { submitLoading, submitSuccess, submitError } = useSelector(s => s.review);
-  const { user } = useSelector(s => s.user);
-  const [rating, setRating]   = useState(0);
-
   const [comment, setComment] = useState("");
   const [hovered, setHovered] = useState(0);
 
@@ -725,7 +676,6 @@ const AddReviewForm = ({ hotelId }) => {
   }, [submitSuccess, dispatch]);
 
   // Not logged in
-
   if (!user)
     return (
       <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
@@ -741,32 +691,13 @@ const AddReviewForm = ({ hotelId }) => {
       </div>
     );
 
-  if (!user) return (
-    <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
-      <p className="text-sm text-slate-500">
-        <button
-          onClick={() => navigate("/login")}
-          className="text-[#1a3a6b] font-semibold hover:underline"
-        >
-          Login
-        </button>{" "}
-        to write a review
-      </p>
-    </div>
-  );
-
-
   return (
     <div className="mt-5 border-t border-slate-100 pt-5">
       <h3 className="text-sm font-bold text-slate-800 mb-3">Write a Review</h3>
 
       {/* Star selector */}
       <div className="flex items-center gap-1 mb-3">
-
         {[1, 2, 3, 4, 5].map((star) => (
-
-        {[1, 2, 3, 4, 5].map(star => (
-
           <button
             key={star}
             onMouseEnter={() => setHovered(star)}
@@ -774,7 +705,6 @@ const AddReviewForm = ({ hotelId }) => {
             onClick={() => setRating(star)}
             className="text-2xl transition-transform hover:scale-110"
           >
-
             <FaStar
               className={
                 star <= (hovered || rating)
@@ -782,9 +712,6 @@ const AddReviewForm = ({ hotelId }) => {
                   : "text-slate-200"
               }
             />
-
-            <FaStar className={star <= (hovered || rating) ? "text-amber-400" : "text-slate-200"} />
-
           </button>
         ))}
         {rating > 0 && (
@@ -794,11 +721,7 @@ const AddReviewForm = ({ hotelId }) => {
 
       <textarea
         value={comment}
-
         onChange={(e) => setComment(e.target.value)}
-
-        onChange={e => setComment(e.target.value)}
-
         placeholder="Share your experience..."
         rows={3}
         className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20 resize-none"
@@ -817,16 +740,10 @@ const AddReviewForm = ({ hotelId }) => {
         disabled={!rating || !comment.trim() || submitLoading}
         onClick={() => dispatch(addHotelReview({ hotelId, rating, comment }))}
         className={`mt-3 px-5 py-2 rounded-xl text-white text-xs font-bold transition-all
-
           ${
             !rating || !comment.trim() || submitLoading
               ? "bg-slate-300 cursor-not-allowed"
               : "bg-[#1a3a6b] hover:bg-[#14305a] active:scale-95"
-
-          ${!rating || !comment.trim() || submitLoading
-            ? "bg-slate-300 cursor-not-allowed"
-            : "bg-[#1a3a6b] hover:bg-[#14305a] active:scale-95"
-
           }`}
       >
         {submitLoading ? "Submitting..." : "Submit Review"}
@@ -857,7 +774,7 @@ const HotelDetailPage = () => {
     Overview: useRef(null),
     Amenities: useRef(null),
     Rooms: useRef(null),
-    Reviews: useRef(null),  
+    Reviews: useRef(null),
     "Location & Policies": useRef(null),
   };
 
@@ -889,15 +806,9 @@ const HotelDetailPage = () => {
   };
 
   const handleSelectRoom = (room) => {
-
     setSelectedRoom(room); // ← ADD
     bookingRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
-
-  setSelectedRoom(room);  // ← ADD
-  bookingRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-};
-
 
   // Open Google Maps with hotel coordinates or address
   const openGoogleMaps = () => {
@@ -1244,11 +1155,8 @@ const HotelDetailPage = () => {
                                 Sold Out
                               </span>
                             )}
-
+                          </div>
                           <div className="flex flex-row sm:flex-col items-end sm:items-end justify-between sm:justify-start gap-2 shrink-0 w-full sm:w-auto">
-
-                          <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 shrink-0">
-
                             <div className="sm:text-right">
                               <p className="text-xl font-extrabold text-slate-900">
                                 ₹{room.pricePerNight.toLocaleString()}
@@ -1259,11 +1167,8 @@ const HotelDetailPage = () => {
                             </div>
                             <button
                               disabled={availableRooms === 0}
-
+                              onClick={() => handleSelectRoom(room)}
                               className={`text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all min-w-27.5
-
-                              className={`text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all
-
                   ${
                     availableRooms === 0
                       ? "bg-slate-400 cursor-not-allowed"
@@ -1433,24 +1338,18 @@ const HotelDetailPage = () => {
                 <FaEnvelope className="text-[#1a3a6b] text-xs" /> Email Hotel
               </a>
             </div>
-
           </section>
         </div>
 
         {/* RIGHT — booking widget */}
         <div ref={bookingRef} className="w-full lg:w-80 shrink-0">
-
           <BookingWidget
             hotel={hotel}
             onSelectRoom={handleSelectRoom}
             selectedRoom={selectedRoom}
           />
-
-          <BookingWidget hotel={hotel} onSelectRoom={handleSelectRoom} selectedRoom={selectedRoom} />
-
         </div>
       </div>
-
     </div>
   );
 };

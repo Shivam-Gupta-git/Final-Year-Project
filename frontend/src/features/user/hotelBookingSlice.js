@@ -7,13 +7,15 @@ export const getRoomAvailability = createAsyncThunk(
   async ({ hotelId, checkIn, checkOut }, thunkAPI) => {
     try {
       const response = await apiClient.get(
-        `/api/hotelBooking/availability/${hotelId}?checkIn=${checkIn}&checkOut=${checkOut}`
+        `/api/hotelBooking/availability/${hotelId}?checkIn=${checkIn}&checkOut=${checkOut}`,
       );
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed");
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed",
+      );
     }
-  }
+  },
 );
 
 /* ------- book room ------- */
@@ -22,14 +24,20 @@ export const bookRoom = createAsyncThunk(
   async (bookingData, thunkAPI) => {
     try {
       const token = localStorage.getItem("userToken"); // or adminToken if admin
-      const response = await apiClient.post("/api/hotelBooking/bookRoom", bookingData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data; 
+      const response = await apiClient.post(
+        "/api/hotelBooking/bookRoom",
+        bookingData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || "Booking failed");
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Booking failed",
+      );
     }
-  }
+  },
 );
 
 /* ------- getBookingsByHotel ------- */
@@ -46,7 +54,7 @@ export const getBookingsByHotel = createAsyncThunk(
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-  }
+  },
 );
 
 /* ------- updateBookingStatus ------- */
@@ -61,14 +69,14 @@ export const updateBookingStatus = createAsyncThunk(
         { bookingStatus: status },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       return res.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-  }
+  },
 );
 
 /* ------- getMyBookings ------- */
@@ -86,7 +94,7 @@ export const getMyBookings = createAsyncThunk(
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-  }
+  },
 );
 
 /* ------- cancelBooking ------- */
@@ -100,14 +108,14 @@ export const cancelBooking = createAsyncThunk(
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       return res.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message);
     }
-  }
+  },
 );
 
 const hotelBookingSlice = createSlice({
@@ -143,7 +151,7 @@ const hotelBookingSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-    
+
     /* ------- book room ------- */
     builder
       .addCase(bookRoom.pending, (state) => {
@@ -153,6 +161,13 @@ const hotelBookingSlice = createSlice({
       })
       .addCase(bookRoom.fulfilled, (state, action) => {
         state.loading = false;
+
+        if (!action.payload || !action.payload.booking) {
+          state.success = false;
+          state.error = "Invalid booking response";
+          return;
+        }
+
         state.success = true;
         state.lastBooking = action.payload.booking;
         state.hotelBookings.push(action.payload.booking);
@@ -160,10 +175,10 @@ const hotelBookingSlice = createSlice({
       .addCase(bookRoom.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      }); 
-  
-  /* ------- getBookingsByHotel ------- */
-  builder
+      });
+
+    /* ------- getBookingsByHotel ------- */
+    builder
       .addCase(getBookingsByHotel.pending, (state) => {
         state.loading = true;
       })
@@ -174,47 +189,43 @@ const hotelBookingSlice = createSlice({
       .addCase(getBookingsByHotel.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      }) 
-      
-  /* ------- updateBookingStatus ------- */
-  builder
-  .addCase(updateBookingStatus.fulfilled, (state, action) => {
-    const index = state.hotelBookings.findIndex(
-      (b) => b._id === action.payload._id
-    );
-    if (index !== -1) {
-      state.hotelBookings[index] = action.payload;
-    }
-  });  
-  
-  /* ------- getMyBookings ------- */
-  builder
-  .addCase(getMyBookings.pending, (state) => {
-    state.loading = true;
-  })
-  .addCase(getMyBookings.fulfilled, (state, action) => {
-    state.loading = false;
-    state.hotelBookings = action.payload;
-  })
-  .addCase(getMyBookings.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  })
+      });
 
-  /* ------- cancelBooking ------- */
-  builder
-  .addCase(cancelBooking.fulfilled, (state, action) => {
-    const index = state.bookings.findIndex(
-      (b) => b._id === action.payload._id
-    );
-    if (index !== -1) {
-      state.bookings[index] = action.payload;
-    }
-  });
+    /* ------- updateBookingStatus ------- */
+    builder.addCase(updateBookingStatus.fulfilled, (state, action) => {
+      const index = state.hotelBookings.findIndex(
+        (b) => b._id === action.payload._id,
+      );
+      if (index !== -1) {
+        state.hotelBookings[index] = action.payload;
+      }
+    });
 
+    /* ------- getMyBookings ------- */
+    builder
+      .addCase(getMyBookings.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getMyBookings.fulfilled, (state, action) => {
+        state.loading = false;
+        state.hotelBookings = action.payload;
+      })
+      .addCase(getMyBookings.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
+    /* ------- cancelBooking ------- */
+    builder.addCase(cancelBooking.fulfilled, (state, action) => {
+      const index = state.bookings.findIndex(
+        (b) => b._id === action.payload._id,
+      );
+      if (index !== -1) {
+        state.bookings[index] = action.payload;
+      }
+    });
   },
-})
+});
 
 export const { resetBookingState } = hotelBookingSlice.actions;
-export default hotelBookingSlice.reducer
+export default hotelBookingSlice.reducer;

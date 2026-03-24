@@ -53,6 +53,7 @@ import AdminsDetails from "./pages/superAdmin/AdminsDetails";
 import AdminItemsDetailsByAdminId from "./pages/superAdmin/AdminItemsDetailsByAdminId";
 import HotelBookingDashboard from "./pages/admin/HotelBooking/HotelBookingDashboard";
 import BookedHotels from "./pages/admin/HotelBooking/BookedHotels";
+import Booking from "./pages/auth/Booking";
 import PlaceDashboard from "./pages/superAdmin/place/PlaceDashboard";
 import AddPlaceDetails from "./pages/superAdmin/place/AddPlaceDetails";
 import SuperAdminApprovealPlaceList from "./pages/superAdmin/place/SuperAdminApprovealPlaceList";
@@ -60,6 +61,7 @@ import GetPlaceCityWise from "./pages/superAdmin/place/GetPlaceCityWise";
 import GetAllActivePlaceCityWise from "./pages/superAdmin/place/GetAllActivePlaceCityWise";
 import GetInactivePlaceCityWise from "./pages/superAdmin/place/GetInactivePlaceCityWise";
 import UpdatePlaceDetails from "./pages/superAdmin/place/UpdatePlaceDetails";
+
 
 function App() {
   return (
@@ -69,6 +71,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="hotels" element={<HotelPage />} />
         <Route path="/hotels/:id" element={<HotelDetailPage />} />
+        <Route path="/my-booking" element={<Booking />} />
         <Route path="/city/:id" element={<CityDetails />} />
         <Route path="/signUp" element={<Register />} />
         <Route path="/verifyEmail" element={<VerifyEmail />} />

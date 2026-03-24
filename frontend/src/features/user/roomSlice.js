@@ -288,11 +288,7 @@ const roomSlice = createSlice({
       })
       .addCase(getPublicRooms.fulfilled, (state, action) => {
         state.loading = false;
-
         state.publicRooms = action.payload ?? [];
-
-        state.publicRooms = action.payload.data ?? [];
-
       })
       .addCase(getPublicRooms.rejected, (state, action) => {
         state.loading = false;
