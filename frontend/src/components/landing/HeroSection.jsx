@@ -31,7 +31,7 @@ function HeroSection() {
       query = `${formData.city.trim()} places`;
       route = "/places";
     } else if (activeTab === "cities") {
-      query = `${formData.city.trim()}`; // ✅ CITIES tab now works!
+      query = `${formData.city.trim()}`;
       route = "/cities";
     } else if (activeTab === "restaurants") {
       query = `${formData.city.trim()} restaurants`;
@@ -46,7 +46,7 @@ function HeroSection() {
     dispatch(smartSearch(query))
       .unwrap()
       .then((res) => {
-        navigate(route); 
+        navigate(route);
       })
       .catch((err) => {
         console.error("API ERROR:", err);
@@ -84,7 +84,7 @@ function HeroSection() {
   }, []);
 
   return (
-    <section className="relative w-full h-full overflow-hidden">
+    <section className="relative w-full min-h-screen overflow-hidden z-10">
       {/* Sliding Background Images */}
       <div className="absolute inset-0">
         {images.map((image, index) => (
@@ -100,14 +100,14 @@ function HeroSection() {
         <div
           className={`absolute inset-0 transition-all duration-700 ${
             activeTab === "cities"
-              ? "bg-gradient-to-b from-orange-500/20 via-amber-500/10 to-transparent"
+              ? "bg-linear-to-b from-orange-500/20 via-amber-500/10 to-transparent"
               : activeTab === "hotels"
-                ? "bg-gradient-to-b from-orange-500/20 via-amber-500/10 to-transparent"
+                ? "bg-linear-to-b from-orange-500/20 via-amber-500/10 to-transparent"
                 : activeTab === "places"
-                  ? "bg-gradient-to-b from-emerald-500/20 via-green-500/10 to-transparent"
+                  ? "bg-linear-to-b from-emerald-500/20 via-green-500/10 to-transparent"
                   : activeTab === "restaurants"
-                    ? "bg-gradient-to-b from-rose-500/20 via-pink-500/10 to-transparent"
-                    : "bg-gradient-to-b from-blue-500/20 via-indigo-500/10 to-transparent"
+                    ? "bg-linear-to-b from-rose-500/20 via-pink-500/10 to-transparent"
+                    : "bg-linear-to-b from-blue-500/20 via-indigo-500/10 to-transparent"
           }`}
         />
         <div className="absolute inset-0 bg-black/50 lg:bg-black/40" />
@@ -130,13 +130,13 @@ function HeroSection() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-30 flex items-center justify-center min-h-screen px-4 py-16 sm:px-6 lg:px-8">
-        <div className="w-full max-w-5xl mx-auto backdrop-blur-3xl bg-white/95 border border-white/20 shadow-2xl rounded-3xl md:rounded-[2.5rem] p-8 md:p-12 lg:p-8">
+      <div className="relative z-30 flex items-center justify-center min-h-screen px-4 py-20 sm:px-6 lg:px-8">
+        <div className="w-full  max-w-5xl mx-auto backdrop-blur-3xl bg-white/95 border border-white/20 shadow-2xl rounded-3xl md:rounded-[2.5rem] p-8 md:p-12 lg:p-8">
           {/* Icon Navigation Tabs - Like Booking.com */}
           <div className="flex flex-wrap justify-center lg:justify-start gap-4 pb-8 mb-10 border-b border-gray-200/50">
             {[
-              { key: "cities", label: "Cities", icon: "🏙️" },
-              { key: "hotels", label: "Hotels", icon: "🏨" },
+              { key: "cities", label: "Cities", icon: "🏙️"},
+              { key: "hotels", label: "Hotels", icon: "🏨"},
               { key: "places", label: "Places", icon: "📍" },
               { key: "restaurants", label: "Restaurants", icon: "🍽️" },
               { key: "travel", label: "Travel", icon: "✈️" },
@@ -145,21 +145,25 @@ function HeroSection() {
                 key={key}
                 onClick={() => {
                   setActiveTab(key);
-                  if (key === "cities") {
+                  const sectionMap = {
+                    cities: "popular-cities",
+                    hotels: "why-choose-us",
+                    places: "why-choose-us",
+                    restaurants: "why-choose-us",
+                    travel: "why-choose-us",
+                  };
+
+                  const sectionId = sectionMap[key];
+
+                  if (sectionId && document.getElementById(sectionId)) {
                     document
-                      .getElementById("popular-cities")
+                      .getElementById(sectionId)
                       ?.scrollIntoView({ behavior: "smooth" });
                   }
-                  if (key === "hotels") {
-                    navigate("/hotels");
-                  }
-                  if (key === "places") navigate("/places");
-                  if (key === "restaurants") navigate("/restaurants");
-                  if (key === "travel") navigate("/travel");
                 }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl font-semibold transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:-translate-y-1 border-2 group min-w-[80px] ${
+                className={`flex flex-col items-center gap-2 p-4 rounded-2xl font-semibold transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:-translate-y-1 border-2 group min-w-20 ${
                   activeTab === key
-                    ? "bg-gradient-to-r from-white to-gray-50 text-orange-600 border-orange-200 shadow-orange-200/50"
+                    ? "bg-linear-to-r from-white to-gray-50 text-orange-600 border-orange-200 shadow-orange-200/50"
                     : "bg-white/80 text-gray-700 border-gray-200/50 hover:border-gray-300 hover:bg-white backdrop-blur-sm"
                 }`}
               >
@@ -190,7 +194,7 @@ function HeroSection() {
                   placeholder="Enter city or destination"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full border-2 border-gray-200 rounded-3xl p-5 pl-14 pr-12 text-lg focus:border-blue-400 focus:ring-4 focus:ring-blue-100/50 outline-none transition-all duration-300 bg-gradient-to-r from-white via-white/90 to-gray-50/50 hover:border-gray-300 hover:shadow-md shadow-sm"
+                  className="w-full border-2 border-gray-200 rounded-3xl p-5 pl-14 pr-12 text-lg focus:border-blue-400 focus:ring-4 focus:ring-blue-100/50 outline-none transition-all duration-300 bg-linear-to-r from-white via-white/90 to-gray-50/50 hover:border-gray-300 hover:shadow-md shadow-sm"
                 />
                 <svg
                   className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400 group-hover:text-gray-500 transition-colors"
@@ -222,7 +226,7 @@ function HeroSection() {
                   name="checkIn"
                   value={formData.checkIn}
                   onChange={handleChange}
-                  className="w-full border-2 border-gray-200 rounded-3xl p-5 pl-14 pr-4 text-lg focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100/50 outline-none transition-all duration-300 bg-gradient-to-r from-white via-white/90 to-gray-50/50 hover:border-gray-300 hover:shadow-md shadow-sm"
+                  className="w-full border-2 border-gray-200 rounded-3xl p-5 pl-14 pr-4 text-lg focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100/50 outline-none transition-all duration-300 bg-linear-to-r from-white via-white/90 to-gray-50/50 hover:border-gray-300 hover:shadow-md shadow-sm"
                 />
                 <svg
                   className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400"
@@ -251,7 +255,7 @@ function HeroSection() {
                   name="checkOut"
                   value={formData.checkOut}
                   onChange={handleChange}
-                  className="w-full border-2 border-gray-200 rounded-3xl p-5 pl-14 pr-4 text-lg focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100/50 outline-none transition-all duration-300 bg-gradient-to-r from-white via-white/90 to-gray-50/50 hover:border-gray-300 hover:shadow-md shadow-sm"
+                  className="w-full border-2 border-gray-200 rounded-3xl p-5 pl-14 pr-4 text-lg focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100/50 outline-none transition-all duration-300 bg-linear-to-r from-white via-white/90 to-gray-50/50 hover:border-gray-300 hover:shadow-md shadow-sm"
                 />
                 <svg
                   className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400"
@@ -274,7 +278,7 @@ function HeroSection() {
           <div className="flex justify-center mt-10 lg:mt-15">
             <button
               onClick={handleSearch}
-              className="group relative bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:via-amber-600 hover:to-orange-700 text-white px-20 py-7 rounded-3xl font-black text-xl shadow-2xl hover:shadow-3xl hover:-translate-y-2 transition-all duration-500 overflow-hidden ring-4 ring-orange-200/30 hover:ring-orange-300/50"
+              className="group relative bg-linear-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:via-amber-600 hover:to-orange-700 text-white px-20 py-7 rounded-3xl font-black text-xl shadow-2xl hover:shadow-3xl hover:-translate-y-2 transition-all duration-500 overflow-hidden ring-4 ring-orange-200/30 hover:ring-orange-300/50"
             >
               <span className="flex items-center gap-3 relative z-10">
                 🔍 Start Your Adventure
@@ -292,7 +296,7 @@ function HeroSection() {
                   />
                 </svg>
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-linear-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
           </div>
         </div>
