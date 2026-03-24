@@ -10,7 +10,7 @@ const roomRouter = express.Router()
 roomRouter.post(
   "/create-room",
   isAuthenticated,
-  authorize("admin"),
+  authorize("admin", "super_admin"),
   upload.array("images", 5),
   createRoom
 );
@@ -18,7 +18,7 @@ roomRouter.post(
 roomRouter.get(
   "/admin/rooms/:hotelId",
   isAuthenticated,
-  authorize("admin"),
+  authorize("admin", "super_admin"),
   getAllRoomsByID
 );
 
@@ -27,19 +27,29 @@ roomRouter.get("/public/:hotelId", getPublicRoomsByHotel)
 roomRouter.get(
   "/single-room/:roomId",
   isAuthenticated,
-  authorize("admin"),
+  authorize("admin", "super_admin"),
   getSingleRoom
 );
 
 roomRouter.put(
   "/update-room/:roomId",
   isAuthenticated,
-  authorize("admin"),
+  authorize("admin", "super_admin"),
   upload.array("images", 5),
   updateRoom
 );
 
-roomRouter.patch("/active-room/:roomId", isAuthenticated, authorize("admin"), activeRoom);
-roomRouter.patch("/inactive-room/:roomId", isAuthenticated, authorize("admin"), inactiveRoom);
+roomRouter.patch(
+  "/active-room/:roomId",
+  isAuthenticated,
+  authorize("admin", "super_admin"),
+  activeRoom
+);
+roomRouter.patch(
+  "/inactive-room/:roomId",
+  isAuthenticated,
+  authorize("admin", "super_admin"),
+  inactiveRoom
+);
 
 export default roomRouter

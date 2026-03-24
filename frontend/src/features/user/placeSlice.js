@@ -9,6 +9,12 @@ const initialState = {
   loading: false,
   error: null,
   success: false,
+
+//  AI STATE
+  aiPlan: [],
+  planHistory: [],
+  aiLoading: false,
+  aiError: null,
 };
 
 /* -------- Create Place -------- */
@@ -236,11 +242,47 @@ export const updatePlace = createAsyncThunk(
   }
 );
 
+/* ------ generateTravelPlan ------- */
+export const generatePlan = createAsyncThunk(
+  "place/generatePlan",
+  async (data, thunkAPI) => {
+    try {
+      const response = await apiClient.post("/api/place/generate-plan", data); 
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message);
+    }
+  }
+);
+
 
 const placeSlice = createSlice({
   name: "place",
   initialState,
-  reducers: {},
+  reducers: {
+        // save AI plan and history
+        setAiPlan: (state, action) => {
+          state.aiPlan = action.payload;
+          // save in localStorage
+          let history = JSON.parse(localStorage.getItem("planHistory")) || [];
+          history.unshift({ id: Date.now(), plan: action.payload });
+          history = history.slice(0, 10); // keep last 10
+          localStorage.setItem("planHistory", JSON.stringify(history));
+          state.planHistory = history;
+          localStorage.setItem("lastAiPlan", JSON.stringify(action.payload));
+        },
+    
+        // load history from localStorage
+        loadPlanHistory: (state) => {
+          const history = JSON.parse(localStorage.getItem("planHistory")) || [];
+          state.planHistory = history;
+        },
+    
+        // load a plan into aiPlan
+        loadAiPlan: (state, action) => {
+          state.aiPlan = action.payload;
+        },
+  },
 
   extraReducers: (builder) => {
     /* -------- Create Place -------- */
@@ -433,8 +475,36 @@ const placeSlice = createSlice({
           state.loading = false;
           state.error = action.payload;
           state.success = false;
-        });  
+        }); 
+    
+    /* ------ generateTravelPlan ------- */
+    builder
+    .addCase(generatePlan.pending, (state) => {
+      state.aiLoading = true;
+      state.aiError = null;
+      state.aiPlan = null;
+    })
+  
+    .addCase(generatePlan.fulfilled, (state, action) => {
+      state.aiLoading = false;
+      state.aiPlan = action.payload; // ✅ store AI result
+
+       // also save in localStorage using setAiPlan logic
+       let history = JSON.parse(localStorage.getItem("planHistory")) || [];
+       history.unshift({ id: Date.now(), plan: action.payload });
+       history = history.slice(0, 10);
+       localStorage.setItem("planHistory", JSON.stringify(history));
+       state.planHistory = history;
+       localStorage.setItem("lastAiPlan", JSON.stringify(action.payload));
+    })
+  
+    .addCase(generatePlan.rejected, (state, action) => {
+      state.aiLoading = false;
+      state.aiError = action.payload;
+    }); 
+       
   },
 });
 
+export const { setAiPlan, loadPlanHistory, loadAiPlan } = placeSlice.actions;
 export default placeSlice.reducer;

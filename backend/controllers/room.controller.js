@@ -116,7 +116,7 @@ export const createRoom = async (req, res) => {
       amenities: amenitiesArray,
       description,
       images: imageUrls,
-      status: "active",
+      status: "pending",
       createdBy: req.user.id,
     });
 

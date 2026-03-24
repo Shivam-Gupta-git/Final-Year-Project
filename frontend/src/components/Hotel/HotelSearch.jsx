@@ -116,18 +116,7 @@ const HeroSearch = () => {
   const [allCities, setAllCities] = useState([]);
 
   // Load cities once on mount
-  // useEffect(() => {
-  //   apiClient
-  //     .get("/api/city/active-cities")
-  //     .then((res) => {
-  //       const names = (res.data?.data || [])
-  //         .map((c) => c.name)
-  //         .filter(Boolean)
-  //         .sort();
-  //       setAllCities(names);
-  //     })
-  //     .catch(() => {});
-  // }, []);
+  
 
   const debouncedCity = useDebounce(searchData.city, 200);
 

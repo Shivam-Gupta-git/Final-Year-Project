@@ -3,9 +3,10 @@ import { uploadCloudinary } from "../config/cloudinary.config.js";
 import { City } from "../model/city.model.js";
 import { Place } from "../model/place.model.js";
 import mongoose from "mongoose";
+import { Hotel } from "../model/hotel.model.js";
+import { Room } from "../model/room.model.js";
 
-
-// SuperAdmin - Create Place 
+// SuperAdmin - Create Place
 export const createPlace = async (req, res) => {
   try {
     let {
@@ -133,13 +134,11 @@ export const createPlace = async (req, res) => {
   }
 };
 
-// SuperAdmin - Approve Place 
+// SuperAdmin - Approve Place
 export const approvePlace = async (req, res) => {
   try {
     const place = await Place.findById(req.params.id);
     console.log(place);
-
-    
 
     if (!place) {
       return res.status(400).json({
@@ -164,12 +163,11 @@ export const approvePlace = async (req, res) => {
   }
 };
 
-// SuperAdmin - Reject Place 
+// SuperAdmin - Reject Place
 export const rejectPlace = async (req, res) => {
   try {
     const place = await Place.findById(req.params.id);
 
-    
     if (!place) {
       return res.status(404).json({ message: "place not found" });
     }
@@ -187,12 +185,12 @@ export const rejectPlace = async (req, res) => {
   }
 };
 
-// SuperAdmin - Pending Place 
+// SuperAdmin - Pending Place
 export const pendingPlace = async (req, res) => {
   try {
     const place = await Place.find({ status: "pending" }).populate(
       "createdBy",
-      "userName email role",
+      "userName email role"
     );
 
     console.log("Place: ", place);
@@ -215,22 +213,26 @@ export const inactivePlace = async (req, res) => {
   try {
     const placeId = req.params.id;
     const place = await Place.findById(placeId);
-    if(!place){
-      return res.status(403).json({success: false, message: "place not found"})
+    if (!place) {
+      return res
+        .status(403)
+        .json({ success: false, message: "place not found" });
     }
 
-    place.status = "inactive"
+    place.status = "inactive";
     place.approvedBy = null;
     await place.save();
 
-    return res.status(200).json({success: true, message: "place inactive successfully"})
+    return res
+      .status(200)
+      .json({ success: true, message: "place inactive successfully" });
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
-}
+};
 
 // SuperAdmin - Get All Place CityWise
 export const getPlacesCityWise = async (req, res) => {
@@ -278,10 +280,9 @@ export const getPlacesCityWise = async (req, res) => {
 export const getActivePlacesCityWise = async (req, res) => {
   try {
     const places = await Place.aggregate([
-      
       // ✅ only active places
       {
-        $match: { status: "active" }
+        $match: { status: "active" },
       },
 
       // ✅ join city data
@@ -290,13 +291,13 @@ export const getActivePlacesCityWise = async (req, res) => {
           from: "cities", // collection name (IMPORTANT ⚠️)
           localField: "city",
           foreignField: "_id",
-          as: "city"
-        }
+          as: "city",
+        },
       },
 
       // ✅ convert array → object
       {
-        $unwind: "$city"
+        $unwind: "$city",
       },
 
       // ✅ group by city
@@ -316,33 +317,32 @@ export const getActivePlacesCityWise = async (req, res) => {
               timeRequired: "$timeRequired",
               entryfees: "$entryfees",
               bestTimeToVisit: "$bestTimeToVisit",
-              location: "$location"
-            }
-          }
-        }
+              location: "$location",
+            },
+          },
+        },
       },
 
       // ✅ optional sorting
       {
-        $sort: { cityName: 1 }
-      }
+        $sort: { cityName: 1 },
+      },
     ]);
 
     return res.status(200).json({
       success: true,
-      data: places
+      data: places,
     });
-
   } catch (error) {
     console.log("ERROR:", error);
     return res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
 
-// SuperAdmin - Get All Inactive Place CityWise 
+// SuperAdmin - Get All Inactive Place CityWise
 export const getInactivePlacesCityWise = async (req, res) => {
   try {
     const places = await Place.aggregate([
@@ -528,6 +528,123 @@ export const deletePlace = async (req, res) => {
       message: "delete successfully",
     });
   } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Public - generateTravelPlan
+export const generateTravelPlan = async (req, res) => {
+  try {
+    const { cityId, budget, days } = req.body;
+
+    if (!cityId || !budget || !days) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+
+    // 1️⃣ Fetch active places, hotels, restaurants
+    const places = await Place.find({
+      city: cityId,
+      status: "active",
+      entryfees: { $lte: budget },
+    });
+
+    const hotels = await Hotel.find({
+      city: cityId,
+      status: "active",
+    });
+
+    const rooms = await Room.find({
+      status: "active",
+      pricePerNight: { $lte: budget },
+    });
+
+    // const restaurants = await Restaurant.find({
+    //   city: cityId,
+    //   status: "active",
+    //   avgCost: { $lte: budget },
+    // });
+
+    if (!places.length && !hotels.length) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No options found in this city" });
+    }
+
+    // 2️⃣ Sort by priority/ratings
+    const sortedPlaces = places.sort((a, b) => b.priorityScore - a.priorityScore);
+
+    // Map hotels with cheapest room
+    const hotelsWithCheapestRoom = await Promise.all(
+      hotels.map(async (hotel) => {
+        const hotelRooms = rooms.filter((r) => r.hotelId.toString() === hotel._id.toString() && r.pricePerNight <= budget);
+        if (!hotelRooms.length) return null;
+        const cheapestRoom = hotelRooms.reduce((a, b) => (a.pricePerNight < b.pricePerNight ? a : b));
+        return { ...hotel.toObject(), cheapestRoom };
+      })
+    );
+
+    const filteredHotels = hotelsWithCheapestRoom.filter(Boolean);
+
+    const sortedHotels = filteredHotels.sort((a, b) => {
+      const scoreA = 1 / (a.cheapestRoom.pricePerNight || 1) + (a.rating || 0);
+      const scoreB = 1 / (b.cheapestRoom.pricePerNight || 1) + (b.rating || 0);
+      return scoreB - scoreA; // descending
+    });
+
+    // const sortedRestaurants = restaurants.sort((a, b) => b.rating - a.rating);
+
+    // 3️⃣ Allocate per day
+    let totalBudget = budget;
+    let plan = [];
+    let hoursPerDay = 8;
+    let currentDay = 1;
+    let usedHours = 0;
+
+    for (let place of sortedPlaces) {
+      // Skip if budget too low
+      if (totalBudget < place.avgCost) continue;
+
+      // Check day limit
+      if (usedHours + place.visitDurationHours > hoursPerDay) {
+        currentDay++;
+        usedHours = 0;
+      }
+      if (currentDay > days) break;
+
+      // Pick hotel and restaurant for the day
+      const hotel = sortedHotels.find((h) => h.cheapestRoom.pricePerNight <= totalBudget);
+      // const restaurant = sortedRestaurants.find((r) => r.avgCost <= totalBudget);
+
+      // Push to plan
+      plan.push({
+        day: currentDay,
+        places: [place],
+        hotels: hotel ? [hotel] : [],
+        // restaurants: restaurant ? [restaurant] : [],
+        // travel: [], // optional: add travel distance objects here
+      });
+
+      // Deduct budget
+      totalBudget -=
+        place.avgCost +
+        (hotel?.cheapestRoom.pricePerNight || 0) 
+        // + (restaurant?.avgCost || 0);
+
+      usedHours += place.visitDurationHours;
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: plan,
+      remainingBudget: totalBudget,
+    });
+  } catch (error) {
+    console.error("Error generating travel plan:", error.message);
     return res.status(500).json({
       success: false,
       message: error.message,

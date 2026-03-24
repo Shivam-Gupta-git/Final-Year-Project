@@ -92,6 +92,18 @@ const placeSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    avgCost: {
+      type: Number, // avg spending at place (ticket + food + misc)
+      default: 100
+    },
+    visitDurationHours: {
+      type: Number, // e.g. 2 hours
+      default: 2
+    },
+    priorityScore: {
+      type: Number, // popularity ranking
+      default: 1
+    }
   },
   { timestamps: true },
 );
