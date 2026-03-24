@@ -142,9 +142,27 @@ export const inactiveRoomAction = createAsyncThunk(
   }
 );
 
+export const getPublicRooms = createAsyncThunk(
+  "room/getPublicRooms",
+  async (hotelId, thunkAPI) => {
+    try {
+      const response = await apiClient.get(`/api/room/public/${hotelId}`);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch rooms"
+      );
+    }
+  }
+);
+
 const roomSlice = createSlice({
   name: "room",
-  initialState,
+  initialState: {
+    publicRooms: [],
+    loading: false,
+    error: null,
+  },
   reducers: {},
 
   extraReducers: (builder) => {
@@ -262,6 +280,20 @@ const roomSlice = createSlice({
     state.error = action.payload || "Failed to inactivate room";
   });
   
+  //----------------- getPublicRooms -----------
+  builder
+      .addCase(getPublicRooms.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getPublicRooms.fulfilled, (state, action) => {
+        state.loading = false;
+        state.publicRooms = action.payload ?? [];
+      })
+      .addCase(getPublicRooms.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   
   },
 });

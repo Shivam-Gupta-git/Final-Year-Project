@@ -1,6 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import L from "leaflet";
 import { getActiveCities } from "../../features/user/citySlice";
 import { loadAiPlan, loadPlanHistory } from "../../features/user/placeSlice";
@@ -43,7 +44,7 @@ const markerIcons = {
   Restaurant: createIcon("orange"),
 };
 
-function AiPlannerDetails() {
+function AiPlannerDetails({ embedded = false } = {}) {
   const dispatch = useDispatch();
   const [modalData, setModalData] = useState(null);
 
@@ -72,30 +73,81 @@ function AiPlannerDetails() {
 
   const bounds = coordinates.length ? L.latLngBounds(coordinates) : null;
 
-  return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+  const content = (
+    <div className={embedded ? "space-y-4" : "p-6 max-w-7xl mx-auto space-y-6"}>
 
       {/* HEADER */}
-      <div className="text-gray-800 mb-4 px-6 py-4 rounded-2xl shadow-md bg-gray-200">
-        <h1 className="text-3xl font-bold">AI Travel Planner 🤖</h1>
-        <h3 className="text-lg font-semibold mt-2">Plan Overview</h3>
+      <div
+        className={
+          embedded
+            ? "rounded-2xl border border-slate-200 bg-white/80 backdrop-blur px-5 py-4 shadow-sm"
+            : "rounded-2xl border border-slate-200 bg-white/70 backdrop-blur px-6 py-5 shadow-sm"
+        }
+      >
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h1
+              className={
+                embedded
+                  ? "text-lg sm:text-xl font-semibold text-slate-900"
+                  : "text-2xl sm:text-3xl font-semibold text-slate-900"
+              }
+            >
+              Plan overview
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Tap a place card to see details and nearby hotels.
+            </p>
+          </div>
+          <div className="text-sm text-slate-600">
+            {safeAiPlan?.length ? (
+              <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                {safeAiPlan.length} day plan generated
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                <span className="h-2 w-2 rounded-full bg-slate-300" />
+                No plan loaded
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* EMPTY STATE */}
       {safeAiPlan?.length === 0 && (
-        <p className="text-gray-500 text-center mt-6">
-          No plan generated yet
-        </p>
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center">
+          <p className="text-base font-medium text-slate-800">
+            No plan generated yet
+          </p>
+          <p className="text-sm text-slate-500 mt-1">
+            Go back to the planner and generate a new itinerary.
+          </p>
+        </div>
       )}
 
       {/* ================= CARDS ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        className={
+          embedded
+            ? "grid grid-cols-1 gap-4"
+            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        }
+      >
         {safeAiPlan.map((day, index) => (
           <div
             key={index}
-            className="p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition"
+            className="p-4 bg-white/80 backdrop-blur rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition"
           >
-            <h2 className="font-bold mb-3 text-lg">Day {day.day}</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold text-lg text-slate-900">
+                Day {day.day}
+              </h2>
+              <span className="text-xs text-slate-500">
+                {(day.places?.length || 0)} places
+              </span>
+            </div>
 
             {day.places?.map((p, idx) => (
               <div
@@ -103,18 +155,20 @@ function AiPlannerDetails() {
                 onClick={() =>
                   setModalData({ type: "place", data: p, day })
                 }
-                className="p-3 mb-2 rounded-md shadow-sm hover:shadow-md transition cursor-pointer flex items-center gap-3"
+                className="p-3 mb-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:shadow-sm transition cursor-pointer flex items-center gap-3"
               >
                 {p.images?.[0] && (
                   <img
                     src={p.images[0]}
                     alt={p.name}
-                    className="w-16 h-16 object-cover rounded-md"
+                    className="w-16 h-16 object-cover rounded-xl"
                   />
                 )}
                 <div>
-                  <strong>{p.name}</strong>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-semibold text-slate-900 leading-snug line-clamp-1">
+                    {p.name}
+                  </p>
+                  <p className="text-sm text-slate-500">
                     {p.category}
                   </p>
                 </div>
@@ -126,13 +180,22 @@ function AiPlannerDetails() {
 
       {/* ================= GLOBAL MAP ================= */}
       {coordinates.length > 0 && (
-        <div className="mt-8 bg-white p-4 rounded-xl shadow-md">
-          <h2 className="text-xl font-bold mb-3">Map Overview 🗺️</h2>
+        <div className="mt-8 bg-white/80 backdrop-blur p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-end justify-between gap-3 mb-3">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">
+                Map overview
+              </h2>
+              <p className="text-sm text-slate-500">
+                Visualize the route across selected places and hotels.
+              </p>
+            </div>
+          </div>
 
           <MapContainer
             bounds={bounds}
             scrollWheelZoom={true}
-            style={{ height: "450px", width: "100%" }}
+            style={{ height: embedded ? "320px" : "450px", width: "100%" }}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
@@ -170,18 +233,20 @@ function AiPlannerDetails() {
       )}
 
       {/* ================= MODAL ================= */}
-      {modalData && (
+      {modalData &&
+        createPortal(
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-9999"
+          className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4"
           onClick={() => setModalData(null)}
         >
           <div
-            className="bg-white p-6 rounded-xl w-[90%] h-[85%] overflow-y-auto shadow-lg relative"
+            className="bg-white p-5 sm:p-6 rounded-2xl w-full max-w-5xl max-h-[85vh] overflow-y-auto shadow-xl relative border border-slate-200"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className="absolute top-3 right-3 text-3xl hover:text-red-500"
+              className="absolute top-3 right-3 text-3xl text-slate-500 hover:text-slate-900 transition"
               onClick={() => setModalData(null)}
+              aria-label="Close details"
             >
               <IoIosCloseCircleOutline />
             </button>
@@ -189,54 +254,60 @@ function AiPlannerDetails() {
             {/* PLACE DETAILS */}
             {modalData.type === "place" && (
               <>
-                <h2 className="text-2xl font-bold mb-2">
+                <h2 className="text-2xl sm:text-3xl font-semibold mb-2 text-slate-900 pr-10">
                   {modalData.data.name}
                 </h2>
 
-                <p className="text-gray-600 mb-2">
+                <p className="text-slate-600 mb-3">
                   {modalData.data.description}
                 </p>
 
-                <p className="text-sm text-gray-500 mb-2">
-                  Category: {modalData.data.category}
-                </p>
-
-                <p className="text-sm text-gray-500 mb-4">
-                  ₹{modalData.data.entryfees} •{" "}
-                  {modalData.data.timeRequired} hrs
-                </p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {modalData.data.category && (
+                    <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+                      {modalData.data.category}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+                    ₹{modalData.data.entryfees} • {modalData.data.timeRequired} hrs
+                  </span>
+                </div>
 
                 {/* IMAGES */}
-                <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
                   {modalData.data.images?.map((img, i) => (
                     <img
                       key={i}
                       src={img}
-                      className="w-full h-24 object-cover rounded-md"
+                      alt={`${modalData.data.name}-${i + 1}`}
+                      className="w-full h-28 sm:h-32 object-cover rounded-xl border border-slate-200"
                     />
                   ))}
                 </div>
 
                 {/* HOTELS */}
-                <h3 className="text-lg font-bold mb-2">
-                  Nearby Hotels 🏨
+                <h3 className="text-lg font-semibold mb-2 text-slate-900">
+                  Nearby hotels
                 </h3>
 
                 <div className="grid grid-cols-1 gap-2 mb-4">
                   {modalData.day?.hotels?.map((h, idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-md shadow-sm flex gap-3"
+                      className="p-3 rounded-xl border border-slate-200 bg-white flex gap-3"
                     >
                       {h.images?.[0] && (
                         <img
                           src={h.images[0]}
+                          alt={h.name}
                           className="w-16 h-16 rounded-md"
                         />
                       )}
                       <div>
-                        <strong>{h.name}</strong>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-semibold text-slate-900 line-clamp-1">
+                          {h.name}
+                        </p>
+                        <p className="text-sm text-slate-500">
                           ₹{h.cheapestRoom?.pricePerNight}/night
                         </p>
                       </div>
@@ -246,8 +317,17 @@ function AiPlannerDetails() {
               </>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
+    </div>
+  );
+
+  return embedded ? (
+    content
+  ) : (
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100">
+      {content}
     </div>
   );
 }

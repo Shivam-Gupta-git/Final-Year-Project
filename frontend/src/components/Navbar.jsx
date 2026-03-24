@@ -119,13 +119,13 @@ function Navbar() {
     if (adminToken) {
       dispatch(getAdminData());
     }
+  }, [token, dispatch, superAdminToken, adminToken]);
 
-    /* ---- close location form section ---- */
-    if (loading === false) {
+  useEffect(() => {
+    if (loading == false) {
       setShowLocationSection(false);
     }
-  }, [token, dispatch, superAdminToken, setShowLocationSection, loading]);
-
+  }, [loading]);
   useEffect(() => {
     setProfileOpen(false);
 

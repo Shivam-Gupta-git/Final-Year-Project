@@ -4,6 +4,6 @@ import { createReview, getReviewsByTarget } from "../controllers/review.controll
 
 const reviewRouter = express.Router();
 reviewRouter.post("/", isAuthenticated, authorize("user"), createReview);
-reviewRouter.get("/:targetType/:targetId", isAuthenticated,  getReviewsByTarget);
+reviewRouter.get("/:targetType/:targetId",   getReviewsByTarget);
 
 export default reviewRouter;

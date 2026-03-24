@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { FaSearch, FaMapMarkerAlt, FaRupeeSign, FaTimes } from "react-icons/fa";
+import { useEffect } from "react";
+import { FaSearch, FaMapMarkerAlt, FaRupeeSign, FaTimes, FaStar } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
+import { getFilterCounts } from "../../features/user/hotelSlice";
 
 const SUGGESTED_FILTERS = [
   { label: "Rush Deal", count: 305, icon: "🔥" },
@@ -37,11 +41,18 @@ const SectionLabel = ({ dot, children }) => (
 );
 
 const HotelFilter = ({ onFilterChange, onMapOpen }) => {
+  const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const cityParam = searchParams.get("city") || "";
+
+  const { filterCounts, filterCountsLoading } = useSelector((s) => s.hotel);
+
   const [filters, setFilters] = useState({
     locality: "",
     suggested: [],
     price: [],
     amenities: [],
+    stars: [],
   });
 
   const toggle = (type, value) => {
@@ -60,7 +71,13 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
   };
 
   const clearAll = () => {
-    const fresh = { locality: "", suggested: [], price: [], amenities: [] };
+    const fresh = {
+      locality: "",
+      suggested: [],
+      price: [],
+      amenities: [],
+      stars: [],
+    };
     setFilters(fresh);
     onFilterChange?.(fresh);
   };
@@ -70,10 +87,19 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
     filters.suggested.length +
     filters.price.length +
     filters.amenities.length +
+    filters.stars.length +
     (filters.locality ? 1 : 0);
 
+  useEffect(() => {
+    dispatch(getFilterCounts(cityParam));
+  }, [cityParam, dispatch]);
+
+  const getCount = (type, key) => {
+    if (filterCountsLoading) return null;
+    return filterCounts?.[type]?.[key] ?? 0;
+  };
+
   return (
-    // ── Fixed width only on lg+ screens ───────────────────────────────────
     <div className="w-full lg:w-67 bg-white rounded-2xl border border-slate-100 shadow-lg shadow-slate-100/70 overflow-hidden lg:sticky lg:top-4 lg:max-h-[calc(100vh-90px)] flex flex-col">
       {/* Header */}
       <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/60">
@@ -97,7 +123,7 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
 
       {/* Scrollable body */}
       <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
-        {/* Map button */}
+        {/* Map */}
         <div
           onClick={onMapOpen}
           className="relative h-24 rounded-xl overflow-hidden cursor-pointer group shadow-sm"
@@ -110,8 +136,7 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
           <div className="absolute inset-0 bg-linear-to-t from-[#0f1f3d]/65 via-[#0f1f3d]/20 to-transparent" />
           <div className="absolute inset-x-0 bottom-2.5 flex justify-center">
             <div className="flex items-center gap-1.5 bg-white/95 text-[#1a3a6b] text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md">
-              <FaMapMarkerAlt className="text-[9px]" />
-              Explore on Map
+              <FaMapMarkerAlt className="text-[9px]" /> Explore on Map
             </div>
           </div>
         </div>
@@ -163,9 +188,68 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
                     </span>
                   </div>
                   <span
-                    className={`text-[10px] font-semibold tabular-nums ${active ? "text-[#1a3a6b]" : "text-slate-400"}`}
+                    className={`text-[10px] font-semibold tabular-nums ${active ? "text-emerald-600" : "text-slate-400"}`}
                   >
-                    {item.count}
+                    {filterCountsLoading ? (
+                      <span className="inline-block w-5 h-2.5 bg-slate-200 rounded animate-pulse" />
+                    ) : (
+                      `(${getCount("price", item.value)})`
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="h-px bg-slate-100" />
+
+        {/* ── STAR RATING — price section se PEHLE add karo ── */}
+        <div>
+          <SectionLabel dot="bg-amber-400">Star Rating</SectionLabel>
+          <div className="space-y-0.5">
+            {[5, 4, 3, 2, 1].map((star) => {
+              const active = filters.stars.includes(star);
+              return (
+                <button
+                  key={star}
+                  onClick={() => toggle("stars", star)}
+                  className={`w-full flex items-center justify-between px-2.5 py-2.5 rounded-lg border text-left transition-all duration-150
+            ${active ? "border-amber-200 bg-amber-50/60" : "border-transparent hover:bg-slate-50"}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-all
+              ${active ? "bg-amber-400 text-white text-xs" : "bg-slate-100"}`}
+                    >
+                      {active ? (
+                        "✓"
+                      ) : (
+                        <FaStar className="text-amber-400 text-[10px]" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      {[...Array(star)].map((_, i) => (
+                        <FaStar
+                          key={i}
+                          className={`text-[10px] ${active ? "text-amber-500" : "text-amber-300"}`}
+                        />
+                      ))}
+                      <span
+                        className={`text-xs font-medium ml-1 ${active ? "text-amber-700" : "text-slate-600"}`}
+                      >
+                        {star} Star
+                      </span>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-[10px] font-semibold ${active ? "text-amber-600" : "text-slate-400"}`}
+                  >
+                    {filterCountsLoading ? (
+                      <span className="inline-block w-5 h-2.5 bg-slate-200 rounded animate-pulse" />
+                    ) : (
+                      `(${getCount("stars", star)})`
+                    )}
                   </span>
                 </button>
               );
@@ -214,7 +298,7 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
 
         <div className="h-px bg-slate-100" />
 
-        {/* Amenities — values match backend facilities field */}
+        {/* Amenities */}
         <div>
           <SectionLabel dot="bg-violet-500">Amenities</SectionLabel>
           <div className="grid grid-cols-2 gap-1.5">

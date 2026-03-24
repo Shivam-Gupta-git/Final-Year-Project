@@ -176,6 +176,28 @@ export const getAllRoomsByID = async (req, res) => {
   }
 };
 
+
+export const getPublicRoomsByHotel = async (req, res) => {
+  try {
+    const { hotelId } = req.params;
+
+    const hotel = await Hotel.findById(hotelId);
+    if (!hotel) {
+      return res.status(404).json({ success: false, message: "Hotel not found" });
+    }
+
+    const rooms = await Room.find({ hotelId, status: "active" })
+      .sort({ pricePerNight: 1 });
+
+    return res.status(200).json({
+      success: true,
+      data: rooms,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getSingleRoom = async (req, res) => {
   try {
     const { roomId } = req.params;

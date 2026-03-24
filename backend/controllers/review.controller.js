@@ -89,9 +89,9 @@ export const getReviewsByTarget = async (req, res) => {
 
     if (!mongoose.Types.ObjectId.isValid(targetId)) {
       return res.status(400).json({
-        success : false ,
-        message : "Invalid target ID"
-      })
+        success: false,
+        message: "Invalid target ID",
+      });
     }
 
     const reviews = await Review.find({
@@ -115,38 +115,38 @@ export const getReviewsByTarget = async (req, res) => {
   }
 };
 
-const updateTargetRating = async (targetId , targetType) => {
+const updateTargetRating = async (targetId, targetType) => {
   const modelMap = {
-      place : Place,
-      hotel : Hotel,
-      restaurant : Restaurant
-  }
+    place: Place,
+    hotel: Hotel,
+    restaurant: Restaurant,
+  };
   const TargetModel = modelMap[targetType];
 
   const stats = await Review.aggregate([
     {
-      $match : {
-        targetId : new mongoose.Types.ObjectId(targetId),
-        status : "approved"
+      $match: {
+        targetId: new mongoose.Types.ObjectId(targetId),
+        status: "approved",
       },
     },
     {
-      $group : {
-        _id : null,
-        avgRating : { $avg : "$rating"},
-        total : {$sum  : 1}
+      $group: {
+        _id: null,
+        avgRating: { $avg: "$rating" },
+        total: { $sum: 1 },
       },
     },
   ]);
 
   const avgRating = stats[0]?.avgRating || 0;
-  const totalReviews  = stats[0]?.total || 0;
+  const totalReviews = stats[0]?.total || 0;
 
-  await TargetModel.findByIdAndUpdate(targetId , {
-    averagerating : avgRating,
-    totalReviews
-  })
-}
+  await TargetModel.findByIdAndUpdate(targetId, {
+    averagerating: avgRating,
+    totalReviews,
+  });
+};
 
 export const approveReview = async (req, res) => {
   try {
@@ -185,7 +185,7 @@ export const approveReview = async (req, res) => {
     review.approvedBy = req.user?._id;
     await review.save();
 
-    await updateTargetRating(review.targetId , review.targetType)
+    await updateTargetRating(review.targetId, review.targetType);
 
     return res.status(200).json({
       success: true,
@@ -233,10 +233,10 @@ export const rejectReview = async (req, res) => {
     );
 
     if (review.status === "approved") {
-      review.status = "rejected"
-      await review.save()
+      review.status = "rejected";
+      await review.save();
 
-      await updateTargetRating(review.targetId , review.targetType)
+      await updateTargetRating(review.targetId, review.targetType);
     }
 
     if (!review) {

@@ -3,12 +3,14 @@ import { uploadCloudinary } from "../config/cloudinary.config.js";
 import { City } from "../model/city.model.js";
 import { Hotel } from "../model/hotel.model.js";
 import fs from "fs";
+
 import { Place } from "../model/place.model.js";
 import { User } from "../model/user.model.js";
 
 export const createHotel = async (req, res) => {
   try {
-    const { name, city, address, description, facilities } = req.body;
+    const { name, city, address, description, facilities, pricePerNight } =
+      req.body;
 
     let location;
     try {
@@ -69,6 +71,7 @@ export const createHotel = async (req, res) => {
       address,
       description,
       facilities: facilitiesArray,
+      pricePerNight: Number(pricePerNight) || 0,
       images: imageUrls,
       location,
       status: "pending",
@@ -179,8 +182,7 @@ export const updateHotel = async (req, res) => {
 
       { new: true, runValidators: true }, //this is use to validate data
 
-      { new: true, runValidators: true } //this is use to validate data
-
+      { new: true, runValidators: true }, //this is use to validate data
     )
       .populate("city")
       .populate("createdBy", "name email");
@@ -447,7 +449,6 @@ export const getPublicActiveHotels = async (req, res) => {
   try {
     const { city } = req.query; // ← read city from ?city=Delhi
 
-
     let query = { status: "active" };
 
     if (city && city.trim()) {
@@ -464,22 +465,16 @@ export const getPublicActiveHotels = async (req, res) => {
 
     const hotels = await Hotel.find(query).populate("city", "name state");
 
-    res.status(200).json({ success: true, data: hotels });
-
-    res.status(200).json({
-      success: true,
-      data: hotels,
-    });
-
+    return res.status(200).json({ success: true, data: hotels });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 export const inactiveHotelByAdmin = async (req, res) => {
   try {
     const hotelId = req.params.id;
-    
+
     const hotel = await Hotel.findById(hotelId);
     if (!hotel) {
       return res.status(404).json({
@@ -508,13 +503,10 @@ export const inactiveHotelByAdmin = async (req, res) => {
     hotel.approvedBy = null;
     await hotel.save();
 
-
-
     return res.status(200).json({
       success: true,
       message: "Hotel inactivated successfully",
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,

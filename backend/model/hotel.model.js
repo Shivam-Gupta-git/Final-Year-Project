@@ -14,6 +14,12 @@ const hotelSchema = new Schema(
       required: true,
     },
 
+    pricePerNight: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     address: {
       type: String,
       required: true,
@@ -49,12 +55,14 @@ const hotelSchema = new Schema(
       },
     },
 
-    rating: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
-    },
+    // rating: {
+    //   type: Number,
+    //   default: 0,
+    //   min: 0,
+    //   max: 5,
+    // },
+
+    payAtHotel: { type: Boolean, default: false },
 
     averageRating: {
       type: Number,
@@ -86,8 +94,19 @@ const hotelSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    starCategory: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null, // null = unrated
+    },
+    propertyType: {
+      type: String,
+      enum: ["hotel", "villa", "homestay", "resort", "apartment"],
+      default: "hotel",
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 hotelSchema.index({ location: "2dsphere" });
