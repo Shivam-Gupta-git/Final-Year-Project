@@ -53,6 +53,7 @@ import AdminsDetails from "./pages/superAdmin/AdminsDetails";
 import AdminItemsDetailsByAdminId from "./pages/superAdmin/AdminItemsDetailsByAdminId";
 import HotelBookingDashboard from "./pages/admin/HotelBooking/HotelBookingDashboard";
 import BookedHotels from "./pages/admin/HotelBooking/BookedHotels";
+import Booking from "./pages/auth/Booking";
 
 function App() {
   return (
@@ -62,6 +63,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="hotels" element={<HotelPage />} />
         <Route path="/hotels/:id" element={<HotelDetailPage />} />
+        <Route path="/my-booking" element={<Booking />} />
         <Route path="/city/:id" element={<CityDetails />} />
         <Route path="/signUp" element={<Register />} />
         <Route path="/verifyEmail" element={<VerifyEmail />} />
