@@ -13,8 +13,6 @@ import hotelBookingreducer from "../features/user/hotelBookingSlice";
 import reviewReducer from "../features/user/reviewSlice"
 import placeReducer from "../features/user/placeSlice";
 
-
-
 export const store = configureStore({
   reducer:{
     auth: authReducer,
@@ -27,6 +25,7 @@ export const store = configureStore({
     hotel: hotelReducer,
     room: roomReducer,
     hotelBooking: hotelBookingreducer,
+    place: placeReducer,
     search : searchReducer,
     review : reviewReducer,
     place : placeReducer
