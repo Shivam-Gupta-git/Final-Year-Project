@@ -4,19 +4,30 @@ import { City } from "../model/city.model.js";
 import { Restaurant } from "../model/restaurant.model.js";
 import fs from "fs";
 
-// Superadmin - createRestaurant 
+// admin - createRestaurant
 export const createRestaurant = async (req, res) => {
   try {
     let {
       name,
       address,
-      state,
+      stateId,
       cityId,
       foodType,
       avgCostForOne,
       isRecommended,
-      openingHours,
     } = req.body;
+    console.log("data", req.body.openingHours);
+
+    let openingHours;
+
+    try {
+      openingHours = JSON.parse(req.body.openingHours);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid opening hours format",
+      });
+    }
 
     // ✅ Parse location safely
     let location;
@@ -45,10 +56,11 @@ export const createRestaurant = async (req, res) => {
     if (
       !name ||
       !address ||
-      !state ||
+      !stateId ||
       !cityId ||
       !foodType ||
-      !avgCostForOne
+      !avgCostForOne ||
+      !openingHours
     ) {
       return res.status(400).json({
         success: false,
@@ -103,15 +115,15 @@ export const createRestaurant = async (req, res) => {
     const restaurant = await Restaurant.create({
       name,
       address,
-      state,
+      state: stateId,
       city: cityId,
       foodType,
       avgCostForOne,
-      isRecommended: isRecommended || false,
       openingHours,
+      isRecommended: isRecommended || false,
       location,
       images: imageUrls,
-      owner: req.user?._id,
+      owner: req.user?.id,
       status: "pending",
     });
 
@@ -209,7 +221,7 @@ export const rejectResturant = async (req, res) => {
       },
       {
         new: true,
-      },
+      }
     );
 
     if (!resturant) {
@@ -274,15 +286,12 @@ export const allAciveResturant = async (req, res) => {
         message: "Invalid city ID",
       });
     }
-    
-    
 
     const city = await City.findOne({
       _id: cityId,
       status: "active",
     });
     console.log(city);
-    
 
     if (!city) {
       return res.status(400).json({
@@ -304,8 +313,7 @@ export const allAciveResturant = async (req, res) => {
       .limit(limit)
       .skip(skip)
       .lean();
-      console.log(restaurant);
-      
+    console.log(restaurant);
 
     return res.status(200).json({
       success: true,
@@ -381,22 +389,22 @@ export const updateResturant = async (req, res) => {
     }
 
     if (updateData.location?.coordinates) {
-          const exitingResturant = await Restaurant.findOne({
-            _id: { $ne: id },
-            "location.coordinates": updateData.location.coordinates,
-          });
-          if (exitingResturant) {
-            return res.status(409).json({
-              success: false,
-              message: "Another resturant already exists at these coordinates.",
-            });
-          }
-        }
+      const exitingResturant = await Restaurant.findOne({
+        _id: { $ne: id },
+        "location.coordinates": updateData.location.coordinates,
+      });
+      if (exitingResturant) {
+        return res.status(409).json({
+          success: false,
+          message: "Another resturant already exists at these coordinates.",
+        });
+      }
+    }
 
     if (req.files && req.files.length > 0) {
       try {
         const uploadPromises = req.files.map((file) =>
-          uploadCloudinary(file.path, "Restaurant"),
+          uploadCloudinary(file.path, "Restaurant")
         );
         const uploadResults = await Promise.all(uploadPromises);
         updateData.images = uploadResults.map((result) => result.secure_url);
@@ -415,12 +423,15 @@ export const updateResturant = async (req, res) => {
       }
     }
 
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(id , updateData , {
-      new : true,
-      runValidators : true
-    })
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
+      id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
     console.log(updatedRestaurant);
-    
 
     return res.status(200).json({
       success: true,
@@ -436,39 +447,36 @@ export const updateResturant = async (req, res) => {
   }
 };
 
-export const deleteResturant = async (req, res) => { 
+export const deleteResturant = async (req, res) => {
   try {
-    const {id} = req.params;
-  
-    if(!mongoose.Types.ObjectId.isValid(id)){
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
-        success : false,
-        message : "Invalid id "
-      })
+        success: false,
+        message: "Invalid id ",
+      });
     }
-  
-    const deleteresturant = await Restaurant.findByIdAndDelete(id , {
-      runValidators : true,
-      
-    })
+
+    const deleteresturant = await Restaurant.findByIdAndDelete(id, {
+      runValidators: true,
+    });
     if (!deleteresturant) {
       return res.status(404).json({
-        success : true,
-        message : "Resturant not found"
-      })
+        success: true,
+        message: "Resturant not found",
+      });
     }
 
     return res.status(200).json({
-      success : true,
-      data : deleteresturant,
-      message : "successfully deleted"
-    })
+      success: true,
+      data: deleteresturant,
+      message: "successfully deleted",
+    });
   } catch (error) {
     return res.status(500).json({
-      success : false,
-      message : error.message
-    })
+      success: false,
+      message: error.message,
+    });
   }
-
-  
 };

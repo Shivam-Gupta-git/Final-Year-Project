@@ -10,9 +10,9 @@ const restaurantSchema = new mongoose.Schema(
     },
 
     state: {
-      type: String,
-      trim: true,
-      lowercase: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "City",
+      required: true,
     },
 
     address: {
