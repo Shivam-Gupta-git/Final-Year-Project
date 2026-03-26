@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
 import { motion } from "framer-motion"
-import { FaUserSecret } from "react-icons/fa";
+import { FaUserSecret, FaCity } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 
 function RestaurantDashboard() {
@@ -72,6 +72,63 @@ function RestaurantDashboard() {
           </Link>
         </div>
       </motion.div>
+
+      {/* card section */}
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Card */}
+        <Link to="/admin/admin-active-restaurant">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
+          >
+            <div className="text-3xl mb-3 bg-purple-500 p-3 rounded-xl text-white shadow">
+              <FaCity />
+            </div>
+            <h2 className="font-semibold text-gray-800 dark:text-white">
+              All Restaurants
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              View and manage all Restaurants
+            </p>
+          </motion.div>
+        </Link>
+
+        {/* Card */}
+        <Link to="/admin/show-restaurant-status">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
+          >
+            <div className="text-3xl mb-3 bg-blue-500 p-3 rounded-xl text-white shadow">
+              <FaCity />
+            </div>
+            <h2 className="font-semibold text-gray-800 dark:text-white">
+            Restaurants Status
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Track approval & availability
+            </p>
+          </motion.div>
+        </Link>
+
+        {/* Card */}
+        <Link to="/admin/hotel-booking-dashboard">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all p-6 flex flex-col items-center text-center border border-gray-200 dark:border-gray-700"
+          >
+            <div className="text-3xl mb-3 bg-gray-500 p-3 rounded-xl text-white shadow">
+              <FaCity />
+            </div>
+            <h2 className="font-semibold text-gray-800 dark:text-white">
+              Show Restaurant Bookings
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Track approval & availability
+            </p>
+          </motion.div>
+        </Link>
+      </div>
     </div>
   )
 }

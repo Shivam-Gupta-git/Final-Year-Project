@@ -4,7 +4,7 @@ import { City } from "../model/city.model.js";
 import { Restaurant } from "../model/restaurant.model.js";
 import fs from "fs";
 
-// admin - createRestaurant
+// ADMIN - CREATE RESTAURANT
 export const createRestaurant = async (req, res) => {
   try {
     let {
@@ -139,6 +139,117 @@ export const createRestaurant = async (req, res) => {
     });
   }
 };
+
+// ADMIN - GET ACTIVE ADMIN'S RESTAURANT BY ADMIN
+export const getActiveRestaurant = async (req, res) => {
+  try {
+
+    let filter = { status: "active" };
+    if (req.user.role === "admin") {
+      // admin → only own hotels
+      filter.owner = req.user.id;
+    }
+
+    if (req.user.role === "user") {
+      // user → only approved active hotels
+      filter.isApproved = true;
+    }
+
+    const restaurant = await Restaurant.find(filter)
+      .populate("city", "name state")
+      .populate("owner", "name email");
+
+    return res.status(200).json({
+      success: true,
+      message: "Active hotels fetched successfully",
+      data: restaurant,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ADMIN - INACTIVE RESTAURANT BY ADMIN
+export const inactiveRestaurantByAdmin = async (req, res) => {
+  try {
+    const restaurantId = req.params.id;
+    const restaurant = await Restaurant.findById(restaurantId);
+
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: "restaurant not found",
+      });
+    }
+    // ownership check
+    if (restaurant.owner.toString() !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only inactive your own restaurant",
+      });
+    }
+
+    // status validation
+    if (restaurant.status !== "active") {
+      return res.status(400).json({
+        success: false,
+        message: "Only active hotel can be inactivated",
+      });
+    }
+
+    restaurant.status = "inactive";
+    restaurant.approvedBy = null;
+    await restaurant.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "restaurant inactivated successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ADMIN - GET RESTAURANT STATUS
+export const getRestaurantStatus = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let filter = {};
+
+    // SUPER ADMIN → see all
+    if (req.user.role === "super_admin") {
+      filter = status ? { status } : {};
+    }
+
+    // ADMIN → see own
+    if (req.user.role === "admin") {
+      filter = {
+        owner: req.user.id,
+        ...(status && { status }),
+      };
+    }
+
+    const restaurants = await Restaurant.find(filter).populate("city");
+
+    return res.status(200).json({
+      success: true,
+      data: restaurants,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 
 export const approveResturant = async (req, res) => {
   try {

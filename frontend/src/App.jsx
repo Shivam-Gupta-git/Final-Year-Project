@@ -65,6 +65,8 @@ import AiPlanner from "./pages/AIPlanner/AiPlanner";
 import AiPlannerDetails from "./pages/AIPlanner/AiPlannerDetails";
 import RestaurantDashboard from "./pages/admin/restaurant/restaurantDashboard";
 import AddRestaurantDetails from "./pages/admin/restaurant/AddRestaurantDetails";
+import AdminActiveRestaurant from "./pages/admin/restaurant/AdminActiveRestaurant";
+import ShowRestaurantStatus from "./pages/admin/restaurant/ShowRestaurantStatus";
 
 
 function App() {
@@ -397,6 +399,8 @@ function App() {
         <Route path="/AiPlanner-details" element={<AiPlannerDetails />} />
         <Route path="/admin/restaurantDashboard" element={<AdminProtectedRouter><RestaurantDashboard/></AdminProtectedRouter>}/>
         <Route path="/admin/add-restaurant" element={<AdminProtectedRouter><AddRestaurantDetails/></AdminProtectedRouter>}/>
+        <Route path="/admin/admin-active-restaurant" element={<AdminProtectedRouter><AdminActiveRestaurant/></AdminProtectedRouter>}/>
+        <Route path="/admin/show-restaurant-status" element={<AdminProtectedRouter><ShowRestaurantStatus/></AdminProtectedRouter>}/>
       </Routes>
     </>
   );
