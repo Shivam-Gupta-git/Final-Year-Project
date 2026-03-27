@@ -67,6 +67,7 @@ import RestaurantDashboard from "./pages/admin/restaurant/restaurantDashboard";
 import AddRestaurantDetails from "./pages/admin/restaurant/AddRestaurantDetails";
 import AdminActiveRestaurant from "./pages/admin/restaurant/AdminActiveRestaurant";
 import ShowRestaurantStatus from "./pages/admin/restaurant/ShowRestaurantStatus";
+import UpdateRestaurantDetails from "./pages/admin/restaurant/UpdateRestaurantDetails";
 
 
 function App() {
@@ -401,6 +402,7 @@ function App() {
         <Route path="/admin/add-restaurant" element={<AdminProtectedRouter><AddRestaurantDetails/></AdminProtectedRouter>}/>
         <Route path="/admin/admin-active-restaurant" element={<AdminProtectedRouter><AdminActiveRestaurant/></AdminProtectedRouter>}/>
         <Route path="/admin/show-restaurant-status" element={<AdminProtectedRouter><ShowRestaurantStatus/></AdminProtectedRouter>}/>
+        <Route path="/admin/update-restaurant/:id" element={<AdminProtectedRouter><UpdateRestaurantDetails/></AdminProtectedRouter>}/>
       </Routes>
     </>
   );

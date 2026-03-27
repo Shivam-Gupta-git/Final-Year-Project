@@ -27,6 +27,14 @@ const restaurantSchema = new mongoose.Schema(
       required: true,
     },
 
+    famousFood: {
+      type: String,
+    },
+    
+    bestTime: {
+     type: String
+    },
+
     foodType: {
       type: String,
       enum: ["veg", "non-veg", "both"],

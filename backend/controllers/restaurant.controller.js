@@ -12,6 +12,8 @@ export const createRestaurant = async (req, res) => {
       address,
       stateId,
       cityId,
+      famousFood,
+      bestTime,
       foodType,
       avgCostForOne,
       isRecommended,
@@ -58,6 +60,8 @@ export const createRestaurant = async (req, res) => {
       !address ||
       !stateId ||
       !cityId ||
+      !famousFood ||
+      !bestTime ||
       !foodType ||
       !avgCostForOne ||
       !openingHours
@@ -117,6 +121,8 @@ export const createRestaurant = async (req, res) => {
       address,
       state: stateId,
       city: cityId,
+      famousFood,
+      bestTime,
       foodType,
       avgCostForOne,
       openingHours,
@@ -250,6 +256,124 @@ export const getRestaurantStatus = async (req, res) => {
   }
 };
 
+// ADMIN || SUPERADMIN - GET RESTAURANT BYID
+export const getResturantbyID = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Resturant ID",
+      });
+    }
+
+    const restaurant = await Restaurant.findById(id)
+      .populate("city", "name state")
+      .lean();
+
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: "Resturant not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: restaurant,
+      message: "successfully get all data",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ADMIN - UPDATE RESTAURANT 
+export const updateResturant = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let updateData = { ...req.body };
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid restaurant ID",
+      });
+    }
+
+    if (req.body.location) {
+      try {
+        updateData.location = JSON.parse(req.body.location);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid location format",
+        });
+      }
+    }
+
+    if (updateData.location?.coordinates) {
+      const exitingResturant = await Restaurant.findOne({
+        _id: { $ne: id },
+        "location.coordinates": updateData.location.coordinates,
+      });
+      if (exitingResturant) {
+        return res.status(409).json({
+          success: false,
+          message: "Another resturant already exists at these coordinates.",
+        });
+      }
+    }
+
+    if (req.files && req.files.length > 0) {
+      try {
+        const uploadPromises = req.files.map((file) =>
+          uploadCloudinary(file.path, "Restaurant")
+        );
+        const uploadResults = await Promise.all(uploadPromises);
+        updateData.images = uploadResults.map((result) => result.secure_url);
+        // Delete local temp files
+        req.files.forEach((file) => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      } catch (uploadError) {
+        console.log("Upload Error:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Image upload failed",
+        });
+      }
+    }
+
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
+      id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    console.log(updatedRestaurant);
+
+    return res.status(200).json({
+      success: true,
+      data: updatedRestaurant,
+      message: "Restaurant updated successfully",
+    });
+  } catch (error) {
+    console.error("Update Restaurant Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 export const approveResturant = async (req, res) => {
   try {
@@ -441,122 +565,9 @@ export const allAciveResturant = async (req, res) => {
   }
 };
 
-export const getResturantbyID = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Resturant ID",
-      });
-    }
 
-    const restaurant = await Restaurant.findById(id)
-      .populate("city", "name state")
-      .lean();
 
-    if (!restaurant) {
-      return res.status(404).json({
-        success: false,
-        message: "Resturant not found",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: restaurant,
-      message: "successfully get all data",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-export const updateResturant = async (req, res) => {
-  try {
-    const { id } = req.params;
-    let updateData = { ...req.body };
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid restaurant ID",
-      });
-    }
-
-    if (req.body.location) {
-      try {
-        updateData.location = JSON.parse(req.body.location);
-      } catch (error) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid location format",
-        });
-      }
-    }
-
-    if (updateData.location?.coordinates) {
-      const exitingResturant = await Restaurant.findOne({
-        _id: { $ne: id },
-        "location.coordinates": updateData.location.coordinates,
-      });
-      if (exitingResturant) {
-        return res.status(409).json({
-          success: false,
-          message: "Another resturant already exists at these coordinates.",
-        });
-      }
-    }
-
-    if (req.files && req.files.length > 0) {
-      try {
-        const uploadPromises = req.files.map((file) =>
-          uploadCloudinary(file.path, "Restaurant")
-        );
-        const uploadResults = await Promise.all(uploadPromises);
-        updateData.images = uploadResults.map((result) => result.secure_url);
-        // Delete local temp files
-        req.files.forEach((file) => {
-          if (fs.existsSync(file.path)) {
-            fs.unlinkSync(file.path);
-          }
-        });
-      } catch (uploadError) {
-        console.log("Upload Error:", uploadError);
-        return res.status(500).json({
-          success: false,
-          message: "Image upload failed",
-        });
-      }
-    }
-
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
-      id,
-      updateData,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    console.log(updatedRestaurant);
-
-    return res.status(200).json({
-      success: true,
-      data: updatedRestaurant,
-      message: "Restaurant updated successfully",
-    });
-  } catch (error) {
-    console.error("Update Restaurant Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
 
 export const deleteResturant = async (req, res) => {
   try {

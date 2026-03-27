@@ -7,6 +7,7 @@ import { allAciveResturant, createRestaurant, deleteResturant, getActiveRestaura
 const restaurantRouter = express.Router()
 
 //private routes...
+
 // ADMIN - CREATE RESTAURANT 
 restaurantRouter.post("/create-restaurent", isAuthenticated , authorize("admin"), upload.array("images", 5) ,createRestaurant)
 
@@ -19,6 +20,9 @@ restaurantRouter.patch("/:id/inactiveByAdmin", isAuthenticated, authorize("admin
 // ADMIN  - GET RESTAURANT STATUS
 restaurantRouter.get("/get-restaurant-status", isAuthenticated, authorize("admin"), getRestaurantStatus)
 
+// ADMIN || SUPERADMIN - GET RESTAURANT BYID
+restaurantRouter.get("/getresturant/:id", getResturantbyID)
+
 // ADMIN - UPDATE RESTAURANT
 restaurantRouter.put("/updateresturant/:id", isAuthenticated , authorize("admin"), upload.array("images", 5), updateResturant)
 
@@ -27,7 +31,7 @@ restaurantRouter.delete("/delete/:id", isAuthenticated, authorize("admin"), dele
 
 //public routes
 restaurantRouter.get("/restaurant/:cityId" , allAciveResturant)
-restaurantRouter.get("/getresturant/:id", getResturantbyID)
+
 
 
 export default restaurantRouter;
