@@ -95,19 +95,22 @@ export const getRestaurantById = createAsyncThunk(
   async (id, thunkAPI) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await apiClient.get(`/api/resturant/getresturant/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.get(
+        `/api/resturant/getresturant/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       // console.log("API RESPONSE:", response.data);
       return response.data; // IMPORTANT
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Failed to fetch restaurant",
+        error.response?.data?.message || "Failed to fetch restaurant"
       );
     }
-  },
+  }
 );
 
 // ADMIN - UPDATE RESTAURANT
@@ -124,7 +127,7 @@ export const updateRestaurant = createAsyncThunk(
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       // console.log("UPDATE RESPONSE:", response.data);
@@ -132,10 +135,105 @@ export const updateRestaurant = createAsyncThunk(
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "restaurant update failed",
+        error.response?.data?.message || "restaurant update failed"
       );
     }
-  },
+  }
+);
+
+// SUPERADMIN - GET ALL PENDING RESTAURANT
+export const getPendingRestaurant = createAsyncThunk(
+  "restaurant/getPendingRestaurant",
+  async ({ page = 1, limit = 10, city = "" }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("superAdminToken");
+      let url = `/api/admin/restaurant/pending?page=${page}&limit=${limit}`;
+
+      if (city) {
+        url += `&city=${city}`;
+      }
+
+      const response = await apiClient.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch cities"
+      );
+    }
+  }
+);
+
+// SUPERADMIN - APPROVE RESTAURANT
+export const approveRestaurantById = createAsyncThunk(
+  "restaurant/approveRestaurant",
+  async (restaurantId, thunkAPI) => {
+    console.log(restaurantId);
+    try {
+      const token = localStorage.getItem("superAdminToken");
+      const response = await apiClient.patch(
+        `/api/admin/resturant/${restaurantId}/approve`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return { restaurantId, message: response.data.message };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "restaurant approval failed"
+      );
+    }
+  }
+);
+
+// SUPERADMIN - REJECT RESTAURANT
+export const rejecteRestaurantById = createAsyncThunk(
+  "restaurant/rejectRestaurant",
+  async (restaurantId, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("superAdminToken");
+      const response = await apiClient.patch(
+        `/api/admin/resturant/${restaurantId}/reject`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return { restaurantId, message: response.data.message };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "restaurant rejection failed"
+      );
+    }
+  }
+);
+
+// SUPERADMIN - GET ALL RESTAURANT CITY WISE
+export const getRestaurantCityWise = createAsyncThunk(
+  "restaurant/getCityWise",
+  async ({ city = "", page = 1, limit = 10 }, thunkAPI) => {
+    try {
+      let url = `/api/resturant/restaurant-cityWise?page=${page}&limit=${limit}`;
+
+      if (city) {
+        url += `&city=${city}`;
+      }
+
+      const response = await apiClient.get(url);
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch restaurants"
+      );
+    }
+  }
 );
 
 const restaurantSlice = createSlice({
@@ -148,7 +246,11 @@ const restaurantSlice = createSlice({
     error: null,
     createSuccess: false,
     success: false,
+    page: 1,
+    totalPages: 1,
+    total: 0,
   },
+
   reducers: {},
 
   extraReducers: (builder) => {
@@ -219,52 +321,139 @@ const restaurantSlice = createSlice({
 
     // ADMIN || SUPERADMIN - GET RESTAURANT BYID
     builder
-    .addCase(getRestaurantById.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
+      .addCase(getRestaurantById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-    .addCase(getRestaurantById.fulfilled, (state, action) => {
-      state.loading = false;
-      state.restaurant = action.payload;
-    })
+      .addCase(getRestaurantById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.restaurant = action.payload;
+      })
 
-    .addCase(getRestaurantById.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+      .addCase(getRestaurantById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
-  // ADMIN - UPDATE RESTAURANT  
+    // ADMIN - UPDATE RESTAURANT
+    builder
+      .addCase(updateRestaurant.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateRestaurant.fulfilled, (state, action) => {
+        // console.log("FULL PAYLOAD:", action.payload);
+        state.loading = false;
+        state.success = true;
+
+        const updaterestaurant = action.payload?.data || action.payload;
+        if (!updaterestaurant || !updaterestaurant._id) {
+          console.error("Updated hotel invalid:", updatedHotel);
+          return;
+        }
+
+        const index = state.restaurants.findIndex(
+          (r) => r._id === updaterestaurant._id
+        );
+
+        if (index !== -1) {
+          state.restaurants[index] = updaterestaurant;
+        }
+
+        state.restaurant = updaterestaurant; // ✅ update current hotel also
+      })
+      .addCase(updateRestaurant.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+
+    // SUPERADMIN - GET ALL PENDING RESTAURANT
+    builder
+      .addCase(getPendingRestaurant.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(getPendingRestaurant.fulfilled, (state, action) => {
+        state.loading = false;
+
+        state.restaurants = action.payload;
+
+        // ✅ pagination data
+        state.page = action.payload.page;
+        state.totalPages = action.payload.totalPages;
+        state.total = action.payload.total;
+      })
+
+      .addCase(getPendingRestaurant.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // SUPERADMIN - APPROVE RESTAURANT
+    builder
+      .addCase(approveRestaurantById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(approveRestaurantById.fulfilled, (state, action) => {
+        state.loading = false;
+        const restaurant = state.restaurants.find(
+          (r) => r._id === action.payload.restaurantId
+        );
+        if (restaurant) restaurant.status = "active";
+      })
+
+      .addCase(approveRestaurantById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // SUPERADMIN - REJECT RESTAURANT
+    builder
+      .addCase(rejecteRestaurantById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(rejecteRestaurantById.fulfilled, (state, action) => {
+        state.loading = false;
+        const restaurant = state.restaurants.find(
+          (r) => r._id === action.payload.restaurantId
+        );
+        if (restaurant) restaurant.status = "rejected";
+      })
+      .addCase(rejecteRestaurantById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+  // SUPERADMIN - GET ALL RESTAURANT CITY WISE
   builder
-  .addCase(updateRestaurant.pending, (state) => {
+  .addCase(getRestaurantCityWise.pending, (state) => {
     state.loading = true;
     state.error = null;
-    state.success = false;
   })
-  .addCase(updateRestaurant.fulfilled, (state, action) => {
-    // console.log("FULL PAYLOAD:", action.payload);
+
+  .addCase(getRestaurantCityWise.fulfilled, (state, action) => {
     state.loading = false;
-    state.success = true;
 
-    const updaterestaurant = action.payload?.data || action.payload;
-    if (!updaterestaurant || !updaterestaurant._id) {
-      console.error("Updated hotel invalid:", updatedHotel);
-      return;
-    }
+    // ✅ main data
+    state.restaurants = action.payload;
 
-    const index = state.restaurants.findIndex((r) => r._id === updaterestaurant._id);
-
-    if (index !== -1) {
-      state.restaurants[index] = updaterestaurant;
-    }
-
-    state.restaurant = updaterestaurant; // ✅ update current hotel also
+    // ✅ pagination
+    state.page = action.payload.page;
+    state.totalPages = action.payload.totalPages;
+    state.total = action.payload.total;
   })
-  .addCase(updateRestaurant.rejected, (state, action) => {
+
+  .addCase(getRestaurantCityWise.rejected, (state, action) => {
     state.loading = false;
     state.error = action.payload;
-    state.success = false;
-  });
+  });    
 
   },
 });

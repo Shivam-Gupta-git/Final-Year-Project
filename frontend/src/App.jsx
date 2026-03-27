@@ -68,6 +68,10 @@ import AddRestaurantDetails from "./pages/admin/restaurant/AddRestaurantDetails"
 import AdminActiveRestaurant from "./pages/admin/restaurant/AdminActiveRestaurant";
 import ShowRestaurantStatus from "./pages/admin/restaurant/ShowRestaurantStatus";
 import UpdateRestaurantDetails from "./pages/admin/restaurant/UpdateRestaurantDetails";
+import SuperAdminRestaurantDashboard from "./pages/superAdmin/restaurant/SuperAdminRestaurantDashboard";
+import SuperAdminApprovealRestaurant from "./pages/superAdmin/restaurant/SuperAdminApprovealRestaurant";
+import GetAllRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllRestaurantCityWise";
+
 
 
 function App() {
@@ -403,6 +407,9 @@ function App() {
         <Route path="/admin/admin-active-restaurant" element={<AdminProtectedRouter><AdminActiveRestaurant/></AdminProtectedRouter>}/>
         <Route path="/admin/show-restaurant-status" element={<AdminProtectedRouter><ShowRestaurantStatus/></AdminProtectedRouter>}/>
         <Route path="/admin/update-restaurant/:id" element={<AdminProtectedRouter><UpdateRestaurantDetails/></AdminProtectedRouter>}/>
+        <Route path="/superAdmin/restaurant-dashboard" element={<SuperAdminProtectedRouter><SuperAdminRestaurantDashboard/></SuperAdminProtectedRouter>}/>
+        <Route path="/superAdmin/approval-restaurant" element={<SuperAdminProtectedRouter><SuperAdminApprovealRestaurant/></SuperAdminProtectedRouter>}/>
+        <Route path="/superAdmin/all-restaurant" element={<SuperAdminProtectedRouter><GetAllRestaurantCityWise/></SuperAdminProtectedRouter>}/>
       </Routes>
     </>
   );

@@ -375,6 +375,55 @@ export const updateResturant = async (req, res) => {
   }
 };
 
+// SUPERADMIN - GET ALL PENDING RESTAURANT CITY WISE
+export const allPendingResturant = async (req, res) => {
+  try {
+    const { city } = req.query;
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    let filter = { status: "pending" };
+
+    // ✅ city validation
+    if (city) {
+      if (!mongoose.Types.ObjectId.isValid(city)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid city ID",
+        });
+      }
+      filter.city = city;
+    }
+
+    const total = await Restaurant.countDocuments(filter);
+
+    const restaurants = await Restaurant.find(filter)
+      .populate("city", "name")
+      .populate("owner", "userName email role")
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: restaurants,
+      page,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
+
+  } catch (error) {
+    console.error("ERROR:", error); // 👈 MUST ADD THIS
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// SUPERADMIN - APPROVE RESTAURANT
 export const approveResturant = async (req, res) => {
   try {
     const { id } = req.params;
@@ -426,6 +475,7 @@ export const approveResturant = async (req, res) => {
   }
 };
 
+// SUPERADMIN - REJECT RESTAURANT
 export const rejectResturant = async (req, res) => {
   try {
     const { id } = req.params;
@@ -478,31 +528,51 @@ export const rejectResturant = async (req, res) => {
   }
 };
 
-export const allPendingResturant = async (req, res) => {
+// SUPERADMIN - GET ALL RESTAURANT CITY WISE 
+export const getAllRestaurantCityWise = async (req, res) => {
   try {
+    const { city } = req.query;
+
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const total = await Restaurant.countDocuments({ status: "pending" });
+    let filter = {};
 
-    const restaurant = await Restaurant.find({ status: "pending" })
-      .populate("createdBy", "userName email role")
+    // ✅ city filter
+    if (city) {
+      if (!mongoose.Types.ObjectId.isValid(city)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid city ID",
+        });
+      }
+      filter.city = city;
+    }
+
+    // ✅ only active restaurants (optional but recommended)
+    // filter.status = "active";
+
+    const total = await Restaurant.countDocuments(filter);
+
+    const restaurants = await Restaurant.find(filter)
+      .populate("city", "name")
+      .populate("owner", "name email")
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 })
-      .lean();
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
-      data: restaurant,
+      data: restaurants,
       page,
-      limit,
       total,
       totalPages: Math.ceil(total / limit),
-      count: restaurant.length,
+      count: restaurants.length,
     });
+
   } catch (error) {
+    console.error("ERROR:", error);
     return res.status(500).json({
       success: false,
       message: error.message,

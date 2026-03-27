@@ -166,15 +166,15 @@ function Navbar() {
                     src="https://cdn-icons-png.flaticon.com/128/684/684908.png"
                     alt=""
                   />
-                  {/* <GrLocationPin style={{ fontSize: "22px", color: "red" }} /> */}
 
                   <button
                     onClick={() => setShowLocationSection(true)}
                     className="text-sm font-medium text-blue-700 hover:text-blue-900 transition"
                   >
+                    {" "}
                     {currentUser?.location?.city
                       ? `${currentUser.location.city}, ${currentUser.location.state}`
-                      : "Add Location"}
+                      : "Add Location"}{" "}
                   </button>
                 </div>
               )}
@@ -188,36 +188,36 @@ function Navbar() {
                   <NavLink
                     to="/superAdmin/superAdminDashboard"
                     className={({ isActive }) =>
-                      `relative font-medium transition 
-    ${
-      isActive
-        ? "text-blue-600"
-        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
-    }`
+                      `relative font-medium transition ${
+                        isActive
+                          ? "text-blue-600"
+                          : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+                      }`
                     }
                   >
-                    Dashboard
+                    {" "}
+                    Dashboard{" "}
                     <span
                       className={({ isActive }) =>
-                        `absolute left-0 -bottom-1 h-0.5 bg-blue-600 transition-all duration-300
-      ${isActive ? "w-full" : "w-0 group-hover:w-full"}`
+                        `absolute left-0 -bottom-1 h-0.5 bg-blue-600 transition-all duration-300 ${
+                          isActive ? "w-full" : "w-0 group-hover:w-full"
+                        }`
                       }
-                    ></span>
+                    ></span>{" "}
                   </NavLink>
 
                   {/* City */}
                   <NavLink
                     to="/superAdmin/cityDashboard"
                     className={({ isActive }) =>
-                      `relative font-medium transition 
-    ${
-      isActive
-        ? "text-blue-600"
-        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
-    }`
+                      `relative font-medium transition ${
+                        isActive
+                          ? "text-blue-600"
+                          : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+                      }`
                     }
                   >
-                    City
+                    City{" "}
                     <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
                   </NavLink>
 
@@ -250,6 +250,22 @@ function Navbar() {
                     }
                   >
                     Place
+                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  </NavLink>
+
+                  {/* Restaurant */}
+                  <NavLink
+                    to="/superAdmin/restaurant-dashboard"
+                    className={({ isActive }) =>
+                      `relative font-medium transition 
+    ${
+      isActive
+        ? "text-blue-600"
+        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+    }`
+                    }
+                  >
+                    Restaurant
                     <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
                   </NavLink>
 
@@ -374,7 +390,7 @@ function Navbar() {
                             </span>
                             Dashboard
                           </Link>
-                        )  : admin?.host === "hotel" ? (
+                        ) : admin?.host === "hotel" ? (
                           <Link
                             to="/admin/adminDashboard"
                             className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"

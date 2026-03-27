@@ -115,7 +115,7 @@ adminRouter.get("/cities/pending", isAuthenticated, authorize("super_admin"), ge
 adminRouter.get("/hotels/pending", isAuthenticated, authorize("super_admin"), getPendingHotels)
 adminRouter.get("/places/pending", isAuthenticated, authorize("super_admin"), pendingPlace)
 adminRouter.get("/travel-options", isAuthenticated, authorize("super_admin"), getPendingTravelOptions)
-adminRouter.get("/resturant/pending", isAuthenticated , authorize("super_admin"), allPendingResturant)
+adminRouter.get("/restaurant/pending", isAuthenticated , authorize("super_admin"), allPendingResturant)
 
 // inactive by superAdmin......
 // SuperAdmin - inactiveCity
