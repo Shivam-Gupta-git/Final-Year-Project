@@ -71,6 +71,9 @@ import UpdateRestaurantDetails from "./pages/admin/restaurant/UpdateRestaurantDe
 import SuperAdminRestaurantDashboard from "./pages/superAdmin/restaurant/SuperAdminRestaurantDashboard";
 import SuperAdminApprovealRestaurant from "./pages/superAdmin/restaurant/SuperAdminApprovealRestaurant";
 import GetAllRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllRestaurantCityWise";
+import GetAllActiveRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllActiveRestaurantCityWise";
+import GetAllInactiveRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllInactiveRestaurantCityWise";
+import GetAllRejectedRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllRejectedRestaurantCityWise";
 
 
 
@@ -410,6 +413,9 @@ function App() {
         <Route path="/superAdmin/restaurant-dashboard" element={<SuperAdminProtectedRouter><SuperAdminRestaurantDashboard/></SuperAdminProtectedRouter>}/>
         <Route path="/superAdmin/approval-restaurant" element={<SuperAdminProtectedRouter><SuperAdminApprovealRestaurant/></SuperAdminProtectedRouter>}/>
         <Route path="/superAdmin/all-restaurant" element={<SuperAdminProtectedRouter><GetAllRestaurantCityWise/></SuperAdminProtectedRouter>}/>
+        <Route path="/superAdmin/all-active-restaurant" element={<GetAllActiveRestaurantCityWise/>}/>
+        <Route path="/superAdmin/all-inactive-restaurant" element={<SuperAdminProtectedRouter><GetAllInactiveRestaurantCityWise/></SuperAdminProtectedRouter>}/>
+        <Route path="/superAdmin/all-rejected-restaurant" element={<SuperAdminProtectedRouter><GetAllRejectedRestaurantCityWise/></SuperAdminProtectedRouter>}/>
       </Routes>
     </>
   );

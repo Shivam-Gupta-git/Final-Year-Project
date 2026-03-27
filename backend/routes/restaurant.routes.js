@@ -1,7 +1,7 @@
 import express from "express"
 import { authorize, isAuthenticated } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
-import { allAciveResturant, createRestaurant, deleteResturant, getActiveRestaurant, getAllRestaurantCityWise, getRestaurantStatus, getResturantbyID, inactiveRestaurantByAdmin, updateResturant } from "../controllers/restaurant.controller.js";
+import { allAciveResturant, createRestaurant, deleteResturant, getActiveRestaurant, getAllActiveRestaurantCityWise, getAllInActiveRestaurantCityWise, getAllRejectedRestaurantCityWise, getAllRestaurantCityWise, getRestaurantStatus, getResturantbyID, inactiveRestaurantByAdmin, updateResturant } from "../controllers/restaurant.controller.js";
 
 
 const restaurantRouter = express.Router()
@@ -28,6 +28,15 @@ restaurantRouter.put("/updateresturant/:id", isAuthenticated , authorize("admin"
 
 // SUPERADMIN - GET ALL RESTAURANT CITY WISE
 restaurantRouter.get("/restaurant-cityWise", isAuthenticated, authorize("super_admin"), getAllRestaurantCityWise)
+
+// SUPERADMIN - GET ALL ACTIVE RESTAURANT CITY WISE
+restaurantRouter.get("/active-restaurant-cityWise", isAuthenticated, authorize("super_admin"), getAllActiveRestaurantCityWise)
+
+// SUPERADMIN - GET ALL INACTIVE RESTAURANT CITY WISE
+restaurantRouter.get("/inactive-restaurant-cityWise", isAuthenticated, authorize("super_admin"), getAllInActiveRestaurantCityWise)
+
+// SUPERADMIN - GET ALL REJECTED RESTAURANT CITY WISE
+restaurantRouter.get("/rejected-restaurant-cityWise", isAuthenticated, authorize("super_admin"), getAllRejectedRestaurantCityWise)
 
 // SUPERADMIN - DELETE RESTAURANT
 restaurantRouter.delete("/delete/:id", isAuthenticated, authorize("admin"), deleteResturant)

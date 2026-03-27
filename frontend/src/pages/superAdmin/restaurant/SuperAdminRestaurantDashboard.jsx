@@ -20,17 +20,17 @@ function SuperAdminRestaurantDashboard() {
     },
     {
       title: "Show All Active Restaurant",
-      link: "",
+      link: "/superAdmin/all-active-restaurant",
       color: "bg-green-400",
     },
     {
       title: "Show All Inactive Restaurant",
-      link: "",
+      link: "/superAdmin/all-inactive-restaurant",
       color: "bg-red-400",
     },
     {
       title: "Show All Rejected Restaurant",
-      link: "",
+      link: "/superAdmin/all-rejected-restaurant",
       color: "bg-purple-400",
     },
   ]

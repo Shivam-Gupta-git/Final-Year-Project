@@ -219,13 +219,19 @@ export const getRestaurantCityWise = createAsyncThunk(
   "restaurant/getCityWise",
   async ({ city = "", page = 1, limit = 10 }, thunkAPI) => {
     try {
+      const token = localStorage.getItem("superAdminToken");
+
       let url = `/api/resturant/restaurant-cityWise?page=${page}&limit=${limit}`;
 
       if (city) {
         url += `&city=${city}`;
       }
 
-      const response = await apiClient.get(url);
+      const response = await apiClient.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       return response.data;
     } catch (error) {
@@ -236,11 +242,118 @@ export const getRestaurantCityWise = createAsyncThunk(
   }
 );
 
+// SUPERADMIN - GET ALL ACTIVE RESTAURANT CITY WISE
+export const getActiveRestaurantCityWise = createAsyncThunk(
+  "restaurant/getCityWise",
+  async ({ city = "", page = 1, limit = 10 }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("superAdminToken");
+
+      let url = `/api/resturant/active-restaurant-cityWise?page=${page}&limit=${limit}`;
+
+      if (city) {
+        url += `&city=${city}`;
+      }
+
+      const response = await apiClient.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch restaurants"
+      );
+    }
+  }
+);
+
+// SUPERADMIN - INACTIVE RESTAURANT 
+export const inactiveRestaurant = createAsyncThunk(
+  "restaurant/inactiveRestaurant",
+  async (restaurantId, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("superAdminToken");
+      const response = await apiClient.patch(
+        `/api/admin/restaurant/${restaurantId}/inactive`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return { restaurantId, message: response.data.message };
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Place Inactive failed"
+      );
+    }
+  }
+);
+
+// SUPERADMIN - GET ALL INACTIVE RESTAURANT CITY WISE
+export const getInactiveRestaurantCityWise = createAsyncThunk(
+  "restaurant/getInactiveRestaurantCityWise",
+  async ({ city = "", page = 1, limit = 10 }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("superAdminToken");
+
+      let url = `/api/resturant/inactive-restaurant-cityWise?page=${page}&limit=${limit}`;
+
+      if (city) {
+        url += `&city=${city}`;
+      }
+
+      const res = await apiClient.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch inactive restaurant"
+      );
+    }
+  }
+);
+
+// SUPERADMIN - GET ALL REJECTED RESTAURANT CITY WISE
+export const getAllRejectedRestaurantCityWise = createAsyncThunk(
+  "restaurant/getRejectedRestaurantCityWise",
+  async ({ city = "", page = 1, limit = 10 }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("superAdminToken");
+
+      let url = `/api/resturant/rejected-restaurant-cityWise?page=${page}&limit=${limit}`;
+
+      if (city) {
+        url += `&city=${city}`;
+      }
+
+      const res = await apiClient.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch inactive restaurant"
+      );
+    }
+  }
+);
+
 const restaurantSlice = createSlice({
   name: "restaurant",
   initialState: {
     restaurants: [],
     nearbyRestaurants: [],
+    inactiveCityWiseRestaurant: [],
     restaurant: null,
     loading: false,
     error: null,
@@ -431,30 +544,104 @@ const restaurantSlice = createSlice({
         state.error = action.payload;
       });
 
-  // SUPERADMIN - GET ALL RESTAURANT CITY WISE
+    // SUPERADMIN - GET ALL RESTAURANT CITY WISE
+    builder
+      .addCase(getRestaurantCityWise.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(getRestaurantCityWise.fulfilled, (state, action) => {
+        state.loading = false;
+
+        // ✅ main data
+        state.restaurants = action.payload;
+
+        // ✅ pagination
+        state.page = action.payload.page;
+        state.totalPages = action.payload.totalPages;
+        state.total = action.payload.total;
+      })
+
+      .addCase(getRestaurantCityWise.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // SUPERADMIN - GET ALL ACTIVE RESTAURANT CITY WISE
+    // builder
+    //   .addCase(getActiveRestaurantCityWise.pending, (state) => {
+    //     state.loading = true;
+    //     state.error = null;
+    //   })
+
+    //   .addCase(getActiveRestaurantCityWise.fulfilled, (state, action) => {
+    //     state.loading = false;
+
+    //     // ✅ main data
+    //     state.restaurants = action.payload;
+
+    //     // ✅ pagination
+    //     state.page = action.payload.page;
+    //     state.totalPages = action.payload.totalPages;
+    //     state.total = action.payload.total;
+    //   })
+
+    //   .addCase(getActiveRestaurantCityWise.rejected, (state, action) => {
+    //     state.loading = false;
+    //     state.error = action.payload;
+    //   });
+
+  // SUPERADMIN - INACTIVE RESTAURANT 
+  // builder
+  // .addCase(inactiveRestaurant.pending, (state) => {
+  //   state.loading = true;
+  //   state.error = null;
+  //   state.success = false;
+  // })
+  // .addCase(inactiveRestaurant.fulfilled, (state, action) => {
+  //   state.loading = false;
+  //   state.success = true;
+  //   const restaurant = state.restaurants.find(
+  //     (r) => r._id === action.payload.restaurantId
+  //   );
+  //   if (restaurant) place.status = "inactive";
+  // })
+  // .addCase(inactiveRestaurant.rejected, (state, action) => {
+  //   state.loading = false;
+  //   state.error = action.payload;
+  //   state.success = false;
+  // }); 
+
+  // SUPERADMIN - GET ALL INACTIVE RESTAURANT CITY WISE
   builder
-  .addCase(getRestaurantCityWise.pending, (state) => {
+  .addCase(getInactiveRestaurantCityWise.pending, (state) => {
     state.loading = true;
-    state.error = null;
   })
-
-  .addCase(getRestaurantCityWise.fulfilled, (state, action) => {
+  .addCase(getInactiveRestaurantCityWise.fulfilled, (state, action) => {
     state.loading = false;
-
-    // ✅ main data
     state.restaurants = action.payload;
-
-    // ✅ pagination
-    state.page = action.payload.page;
-    state.totalPages = action.payload.totalPages;
-    state.total = action.payload.total;
   })
-
-  .addCase(getRestaurantCityWise.rejected, (state, action) => {
+  .addCase(getInactiveRestaurantCityWise.rejected, (state, action) => {
     state.loading = false;
     state.error = action.payload;
-  });    
+  });
 
+  // SUPERADMIN - GET ALL REJECTED RESTAURANT CITY WISE
+  builder
+  .addCase(getAllRejectedRestaurantCityWise.pending, (state) => {
+    state.loading = true;
+  })
+  .addCase(getAllRejectedRestaurantCityWise.fulfilled, (state, action) => {
+    state.loading = false;
+    state.restaurants = action.payload;
+  })
+  .addCase(getAllRejectedRestaurantCityWise.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  });
+
+      
   },
 });
 
