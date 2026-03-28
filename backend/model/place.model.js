@@ -18,6 +18,10 @@ const placeSchema = new mongoose.Schema(
       required: true,
     },
 
+    tagline : {
+      type : String,
+    },
+
     category: {
       type: String,
       required: true,
@@ -103,6 +107,12 @@ const placeSchema = new mongoose.Schema(
     priorityScore: {
       type: Number, // popularity ranking
       default: 1
+    },
+    suggestedTime : {
+      type : String
+    },
+    rank : {
+      type : Number
     }
   },
   { timestamps: true },

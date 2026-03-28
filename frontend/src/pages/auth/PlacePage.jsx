@@ -9,11 +9,15 @@ import PlaceMap from "../../components/Place/PlaceMap";
 import EmptyState from "../../components/Place/EmptyState";
 import LoadingSkeleton from "../../components/Place/LoadingSkeleton";
 
-const DEFAULT_DISTANCE = 100000;
+const DEFAULT_DISTANCE = 25000;
 
 const PlacePage = ({ cityId }) => {
   const dispatch = useDispatch();
-  const { nearbyPlaces = [], loading, error } = useSelector((state) => state.place);
+  const {
+    nearbyPlaces = [],
+    loading,
+    error,
+  } = useSelector((state) => state.place);
 
   const [coords, setCoords] = useState(null);
   const [distance, setDistance] = useState(DEFAULT_DISTANCE);
@@ -23,8 +27,16 @@ const PlacePage = ({ cityId }) => {
   const [cityName, setCityName] = useState("Discover Nearby");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // NEW: track geolocation state separately from API loading
+  const [locationStatus, setLocationStatus] = useState("idle"); // "idle" | "loading" | "error" | "denied"
+
   const requestUserLocation = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setLocationStatus("error");
+      return;
+    }
+
+    setLocationStatus("loading");
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -32,10 +44,17 @@ const PlacePage = ({ cityId }) => {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
-
         setCoords(nextCoords);
+        setLocationStatus("idle");
       },
-      () => {},
+      (err) => {
+        // FIX: was silently swallowing errors before
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationStatus("denied");
+        } else {
+          setLocationStatus("error");
+        }
+      },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
     );
   };
@@ -65,16 +84,28 @@ const PlacePage = ({ cityId }) => {
     geocoder.geocode({ location: coords }, (results, status) => {
       if (status !== "OK" || !results?.length) return;
 
-      const locality = results[0].address_components?.find((component) =>
-        component.types.includes("locality"),
+      const locality = results[0].address_components?.find((c) =>
+        c.types.includes("locality"),
       );
-      const adminArea = results[0].address_components?.find((component) =>
-        component.types.includes("administrative_area_level_1"),
+      const adminArea = results[0].address_components?.find((c) =>
+        c.types.includes("administrative_area_level_1"),
       );
 
-      setCityName(locality?.long_name || adminArea?.long_name || "Nearby Places");
+      setCityName(
+        locality?.long_name || adminArea?.long_name || "Nearby Places",
+      );
     });
   }, [coords]);
+
+  // NEW: scroll to map on mobile when a card is selected
+  const handleSelectPlace = (id) => {
+    setSelectedPlaceId(id);
+    if (window.innerWidth < 1024) {
+      document
+        .getElementById("place-map-section")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   const filteredPlaces = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -82,10 +113,26 @@ const PlacePage = ({ cityId }) => {
 
     return nearbyPlaces.filter((place) => {
       const name = place?.name?.toLowerCase() || "";
-      const placeCategory = place?.category?.toLowerCase() || "";
-      return name.includes(normalizedQuery) || placeCategory.includes(normalizedQuery);
+      const placeCategory = (
+        typeof place?.category === "string"
+          ? place.category
+          : place?.category?.name || ""
+      ).toLowerCase();
+      return (
+        name.includes(normalizedQuery) ||
+        placeCategory.includes(normalizedQuery)
+      );
     });
   }, [nearbyPlaces, searchQuery]);
+
+  // Derive empty state context for EmptyState component
+  const emptyStateReason = useMemo(() => {
+    if (locationStatus === "denied") return "denied";
+    if (locationStatus === "error") return "error";
+    if (!coords) return "no-location";
+    if (searchQuery.trim()) return "search";
+    return "no-results";
+  }, [locationStatus, coords, searchQuery]);
 
   return (
     <section className="mx-auto grid h-[calc(100vh-4rem)] max-w-[1440px] grid-cols-1 gap-4 p-3 md:p-4 lg:grid-cols-12">
@@ -96,6 +143,7 @@ const PlacePage = ({ cityId }) => {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             onUseLocation={requestUserLocation}
+            locationStatus={locationStatus}
           />
           <PlaceFilters
             distance={distance}
@@ -103,7 +151,10 @@ const PlacePage = ({ cityId }) => {
             onDistanceChange={setDistance}
             onCategoryChange={setCategory}
           />
-          <PlaceSummary count={filteredPlaces.length} distance={distance} />
+          {/* FIX: hide summary during loading so it doesn't show "0 places" */}
+          {!loading && coords && (
+            <PlaceSummary count={filteredPlaces.length} distance={distance} />
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
@@ -114,32 +165,38 @@ const PlacePage = ({ cityId }) => {
               {error}
             </div>
           ) : filteredPlaces.length === 0 ? (
-            <EmptyState />
+            <EmptyState
+              reason={emptyStateReason}
+              onRetry={requestUserLocation}
+            />
           ) : (
             <PlaceList
               places={filteredPlaces}
               selectedPlaceId={selectedPlaceId}
               hoveredPlaceId={hoveredPlaceId}
-              onSelect={setSelectedPlaceId}
+              onSelect={handleSelectPlace}
               onHover={setHoveredPlaceId}
             />
           )}
         </div>
       </aside>
 
-      <div className="order-1 h-[360px] overflow-hidden rounded-2xl bg-white shadow-md md:h-[420px] lg:order-2 lg:col-span-7 lg:h-full">
+      {/* NEW: id for mobile scroll-to-map */}
+      <div
+        id="place-map-section"
+        className="order-1 h-[360px] overflow-hidden rounded-2xl bg-white shadow-md md:h-[420px] lg:order-2 lg:col-span-7 lg:h-full"
+      >
         <PlaceMap
           center={coords}
           places={filteredPlaces}
           selectedPlaceId={selectedPlaceId}
           hoveredPlaceId={hoveredPlaceId}
-          onSelectPlace={setSelectedPlaceId}
+          onSelectPlace={handleSelectPlace}
+          distance={distance}
         />
       </div>
     </section>
   );
 };
-
-
 
 export default PlacePage;
