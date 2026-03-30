@@ -30,7 +30,7 @@ const MOCK_DB = [
   {
     id: 3,
     active: true,
-    route: "/food",
+    route: "/RestaurantLandingPage",
     icon: "🍜",
     tag: "EAT",
     title: "Local Food Trails",

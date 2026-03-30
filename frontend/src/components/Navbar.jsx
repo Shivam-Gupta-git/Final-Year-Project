@@ -14,6 +14,11 @@ import { getAdminData } from "../features/user/adminSlice";
 import { adminLogout } from "../features/auth/adminAuthSlice";
 import { FaUserShield } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import { ShoppingBagIcon } from "@heroicons/react/24/outline";
+import { selectCartItemCount } from "../features/user/cartSlice";
+import { BiTrip } from "react-icons/bi";
+import { FaHeart } from "react-icons/fa6";
+import { IoMdSettings } from "react-icons/io";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +36,7 @@ function Navbar() {
   const { superAdmin } = useSelector((state) => state.superAdmin);
   const { adminToken } = useSelector((state) => state.adminAuth);
   const { admin } = useSelector((state) => state.admin);
+  const cartCount = useSelector(selectCartItemCount);
 
   const location = useLocation();
   const dropdownRef = useRef(null);
@@ -158,6 +164,19 @@ function Navbar() {
                 NotDefine
               </Link>
 
+              <Link
+                to="/cart"
+                className="relative ml-2 inline-flex items-center justify-center rounded-xl p-2 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                aria-label="Cart"
+              >
+                <ShoppingBagIcon className="h-6 w-6" />
+                {cartCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[11px] font-bold text-white">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </Link>
+
               {/* Location */}
               {(token || adminToken) && (
                 <div className="flex items-center gap-1 px-3 py-1 rounded-lg">
@@ -166,15 +185,15 @@ function Navbar() {
                     src="https://cdn-icons-png.flaticon.com/128/684/684908.png"
                     alt=""
                   />
-                  {/* <GrLocationPin style={{ fontSize: "22px", color: "red" }} /> */}
 
                   <button
                     onClick={() => setShowLocationSection(true)}
                     className="text-sm font-medium text-blue-700 hover:text-blue-900 transition"
                   >
+                    {" "}
                     {currentUser?.location?.city
                       ? `${currentUser.location.city}, ${currentUser.location.state}`
-                      : "Add Location"}
+                      : "Add Location"}{" "}
                   </button>
                 </div>
               )}
@@ -188,36 +207,36 @@ function Navbar() {
                   <NavLink
                     to="/superAdmin/superAdminDashboard"
                     className={({ isActive }) =>
-                      `relative font-medium transition 
-    ${
-      isActive
-        ? "text-blue-600"
-        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
-    }`
+                      `relative font-medium transition ${
+                        isActive
+                          ? "text-blue-600"
+                          : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+                      }`
                     }
                   >
-                    Dashboard
+                    {" "}
+                    Dashboard{" "}
                     <span
                       className={({ isActive }) =>
-                        `absolute left-0 -bottom-1 h-0.5 bg-blue-600 transition-all duration-300
-      ${isActive ? "w-full" : "w-0 group-hover:w-full"}`
+                        `absolute left-0 -bottom-1 h-0.5 bg-blue-600 transition-all duration-300 ${
+                          isActive ? "w-full" : "w-0 group-hover:w-full"
+                        }`
                       }
-                    ></span>
+                    ></span>{" "}
                   </NavLink>
 
                   {/* City */}
                   <NavLink
                     to="/superAdmin/cityDashboard"
                     className={({ isActive }) =>
-                      `relative font-medium transition 
-    ${
-      isActive
-        ? "text-blue-600"
-        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
-    }`
+                      `relative font-medium transition ${
+                        isActive
+                          ? "text-blue-600"
+                          : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+                      }`
                     }
                   >
-                    City
+                    City{" "}
                     <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
                   </NavLink>
 
@@ -250,6 +269,22 @@ function Navbar() {
                     }
                   >
                     Place
+                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  </NavLink>
+
+                  {/* Restaurant */}
+                  <NavLink
+                    to="/superAdmin/restaurant-dashboard"
+                    className={({ isActive }) =>
+                      `relative font-medium transition 
+    ${
+      isActive
+        ? "text-blue-600"
+        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+    }`
+                    }
+                  >
+                    Restaurant
                     <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
                   </NavLink>
 
@@ -311,91 +346,111 @@ function Navbar() {
 
                   {/* Dropdown */}
                   {profileOpen && (
-                    <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300 ease-out animate-dropdown">
+                    <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transform transition-all duration-300 ease-out animate-dropdown z-50">
                       {/* Menu Items */}
                       <div className="py-2">
                         {token ? (
                           <Link
                             to="/user-profile"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-300"
+                            className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
                           >
-                            <span className="bg-blue-400 rounded-full text-white">
-                              <FaRegUserCircle style={{ fontSize: "22px" }} />
-                            </span>
-                            User Profile
+                            <FaRegUserCircle className="text-blue-500 text-2xl bg-blue-100 rounded-full p-1" />
+                            <span className="font-medium">User Profile</span>
                           </Link>
                         ) : superAdminToken ? (
                           <Link
                             to="/superAdmin/superAdminProfile"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-300"
+                            className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
                           >
-                            <span className="bg-blue-400 rounded-full text-white">
-                              <FaRegUserCircle style={{ fontSize: "22px" }} />
+                            <FaRegUserCircle className="text-blue-500 text-2xl bg-blue-100 rounded-full p-1" />
+                            <span className="font-medium">
+                              Super Admin Profile
                             </span>
-                            Super Admin Profile
                           </Link>
                         ) : adminToken ? (
                           <Link
                             to="/admin/adminProfile"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-300"
+                            className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
                           >
-                            <span className="bg-blue-400 rounded-full text-white">
-                              <FaRegUserCircle style={{ fontSize: "22px" }} />
-                            </span>
-                            Admin Profile
+                            <FaRegUserCircle className="text-blue-500 text-2xl bg-blue-100 rounded-full p-1" />
+                            <span className="font-medium">Admin Profile</span>
                           </Link>
                         ) : null}
 
-                        {token ? (
-                          <Link
-                            to="/trips"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <span>🧳</span>
-                            My Trips
-                          </Link>
-                        ) : null}
-                        {token ? (
-                          <Link
-                            to="/wishlist"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <span>❤️</span>
-                            Wishlist
-                          </Link>
-                        ) : null}
-                        {superAdmin?.role === "super_admin" ? (
+                        {/* User-specific Links */}
+                        {token && (
+                          <>
+                            <Link
+                              to="/trips"
+                              className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                            >
+                              <span><BiTrip /></span>
+                              <span className="text-sm">My Trips</span>
+                            </Link>
+
+                            <Link
+                              to="/wishlist"
+                              className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                            >
+                              <span><FaHeart /></span>
+                              <span className="text-sm">Wishlist</span>
+                            </Link>
+
+                            <Link
+                              to="/My-Food-orders"
+                              className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                            >
+                              <span>🍽️</span>
+                              <span className="text-sm">Food Orders</span>
+                            </Link>
+                          </>
+                        )}
+
+                        {/* Admin/SuperAdmin Dashboards */}
+                        {superAdmin?.role === "super_admin" && (
                           <Link
                             to="/superAdmin/superAdminDashboard"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
                           >
-                            <span>
-                              <RxDashboard />
-                            </span>
-                            Dashboard
+                            <RxDashboard className="text-lg" />
+                            <span className="text-sm">Dashboard</span>
                           </Link>
-                        ) : admin?.role === "admin" ? (
+                        )}
+
+                        {admin?.host === "hotel" && (
                           <Link
                             to="/admin/adminDashboard"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
                           >
-                            <span>
-                              <RxDashboard />
-                            </span>
-                            Dashboard
+                            <RxDashboard className="text-lg" />
+                            <span className="text-sm">Hotel Dashboard</span>
                           </Link>
-                        ) : null}
+                        )}
+
+                        {admin?.host === "restaurant" && (
+                          <Link
+                            to="/admin/restaurantDashboard"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                          >
+                            <RxDashboard className="text-lg" />
+                            <span className="text-sm">
+                              Restaurant Dashboard
+                            </span>
+                          </Link>
+                        )}
+
+                        {/* Settings */}
                         <Link
                           to="/settings"
-                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
                         >
-                          <span>⚙️</span>
-                          Settings
+                          <span><IoMdSettings /></span>
+                          <span className="text-sm">Settings</span>
                         </Link>
                       </div>
 
                       {/* Divider */}
-                      <div className="border-t border-gray-100"></div>
+                      <div className="border-t border-gray-100 dark:border-gray-700"></div>
 
                       {/* Logout */}
                       <button
@@ -409,10 +464,10 @@ function Navbar() {
                             ? handelAdminLogout
                             : null
                         }
-                        className="flex items-center gap-3 w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 transition-colors"
+                        className="flex items-center gap-3 w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-800 transition-colors duration-200 rounded-lg"
                       >
                         <span>🚪</span>
-                        Logout
+                        <span className="text-sm font-medium">Logout</span>
                       </button>
                     </div>
                   )}

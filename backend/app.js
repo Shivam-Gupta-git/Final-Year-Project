@@ -14,6 +14,8 @@ import { driverRouter } from "./routes/driver.routes.js";
 import  cors  from 'cors'
 import roomRouter from "./routes/room.routes.js";
 import hotelBookingRouter from "./routes/hotelBooking.routes.js";
+import foodRouter from "./routes/food.routes.js";
+import foodOrderRouter from "./routes/foodOrder.routes.js";
 
 const app = express();
 
@@ -43,6 +45,8 @@ app.use("/api/resturant", restaurantRouter)
 app.use("/api/hotelBooking", hotelBookingRouter)
 app.use("/api/review" , reviewRouter)
 app.use("/api/driver", driverRouter)
+app.use("/api/food", foodRouter)
+app.use("/api/foodOrder", foodOrderRouter)
 
 
 app.get("/", (req, res) => {

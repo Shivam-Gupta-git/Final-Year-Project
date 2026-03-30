@@ -34,3 +34,33 @@ html {
   scroll-behavior: smooth;
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235 / 0.85) 0%,
+    rgb(243 244 246 / 0.95) 50%,
+    rgb(229 231 235 / 0.85) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.dark .animate-skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(55 65 81 / 0.85) 0%,
+    rgb(75 85 99 / 0.95) 50%,
+    rgb(55 65 81 / 0.85) 100%
+  );
+  background-size: 200% 100%;
+}
+

@@ -627,6 +627,7 @@ export const adminLogin = async (req, res) => {
       message: "admin login successfully",
       accessToken,
       refreshToken,
+      data: registredAdmin
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

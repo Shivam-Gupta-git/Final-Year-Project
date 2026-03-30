@@ -343,7 +343,8 @@ const citySlice = createSlice({
       })
       .addCase(getActiveCities.fulfilled, (state, action) => {
         state.loading = false;
-        state.cities = action.payload;
+        const p = action.payload;
+        state.cities = Array.isArray(p) ? p : (p?.data ?? []);
       })
       .addCase(getActiveCities.rejected, (state, action) => {
         state.loading = false;
