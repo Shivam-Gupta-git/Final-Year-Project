@@ -10,8 +10,9 @@ function AdminLogin() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false);
 
-  const {loading, error, loginSuccess, adminToken} = useSelector((state) => state.adminAuth);
-
+  const {loading, error, loginSuccess, adminToken, admin} = useSelector((state) => state.adminAuth);
+  console.log("loginSuccess:", loginSuccess);
+  console.log("admin:", admin?.admin?.host);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -32,12 +33,18 @@ function AdminLogin() {
     dispatch(adminLogin({ email, password }));
   };
 
+
   useEffect(() => {
     if (loginSuccess) {
-      alert("admin login successfully")
-      navigate("/admin/adminDashboard");
+      alert("admin login successfully");
+  
+      if (admin?.admin?.host === "hotel") {
+        navigate("/admin/adminDashboard");
+      } else if (admin?.admin?.host === "restaurant") {
+        navigate("/admin/restaurantDashboard");
+      }
     }
-  }, [loginSuccess, navigate]);
+  }, [loginSuccess, navigate, admin]);
 
   return (
     <div className=" flex items-center justify-center bg-linear-to-br from-gray-100 via-white to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 text-gray-800 dark:text-white">

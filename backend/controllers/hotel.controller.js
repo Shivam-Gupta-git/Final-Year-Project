@@ -7,6 +7,7 @@ import fs from "fs";
 import { Place } from "../model/place.model.js";
 import { User } from "../model/user.model.js";
 
+// admin - createHotel
 export const createHotel = async (req, res) => {
   try {
     const { name, city, address, description, facilities, pricePerNight } =
@@ -123,7 +124,7 @@ export const getHotelbyid = async (req, res) => {
   }
 };
 
-//update is will handle by Admin.
+// admin - updateHotel
 export const updateHotel = async (req, res) => {
   try {
     const { id } = req.params;
@@ -208,6 +209,7 @@ export const updateHotel = async (req, res) => {
   }
 };
 
+// superAdmin - deleteHotel
 export const deleteHotel = async (req, res) => {
   try {
     const { id } = req.params;
@@ -241,6 +243,7 @@ export const deleteHotel = async (req, res) => {
   }
 };
 
+// superAdmin - approveHotel
 export const approveHotel = async (req, res) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
@@ -265,6 +268,7 @@ export const approveHotel = async (req, res) => {
   }
 };
 
+// superAdmin - rejectHotel
 export const rejectHotel = async (req, res) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
@@ -286,6 +290,7 @@ export const rejectHotel = async (req, res) => {
   }
 };
 
+// admin - getActiveHotels
 export const getActiveHotels = async (req, res) => {
   try {
     let filter = { status: "active" };
@@ -316,6 +321,7 @@ export const getActiveHotels = async (req, res) => {
   }
 };
 
+// superAdmin - getHotelByStatus
 export const getHotelsByStatus = async (req, res) => {
   try {
     const { status } = req.query;
@@ -349,6 +355,7 @@ export const getHotelsByStatus = async (req, res) => {
   }
 };
 
+// superAdmin - getPendingHotels
 export const getPendingHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find({ status: "pending" })
@@ -368,6 +375,7 @@ export const getPendingHotels = async (req, res) => {
   }
 };
 
+// superAdmin - getAllHotels
 export const getAllHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find().populate("city", "name state country");
@@ -390,6 +398,7 @@ export const getAllHotels = async (req, res) => {
   }
 };
 
+// superAdmin - inctiveHotel
 export const inactiveHotel = async (req, res) => {
   try {
     const hotelId = req.params.id;
@@ -423,6 +432,7 @@ export const inactiveHotel = async (req, res) => {
   }
 };
 
+// superAdmin - getInactiveHotels
 export const getInactiveHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find({ status: "inactive" });
@@ -434,6 +444,7 @@ export const getInactiveHotels = async (req, res) => {
   }
 };
 
+// superAdmin - getRejectedHotel
 export const getRejectedHotel = async (req, res) => {
   try {
     const hotel = await Hotel.find({ status: "rejected" });
@@ -445,6 +456,7 @@ export const getRejectedHotel = async (req, res) => {
   }
 };
 
+// user - getPublicActiveHotel
 export const getPublicActiveHotels = async (req, res) => {
   try {
     const { city } = req.query; // ← read city from ?city=Delhi
@@ -471,6 +483,7 @@ export const getPublicActiveHotels = async (req, res) => {
   }
 };
 
+// admin - inactiveHotelByAdmin
 export const inactiveHotelByAdmin = async (req, res) => {
   try {
     const hotelId = req.params.id;

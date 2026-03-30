@@ -91,7 +91,7 @@ function AddHotelDetails() {
       if (img) data.append("images", img);
     });
 
-    console.log(data);
+    // console.log(data);
     dispatch(createHotel(data));
     alert("Hotel Create SuccessFul.")
     navigate("/admin/adminDashboard")

@@ -75,7 +75,7 @@ export const adminLogin = createAsyncThunk(
 
       return {
         adminToken: response.accessToken,
-        admin: response.admin,
+        admin: response.data,
       };
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -88,7 +88,12 @@ export const adminLogin = createAsyncThunk(
 /* ------- Logout Admin ---------- */
 export const adminLogout = createAsyncThunk("admin/adminLogout", async (_, thunkAPI) => {
   try {
-    const respone = await apiClient.delete("/api/admin/admin-logout")
+    const token = localStorage.getItem("adminToken")
+    const respone = await apiClient.delete("/api/admin/admin-logout", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
     return respone
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response?.data?.message || "Admin Logout Failed")
@@ -176,7 +181,8 @@ const adminAuthSlice = createSlice({
         state.role = "admin";
 
         state.adminToken = action.payload.adminToken;
-        state.admin = action.payload.admin;
+        state.admin = action.payload;
+        
 
         localStorage.setItem("adminToken", action.payload.adminToken);
       })

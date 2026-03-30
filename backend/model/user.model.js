@@ -27,13 +27,13 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["user", "admin", "super_admin", "driver"],
+      enum: ["user", "admin", "super_admin", "driver", "delivery_boy"],
       default: "admin",
     },
 
     host: {
       type: String,
-      enum: ["hotel", "restaurant", "travelOption", "driver"]
+      enum: ["hotel", "restaurant", "travelOption", "driver", "delivery_boy"]
     }, 
 
     avatar: {

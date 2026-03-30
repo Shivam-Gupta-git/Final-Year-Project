@@ -47,7 +47,7 @@ export const createRoom = async (req, res) => {
       });
     }
 
-    console.log("Hotel Owner:", hotel.createdBy.toString());
+    // console.log("Hotel Owner:", hotel.createdBy.toString());
 
     // ---------- OWNERSHIP CHECK ----------
     if (req.user.role === "admin" && !hotel.createdBy.equals(req.user.id)) {

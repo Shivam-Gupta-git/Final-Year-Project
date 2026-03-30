@@ -12,6 +12,10 @@ import roomReducer from "../features/user/roomSlice";
 import hotelBookingreducer from "../features/user/hotelBookingSlice";
 import reviewReducer from "../features/user/reviewSlice"
 import placeReducer from "../features/user/placeSlice";
+import restaurantReducer from "../features/user/restaurantSlice";
+import foodReducer from "../features/user/foodSlice";
+import cartReducer from "../features/user/cartSlice";
+import foodOrderReducer from "../features/user/foodOrderSlice";
 
 export const store = configureStore({
   reducer:{
@@ -28,6 +32,10 @@ export const store = configureStore({
     place: placeReducer,
     search : searchReducer,
     review : reviewReducer,
-    place : placeReducer
+    place : placeReducer,
+    restaurant : restaurantReducer,
+    food : foodReducer,
+    cart : cartReducer,
+    foodOrder : foodOrderReducer
   }
 })

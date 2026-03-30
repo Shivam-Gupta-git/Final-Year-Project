@@ -63,6 +63,32 @@ import GetInactivePlaceCityWise from "./pages/superAdmin/place/GetInactivePlaceC
 import UpdatePlaceDetails from "./pages/superAdmin/place/UpdatePlaceDetails";
 import AiPlanner from "./pages/AIPlanner/AiPlanner";
 import AiPlannerDetails from "./pages/AIPlanner/AiPlannerDetails";
+import RestaurantDashboard from "./pages/admin/restaurant/restaurantDashboard";
+import AddRestaurantDetails from "./pages/admin/restaurant/AddRestaurantDetails";
+import AdminActiveRestaurant from "./pages/admin/restaurant/AdminActiveRestaurant";
+import ShowRestaurantStatus from "./pages/admin/restaurant/ShowRestaurantStatus";
+import UpdateRestaurantDetails from "./pages/admin/restaurant/UpdateRestaurantDetails";
+import SuperAdminRestaurantDashboard from "./pages/superAdmin/restaurant/SuperAdminRestaurantDashboard";
+import SuperAdminApprovealRestaurant from "./pages/superAdmin/restaurant/SuperAdminApprovealRestaurant";
+import GetAllRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllRestaurantCityWise";
+import GetAllActiveRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllActiveRestaurantCityWise";
+import GetAllInactiveRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllInactiveRestaurantCityWise";
+import GetAllRejectedRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllRejectedRestaurantCityWise";
+import CreateFood from "./pages/admin/food/CreateFood";
+import GetAllFood from "./pages/admin/food/GetAllFood";
+import UpdateFood from "./pages/admin/food/UpdateFood";
+import RestaurantLandingPage from "./components/Restaurant/RestaurantLandingPage";
+import RestaurantDetailPage from "./components/Restaurant/RestaurantDetailPage";
+import RestaurantMenuPage from "./components/Restaurant/RestaurantMenuPage";
+import FoodDetailPage from "./components/Restaurant/FoodDetailPage";
+import CartPage from "./components/Restaurant/CartPage";
+import CheckoutPage from "./components/Restaurant/CheckoutPage";
+import MyOrdersPage from "./components/Restaurant/MyOrdersPage";
+import OrderDetailsPage from "./components/Restaurant/OrderDetailsPage";
+import OrdersDashboard from "./pages/admin/restaurant/OrdersDashboard";
+import ManageOrder from "./pages/admin/restaurant/ManageOrder";
+import AdminOrderDetails from "./pages/admin/restaurant/AdminOrderDetails";
+import ViewUsers from "./pages/admin/restaurant/ViewUsers";
 import PlacePage from "./pages/auth/PlacePage";
 
 
@@ -395,6 +421,185 @@ function App() {
         />
         <Route path="/AiPlanner" element={<AiPlanner />} />
         <Route path="/AiPlanner-details" element={<AiPlannerDetails />} />
+        <Route
+          path="/admin/restaurantDashboard"
+          element={
+            <AdminProtectedRouter>
+              <RestaurantDashboard />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/add-restaurant"
+          element={
+            <AdminProtectedRouter>
+              <AddRestaurantDetails />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/admin-active-restaurant"
+          element={
+            <AdminProtectedRouter>
+              <AdminActiveRestaurant />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/show-restaurant-status"
+          element={
+            <AdminProtectedRouter>
+              <ShowRestaurantStatus />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/update-restaurant/:id"
+          element={
+            <AdminProtectedRouter>
+              <UpdateRestaurantDetails />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/superAdmin/restaurant-dashboard"
+          element={
+            <SuperAdminProtectedRouter>
+              <SuperAdminRestaurantDashboard />
+            </SuperAdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/superAdmin/approval-restaurant"
+          element={
+            <SuperAdminProtectedRouter>
+              <SuperAdminApprovealRestaurant />
+            </SuperAdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/superAdmin/all-restaurant"
+          element={
+            <SuperAdminProtectedRouter>
+              <GetAllRestaurantCityWise />
+            </SuperAdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/superAdmin/all-active-restaurant"
+          element={<GetAllActiveRestaurantCityWise />}
+        />
+        <Route
+          path="/superAdmin/all-inactive-restaurant"
+          element={
+            <SuperAdminProtectedRouter>
+              <GetAllInactiveRestaurantCityWise />
+            </SuperAdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/superAdmin/all-rejected-restaurant"
+          element={
+            <SuperAdminProtectedRouter>
+              <GetAllRejectedRestaurantCityWise />
+            </SuperAdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/create-food"
+          element={
+            <AdminProtectedRouter>
+              <CreateFood />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/get-All-Food/:id"
+          element={
+            <AdminProtectedRouter>
+              <GetAllFood />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/update-food/:id"
+          element={
+            <AdminProtectedRouter>
+              <UpdateFood />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/restaurant/:restaurantId/menu"
+          element={<RestaurantMenuPage />}
+        />
+        <Route
+          path="/restaurant/:restaurantId"
+          element={<RestaurantDetailPage />}
+        />
+        <Route path="/food/:foodId" element={<FoodDetailPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route
+          path="/RestaurantLandingPage"
+          element={<RestaurantLandingPage />}
+        />
+
+        <Route
+          path="/CheckoutPage"
+          element={
+            <UserProtectedRouter>
+              <CheckoutPage />
+            </UserProtectedRouter>
+          }
+        />
+        <Route
+          path="/My-Food-orders"
+          element={
+            <UserProtectedRouter>
+              <MyOrdersPage />
+            </UserProtectedRouter>
+          }
+        />
+        <Route
+          path="/OrderDetailsPage/:orderId"
+          element={
+            <UserProtectedRouter>
+              <OrderDetailsPage />
+            </UserProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/ordersDashboard"
+          element={
+            <AdminProtectedRouter>
+              <OrdersDashboard />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/manage-orders"
+          element={
+            <AdminProtectedRouter>
+              <ManageOrder />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/AdminOrderDetails/:orderId"
+          element={
+            <AdminProtectedRouter>
+              <AdminOrderDetails />
+            </AdminProtectedRouter>
+          }
+        />
+        <Route
+          path="/admin/ViewUsers"
+          element={
+            <AdminProtectedRouter>
+              <ViewUsers />
+            </AdminProtectedRouter>
+          }
+        />
       </Routes>
     </>
   );
