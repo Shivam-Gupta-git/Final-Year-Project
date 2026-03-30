@@ -13,7 +13,27 @@ export const getDeliveryBoyProfileThunk = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response.deliveryBoy);
+
+      return response.deliveryBoy;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to load profile"
+      );
+    }
+  }
+);
+
+// DELIVERY BOY - UPDATE DELIVERY BOY STATUS
+export const updateDeliveryBoyStatus = createAsyncThunk(
+  "deliveryBoy/updateStatus",   
+  async ({ id, isOnline, isAvailable }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await apiClient.put(`/api/deliveryBoy/status/${id}`, { isOnline, isAvailable },{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.deliveryBoy;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -24,7 +44,9 @@ export const getDeliveryBoyProfileThunk = createAsyncThunk(
 );
 
 
+
 const initialState = {
+  deliveryBoys: [],
   profile: null,
   loading: false,
   error: null,
@@ -33,7 +55,12 @@ const initialState = {
 const deliveryBoySlice = createSlice({
   name: "deliveryBoy",
   initialState,
-  reducers: {},
+  reducers: {
+    // optional: set delivery boys list
+    setDeliveryBoys: (state, action) => {
+      state.deliveryBoys = action.payload;
+    },
+  },
   extraReducers: (builder) => {
   
   // DELIVERY BOY - Get Delivery Boy Profile  
@@ -52,6 +79,22 @@ const deliveryBoySlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
+
+    // DELIVERY BOY - UPDATE DELIVERY BOY STATUS
+    builder  
+    .addCase(updateDeliveryBoyStatus.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(updateDeliveryBoyStatus.fulfilled, (state, action) => {
+      state.loading = false;
+      state.profile = action.payload; // update profile with latest DeliveryBoy doc
+    })
+    .addCase(updateDeliveryBoyStatus.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+    
   },
 });
 

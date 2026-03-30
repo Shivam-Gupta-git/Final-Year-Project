@@ -6,7 +6,6 @@ import { User } from "../model/user.model.js";
 // DELIVERY BOY - Get Delivery Boy Profile
 export const getDeliveryBoyProfile = async (req, res) => {
   try {
-    console.log(req.user);
     // only delivery boy account can access
     if (
       req.user.role !== "admin" ||
@@ -64,7 +63,8 @@ export const getDeliveryBoyProfile = async (req, res) => {
         avatar: user.avatar,
         role: user.role,
         host: user.host,
-
+        
+        _id: deliveryBoyData._id,
         isAvailable: deliveryBoyData.isAvailable,
         isOnline: deliveryBoyData.isOnline,
         phone: deliveryBoyData.phone,
@@ -82,6 +82,30 @@ export const getDeliveryBoyProfile = async (req, res) => {
       success: false,
       message: "Failed to fetch delivery boy profile",
     });
+  }
+};
+
+// DELIVERY BOY - UPDATE DELIVERY BOY STATUS
+export const updateDeliveryBoyStatus = async (req, res) => {
+  try {
+    const { id } = req.params; // this must be the DeliveryBoy _id
+    const { isOnline, isAvailable } = req.body;
+
+    // Use _id for consistency
+    const deliveryBoy = await DeliveryBoy.findById(id);
+    if (!deliveryBoy) {
+      console.log("Delivery boy not found for id:", id);
+      return res.status(404).json({ success: false, message: "Delivery boy not found" });
+    }
+
+    if (typeof isOnline === "boolean") deliveryBoy.isOnline = isOnline;
+    if (typeof isAvailable === "boolean") deliveryBoy.isAvailable = isAvailable;
+
+    await deliveryBoy.save();
+    return res.status(200).json({ success: true, deliveryBoy });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Failed to update delivery boy status" });
   }
 };
 
