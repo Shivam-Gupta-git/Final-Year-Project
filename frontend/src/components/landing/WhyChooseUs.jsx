@@ -18,7 +18,7 @@ const MOCK_DB = [
   {
     id: 2,
     active: true,
-    route: "/places",
+    route: "/explore",
     icon: "🗺️",
     tag: "EXPLORE",
     title: "Hidden Destinations",

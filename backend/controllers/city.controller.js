@@ -201,7 +201,11 @@ export const getAllCities = async (req, res) => {
 
 export const getActiveCities = async (req, res) => {
   try {
-    const cities = await City.find({ status: "active" });
+    const filter = { status: "active" };
+    if (req.query.country) {
+      filter.country = String(req.query.country).trim().toLowerCase();
+    }
+    const cities = await City.find(filter);
     // console.log("cities", cities);
 
     return res.status(200).json({

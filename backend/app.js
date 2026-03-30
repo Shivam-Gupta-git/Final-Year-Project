@@ -7,6 +7,8 @@ import { adminRouter } from "./routes/admin.routes.js";
 import cityRouter from "./routes/city.routes.js";
 import hotelRouter from "./routes/hotel.routes.js";
 import placeRouter from "./routes/place.routes.js";
+import publicPlacesRouter from "./routes/publicPlaces.routes.js";
+import adminPlaceRouter from "./routes/adminPlace.routes.js";
 import travelOptionRouter from "./routes/travelOption.routes.js";
 import restaurantRouter from "./routes/restaurant.routes.js";
 import reviewRouter from "./routes/review.routes.js";
@@ -40,6 +42,8 @@ app.use("/api/city", cityRouter);
 app.use("/api/hotel" , hotelRouter)
 app.use("/api/room", roomRouter)
 app.use("/api/place", placeRouter)
+app.use("/api/places", publicPlacesRouter)
+app.use("/api/admin/place", adminPlaceRouter)
 app.use("/api/travelOption", travelOptionRouter)
 app.use("/api/resturant", restaurantRouter)
 app.use("/api/hotelBooking", hotelBookingRouter)

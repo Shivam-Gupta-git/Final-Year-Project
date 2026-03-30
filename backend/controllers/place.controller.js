@@ -190,7 +190,7 @@ export const pendingPlace = async (req, res) => {
   try {
     const place = await Place.find({ status: "pending" }).populate(
       "createdBy",
-      "userName email role"
+      "userName email role",
     );
 
     console.log("Place: ", place);
@@ -576,16 +576,24 @@ export const generateTravelPlan = async (req, res) => {
     }
 
     // 2️⃣ Sort by priority/ratings
-    const sortedPlaces = places.sort((a, b) => b.priorityScore - a.priorityScore);
+    const sortedPlaces = places.sort(
+      (a, b) => b.priorityScore - a.priorityScore,
+    );
 
     // Map hotels with cheapest room
     const hotelsWithCheapestRoom = await Promise.all(
       hotels.map(async (hotel) => {
-        const hotelRooms = rooms.filter((r) => r.hotelId.toString() === hotel._id.toString() && r.pricePerNight <= budget);
+        const hotelRooms = rooms.filter(
+          (r) =>
+            r.hotelId.toString() === hotel._id.toString() &&
+            r.pricePerNight <= budget,
+        );
         if (!hotelRooms.length) return null;
-        const cheapestRoom = hotelRooms.reduce((a, b) => (a.pricePerNight < b.pricePerNight ? a : b));
+        const cheapestRoom = hotelRooms.reduce((a, b) =>
+          a.pricePerNight < b.pricePerNight ? a : b,
+        );
         return { ...hotel.toObject(), cheapestRoom };
-      })
+      }),
     );
 
     const filteredHotels = hotelsWithCheapestRoom.filter(Boolean);
@@ -617,7 +625,9 @@ export const generateTravelPlan = async (req, res) => {
       if (currentDay > days) break;
 
       // Pick hotel and restaurant for the day
-      const hotel = sortedHotels.find((h) => h.cheapestRoom.pricePerNight <= totalBudget);
+      const hotel = sortedHotels.find(
+        (h) => h.cheapestRoom.pricePerNight <= totalBudget,
+      );
       // const restaurant = sortedRestaurants.find((r) => r.avgCost <= totalBudget);
 
       // Push to plan
@@ -630,10 +640,8 @@ export const generateTravelPlan = async (req, res) => {
       });
 
       // Deduct budget
-      totalBudget -=
-        place.avgCost +
-        (hotel?.cheapestRoom.pricePerNight || 0) 
-        // + (restaurant?.avgCost || 0);
+      totalBudget -= place.avgCost + (hotel?.cheapestRoom.pricePerNight || 0);
+      // + (restaurant?.avgCost || 0);
 
       usedHours += place.visitDurationHours;
     }
@@ -654,55 +662,54 @@ export const generateTravelPlan = async (req, res) => {
 
 export const getNearbyPlaces = async (req, res) => {
   try {
-    const { lat, lng, cityId, distance = 25000 } = req.query;
+    let { lat, lng, cityId } = req.query;
+    // distance comes in KM (default 20km) -> convert to meters for MongoDB
+    const distanceKm = Number(req.query.distance ?? 20);
+    const distance = (Number.isFinite(distanceKm) ? distanceKm : 20) * 1000;
 
-    if (!lat || !lng) {
+    lat = parseFloat(lat);
+    lng = parseFloat(lng);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
       return res.status(400).json({
         success: false,
         message: "Latitude and Longitude are required",
       });
     }
 
-    let query = {
-      status: "active",
-    };
+    let query = { status: "active" };
 
-    // filter by city if provided
-    if (cityId) {
+    if (cityId && mongoose.Types.ObjectId.isValid(cityId)) {
       query.city = new mongoose.Types.ObjectId(cityId);
     }
 
-    // only famous places
-    query.isPopular = true;
+    if (req.query.popular === "true") {
+      query.isPopular = true;
+    }
+
+    if (req.query.category) {
+      query.category = String(req.query.category).trim().toLowerCase();
+    }
 
     const places = await Place.aggregate([
       {
         $geoNear: {
-          near: {
-            type: "Point",
-            coordinates: [parseFloat(lng), parseFloat(lat)],
-          },
+          near: { type: "Point", coordinates: [lng, lat] },
           distanceField: "distance",
-          maxDistance: parseInt(distance),
+          maxDistance: distance,
           spherical: true,
-          query: query,
+          query,
         },
       },
       {
-        $project: {
-          name: 1,
-          images: 1,
-          category: 1,
-          entryfees: 1,
-          isPopular: 1,
-          location: 1,
+        $addFields: {
           distanceInKm: {
             $round: [{ $divide: ["$distance", 1000] }, 2],
           },
         },
       },
       {
-        $sort: { distance: 1 },
+        $sort: { distance: 1, priorityScore: -1 },
       },
     ]);
 
@@ -718,3 +725,109 @@ export const getNearbyPlaces = async (req, res) => {
   }
 };
 
+// Public - Get active places by city
+export const getPlacesByCityId = async (req, res) => {
+  try {
+    const { cityId } = req.query;
+
+    if (!cityId || !mongoose.Types.ObjectId.isValid(cityId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid cityId is required",
+      });
+    }
+
+    const places = await Place.find({
+      city: cityId,
+      status: "active",
+    }).sort({ isPopular: -1, priorityScore: -1, createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: places,
+      count: places.length,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Public - Get single active place
+export const getPlacePublicById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Place ID",
+      });
+    }
+
+    const place = await Place.findOne({ _id: id, status: "active" }).populate(
+      "city",
+      "name state country",
+    );
+
+    if (!place) {
+      return res.status(404).json({
+        success: false,
+        message: "Place not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: place,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Public - Search active places by keyword
+export const searchPlaces = async (req, res) => {
+  try {
+    const q = String(req.query.q || "").trim();
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: "Query parameter q is required",
+      });
+    }
+
+    const cityId = req.query.cityId;
+    const filter = { status: "active" };
+    if (cityId && mongoose.Types.ObjectId.isValid(cityId)) {
+      filter.city = cityId;
+    }
+
+    const places = await Place.find({
+      ...filter,
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { description: { $regex: q, $options: "i" } },
+        { category: { $regex: q, $options: "i" } },
+      ],
+    })
+      .limit(50)
+      .sort({ isPopular: -1, priorityScore: -1, createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: places,
+      count: places.length,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
