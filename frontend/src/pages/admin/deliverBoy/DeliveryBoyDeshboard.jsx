@@ -235,11 +235,11 @@ function DeliveryBoyDashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs text-gray-400">Customer</p>
-                    <p className="text-sm font-semibold text-slate-800">{profile.currentOrder.deliveryAddress.name || "N/A"}</p>
+                    <p className="text-sm font-semibold text-slate-800">{profile?.currentOrder?.deliveryAddress?.name || "N/A"}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-400">Restaurant</p>
-                    <p className="text-sm font-semibold text-slate-800">{profile.currentOrder.restaurantInfo.name || "N/A"}</p>
+                    <p className="text-sm font-semibold text-slate-800">{profile?.currentOrder?.restaurantInfo?.name || "N/A"}</p>
                   </div>
                 </div>
                 <div className="mt-2 bg-amber-50 rounded-lg px-3 py-2 text-xs text-amber-700 font-medium">

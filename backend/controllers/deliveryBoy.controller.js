@@ -208,25 +208,59 @@ export const getPendingOrders = async (req, res) => {
   }
 };
 
-// ─── 2. Accept Order ───────────────────────────────────────────────────
+// DELIVRY BOY - ACCEPT ORDER 
 export const acceptOrder = async (req, res) => {
-  try {
-    const deliveryBoyId = req.user._id;
+  console.log("req.user", req.user);
+  console.log("orderId", req.params.id);
+  try {  
+    const userId = req.user._id;
     const orderId = req.params.id;
+    const deliveryBoy = await DeliveryBoy.findOne(userId);
+    console.log("deliveryBoy", deliveryBoy);
 
-    const order = await FoodOrder.findOne({ _id: orderId, deliveryBoy: deliveryBoyId });
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
-    if (order.status !== "assigned")
-      return res.status(400).json({ success: false, message: "Cannot accept this order" });
+    if (!deliveryBoy) {
+      return res.status(404).json({
+        success: false,
+        message: "Delivery boy not found",
+      });
+    }
 
-    order.status = "accepted";
+    const order = await FoodOrder.findOne({
+      _id: orderId,
+      deliveryBoy: deliveryBoy._id,
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.status !== "assigned") {
+      return res.status(400).json({
+        success: false,
+        message: "Only assigned orders can be accepted",
+      });
+    }
+
+    order.status = "accepted_by_delivery_boy";
     order.acceptedAt = new Date();
+
     await order.save();
 
-    return res.status(200).json({ success: true, message: "Order accepted", order });
+    return res.status(200).json({
+      success: true,
+      message: "Order accepted successfully",
+      order,
+    });
   } catch (error) {
     console.error("Accept Order Error:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
 };
 

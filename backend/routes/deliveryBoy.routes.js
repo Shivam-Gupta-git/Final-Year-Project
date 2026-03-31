@@ -1,6 +1,7 @@
 import express from "express"
-import { getAvailableDeliveryBoys, getDeliveryBoyProfile, getPendingOrders, updateDeliveryBoyStatus, updateLiveLocation } from "../controllers/deliveryBoy.controller.js"
+import { acceptOrder, getAvailableDeliveryBoys, getDeliveryBoyProfile, getPendingOrders, updateDeliveryBoyStatus, updateLiveLocation } from "../controllers/deliveryBoy.controller.js"
 import { authorize, isAuthenticated } from "../middleware/auth.middleware.js"
+
 
 const deliveryBoyRouter = express.Router()
 
@@ -18,5 +19,8 @@ deliveryBoyRouter.get("/orders/pending", isAuthenticated, authorize("admin"), ge
 
 // ADMIN - GET AVAILABLE DELIVERY BOY
 deliveryBoyRouter.get("/available", getAvailableDeliveryBoys);
+
+// DELIVRY BOY - ACCEPT ORDER 
+deliveryBoyRouter.put("/accept-order/:id", isAuthenticated, authorize("admin"), acceptOrder)
 
 export default deliveryBoyRouter

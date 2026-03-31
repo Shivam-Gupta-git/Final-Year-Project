@@ -1,13 +1,15 @@
 // PendingOrders.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
+import { acceptOrderThunk, getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
 
- function PendingOrders() {
+function PendingOrders() {
   const dispatch = useDispatch();
-  const { orders = [], loading, error } = useSelector(
-    (state) => state.deliveryBoy
-  );
+  const {
+    orders = [],
+    loading,
+    error,
+  } = useSelector((state) => state.deliveryBoy);
 
   const [liveLocationName, setLiveLocationName] = useState("");
 
@@ -124,7 +126,9 @@ import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {orders.map((order) => {
-            const deliveryAddress = `${order.deliveryAddress?.street || ""}, ${order.deliveryAddress?.city || ""}, ${order.deliveryAddress?.pincode || ""}`;
+            const deliveryAddress = `${order.deliveryAddress?.street || ""}, ${
+              order.deliveryAddress?.city || ""
+            }, ${order.deliveryAddress?.pincode || ""}`;
 
             return (
               <div
@@ -132,8 +136,8 @@ import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
                 className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl"
               >
                 <div className="bg-linear-to-r from-blue-600 via-indigo-600 to-violet-600 p-6 text-white">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
+                  <div className="flex items-start justify-between gap-4 ">
+                    <div className="w-[50%]">
                       <p className="text-xs uppercase tracking-[0.3em] text-blue-100">
                         Order ID
                       </p>
@@ -141,7 +145,7 @@ import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
                         #{order._id.slice(-6).toUpperCase()}
                       </h2>
                     </div>
-
+                    <div className="w-[50%] flex flex-col items-end justify-end gap-3">
                     <span
                       className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide ${
                         order.status === "assigned"
@@ -153,6 +157,17 @@ import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
                     >
                       {order.status.replaceAll("_", " ")}
                     </span>
+                    <div>
+                      <button
+                        onClick={() => dispatch(acceptOrderThunk(order._id))}
+                        disabled={order.status !== "assigned"}
+                        className="rounded-xl bg-green-600 px-4 py-2 text-white font-semibold hover:bg-green-700 disabled:opacity-50"
+                      >
+                        Accept Order
+                      </button>
+                    </div>
+
+                    </div>
                   </div>
                 </div>
 
@@ -165,15 +180,21 @@ import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
 
                       <div className="space-y-2 text-sm text-slate-600">
                         <p>
-                          <span className="font-semibold text-slate-800">Name:</span>{" "}
+                          <span className="font-semibold text-slate-800">
+                            Name:
+                          </span>{" "}
                           {order.deliveryAddress?.name}
                         </p>
                         <p>
-                          <span className="font-semibold text-slate-800">Phone:</span>{" "}
+                          <span className="font-semibold text-slate-800">
+                            Phone:
+                          </span>{" "}
                           {order.user?.contactNumber}
                         </p>
                         <p>
-                          <span className="font-semibold text-slate-800">Address:</span>{" "}
+                          <span className="font-semibold text-slate-800">
+                            Address:
+                          </span>{" "}
                           {deliveryAddress}
                         </p>
                       </div>
@@ -186,19 +207,27 @@ import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
 
                       <div className="space-y-2 text-sm text-slate-600">
                         <p>
-                          <span className="font-semibold text-slate-800">Restaurant:</span>{" "}
+                          <span className="font-semibold text-slate-800">
+                            Restaurant:
+                          </span>{" "}
                           {order.restaurantInfo?.name}
                         </p>
                         <p>
-                          <span className="font-semibold text-slate-800">Address:</span>{" "}
+                          <span className="font-semibold text-slate-800">
+                            Address:
+                          </span>{" "}
                           {order.restaurantInfo?.address}
                         </p>
                         <p>
-                          <span className="font-semibold text-slate-800">Payment:</span>{" "}
+                          <span className="font-semibold text-slate-800">
+                            Payment:
+                          </span>{" "}
                           {order.paymentMethod}
                         </p>
                         <p>
-                          <span className="font-semibold text-slate-800">Amount:</span>{" "}
+                          <span className="font-semibold text-slate-800">
+                            Amount:
+                          </span>{" "}
                           ₹{order.totalAmount}
                         </p>
                       </div>
@@ -233,7 +262,8 @@ import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
                         <span className="font-semibold text-slate-800">
                           Current Location:
                         </span>{" "}
-                        {liveLocationName || "Detecting your current location..."}
+                        {liveLocationName ||
+                          "Detecting your current location..."}
                       </p>
 
                       <p className="mt-3">
@@ -253,7 +283,5 @@ import { getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
     </div>
   );
 }
-
-
 
 export default PendingOrders;

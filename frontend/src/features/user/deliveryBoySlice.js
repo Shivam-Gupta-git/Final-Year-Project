@@ -95,6 +95,32 @@ export const getAvailableDeliveryBoysThunk = createAsyncThunk(
   }
 );
 
+// DELIVRY BOY - ACCEPT ORDER 
+export const acceptOrderThunk = createAsyncThunk(
+  "deliveryBoy/acceptOrder",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+    
+      const res = await apiClient.put(
+        `/api/deliveryBoy/accept-order/${orderId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to accept order"
+      );
+    }
+  }
+);
+
 
 
 const initialState = {
@@ -103,6 +129,7 @@ const initialState = {
   orders: [],
   loading: false,
   error: null,
+  successMessage: "",
 };
 
 const deliveryBoySlice = createSlice({
@@ -190,7 +217,28 @@ const deliveryBoySlice = createSlice({
       .addCase(getAvailableDeliveryBoysThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Failed to fetch";
-      });  
+      }); 
+      
+      // DELIVRY BOY - ACCEPT ORDER 
+      builder
+      .addCase(acceptOrderThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(acceptOrderThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message;
+
+        const updatedOrder = action.payload.order;
+
+        state.orders = state.orders.map((order) =>
+          order._id === updatedOrder._id ? updatedOrder : order
+        );
+      })
+      .addCase(acceptOrderThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
     
   },
 });
