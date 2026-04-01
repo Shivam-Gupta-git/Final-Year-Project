@@ -2,21 +2,91 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import apiClient from "../../pages/services/apiClient";
 
 const initialState = {
+  // --- Explore flow (requested feature) ---
   places: [],
-  cityWisePlaces: [],
   nearbyPlaces: [],
+  usingNearby: false,
+  distanceRadius: 20, // KM (5/20/50/100)
+  selectedCity: null,
+  userLocation: null, // { lat, lng }
+  activeCategory: "",
+  searchQuery: "",
+  sortBy: "popularity",
+
+  loadingPlaces: false,
+  loadingNearby: false,
+  errorPlaces: null,
+  errorNearby: null,
+  pagination: null,
+
+  // --- Existing admin/AI features (kept for compatibility) ---
+  cityWisePlaces: [],
   inactiveCityWisePlaces: [],
   place: null,
   loading: false,
   error: null,
   success: false,
 
-  //  AI STATE
   aiPlan: [],
   planHistory: [],
   aiLoading: false,
   aiError: null,
 };
+
+/* -------- Explore: get places by cityId -------- */
+export const fetchPlacesByCity = createAsyncThunk(
+  "place/fetchPlacesByCity",
+  async ({ cityId }, thunkAPI) => {
+    console.log("THUNK RUNNING:", cityId);
+    try {
+      const res = await apiClient.get(`/api/places?cityId=${cityId}`);
+      console.log("API RESPONSE:", res);
+      return res?.data ?? res;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch places",
+      );
+    }
+  },
+);
+
+/* -------- Explore: get nearby places (distance KM) -------- */
+export const fetchNearbyPlaces = createAsyncThunk(
+  "place/fetchNearbyPlaces",
+  async ({ lat, lng, distance, cityId, category, popular }, thunkAPI) => {
+    try {
+      const query = new URLSearchParams();
+      query.set("lat", String(lat));
+      query.set("lng", String(lng));
+      query.set("distance", String(distance)); // KM
+      if (cityId) query.set("cityId", String(cityId));
+      if (category) query.set("category", String(category));
+      if (popular === true) query.set("popular", "true");
+
+      const res = await apiClient.get(`/api/places/nearby?${query.toString()}`);
+      return res?.data ?? res;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch nearby places",
+      );
+    }
+  },
+);
+
+/* -------- Explore: get single place -------- */
+export const getPlaceById = createAsyncThunk(
+  "place/getPlaceById",
+  async (placeId, thunkAPI) => {
+    try {
+      const response = await apiClient.get(`/api/places/${placeId}`);
+      return response?.data ?? response;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch place",
+      );
+    }
+  },
+);
 
 /* -------- Create Place -------- */
 export const createPlace = createAsyncThunk(
@@ -25,7 +95,7 @@ export const createPlace = createAsyncThunk(
     try {
       const token = localStorage.getItem("superAdminToken");
 
-      const response = await apiClient.post("/api/place/create-place", data, {
+      const response = await apiClient.post("/api/admin/place", data, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -98,7 +168,7 @@ export const rejectePlaceById = createAsyncThunk(
           headers: { Authorization: `Bearer ${superAdminToken}` },
         },
       );
-      return { cityId, message: response.data.message };
+      return { placeId, message: response.data.message };
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "City rejection failed",
@@ -156,7 +226,7 @@ export const getActivePlacesCityWise = createAsyncThunk(
   "place/getActivePlacesCityWise",
   async (_, thunkAPI) => {
     try {
-      const res = await apiClient.get("/api/place/activePlace/city-wise");
+      const res = await apiClient.get("/api/place/city-wise");
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || "Failed");
@@ -207,37 +277,18 @@ export const deletePlace = createAsyncThunk(
   },
 );
 
-/* -------- get place ById -------- */
-export const getPlaceById = createAsyncThunk(
-  "city/getPlaceById",
-  async (placeId, thunkAPI) => {
-    try {
-      const response = await apiClient.get(`/api/place/getplace/${placeId}`);
-      return response.data; // return city
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Place rejection failed",
-      );
-    }
-  },
-);
-
 /* ------ update place ------- */
 export const updatePlace = createAsyncThunk(
   "city/updatePlace",
   async ({ id, data }, thunkAPI) => {
     try {
       const superAdminToken = localStorage.getItem("superAdminToken");
-      const response = await apiClient.put(
-        `/api/place/updatePlace/${id}`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${superAdminToken}`,
-            "Content-Type": "multipart/form-data",
-          },
+      const response = await apiClient.put(`/api/admin/place/${id}`, data, {
+        headers: {
+          Authorization: `Bearer ${superAdminToken}`,
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
       return response.data; // updated city
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -260,41 +311,39 @@ export const generatePlan = createAsyncThunk(
   },
 );
 
-//near by places
-export const fetchNearbyPlaces = createAsyncThunk(
-  "place/fetchNearbyPlaces",
-  async (
-    { lat, lng, cityId, distance = 25000 },
-    { rejectWithValue },
-  ) => {
-    try {
-      const query = new URLSearchParams({
-        lat,
-        lng,
-        distance,
-        isPopular: true,
-      });
-
-      if (cityId) query.append("cityId", cityId);
-
-      const res = await apiClient.get(`/api/place/nearby?${query}`);
-      console.log("FULL RESPONSE:", res);
-      console.log("DATA:", res?.data);
-      // `apiClient` interceptor unwraps axios response and returns backend JSON directly.
-      // Backend shape: { success: true, data: places[] }
-      return res?.data || res?.places || [];
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch nearby places",
-      );
-    }
-  },
-);
-
 const placeSlice = createSlice({
   name: "place",
   initialState,
   reducers: {
+    // --- Explore reducers ---
+    setUsingNearby: (state, action) => {
+      state.usingNearby = Boolean(action.payload);
+    },
+    setDistanceRadius: (state, action) => {
+      state.distanceRadius = Number(action.payload);
+    },
+    setSelectedCity: (state, action) => {
+      state.selectedCity = action.payload;
+    },
+    setUserLocation: (state, action) => {
+      state.userLocation = action.payload;
+    },
+    setActiveCategory: (state, action) => {
+      state.activeCategory = action.payload;
+    },
+    setSearchQuery: (state, action) => {
+      state.searchQuery = action.payload;
+    },
+    setSortBy: (state, action) => {
+      state.sortBy = action.payload;
+    },
+    clearNearby: (state) => {
+      state.nearbyPlaces = [];
+      state.usingNearby = false;
+      state.errorNearby = null;
+      state.loadingNearby = false;
+    },
+
     // save AI plan and history
     setAiPlan: (state, action) => {
       state.aiPlan = action.payload;
@@ -320,6 +369,56 @@ const placeSlice = createSlice({
   },
 
   extraReducers: (builder) => {
+    // --- Explore: fetch places by city ---
+    builder
+      .addCase(fetchPlacesByCity.pending, (state) => {
+        state.loadingPlaces = true;
+        state.errorPlaces = null;
+      })
+      .addCase(fetchPlacesByCity.fulfilled, (state, action) => {
+        console.log("REDUCER HIT:", action.payload);
+        state.loadingPlaces = false;
+        state.places = Array.isArray(action.payload)
+          ? action.payload
+          : action.payload?.data || [];
+      })
+      .addCase(fetchPlacesByCity.rejected, (state, action) => {
+        console.log("REDUCER HIT:", action.payload);
+        state.loadingPlaces = false;
+        state.errorPlaces = action.payload;
+      });
+
+    // --- Explore: fetch nearby places ---
+    builder
+      .addCase(fetchNearbyPlaces.pending, (state) => {
+        state.loadingNearby = true;
+        state.errorNearby = null;
+      })
+      .addCase(fetchNearbyPlaces.fulfilled, (state, action) => {
+        state.loadingPlaces = false;
+        state.places = action.payload?.data || action.payload || [];
+      })
+      .addCase(fetchNearbyPlaces.rejected, (state, action) => {
+        console.log("PAYLOAD:", action.payload);
+        state.loadingNearby = false;
+        state.errorNearby = action.payload;
+      });
+
+    // --- Explore: get place by id ---
+    builder
+      .addCase(getPlaceById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getPlaceById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.place = action.payload?.data || null;
+      })
+      .addCase(getPlaceById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
     /* -------- Create Place -------- */
     builder
       .addCase(createPlace.pending, (state) => {
@@ -460,21 +559,6 @@ const placeSlice = createSlice({
         state.error = action.payload;
       });
 
-    /* ------ getCityById ------- */
-    builder
-      .addCase(getPlaceById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getPlaceById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.place = action.payload;
-      })
-      .addCase(getPlaceById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
-
     /* ------ delete city ------- */
     builder
       .addCase(deletePlace.pending, (state) => {
@@ -537,23 +621,37 @@ const placeSlice = createSlice({
         state.aiLoading = false;
         state.aiError = action.payload;
       });
-
-    //Near by places
-    builder
-      .addCase(fetchNearbyPlaces.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchNearbyPlaces.fulfilled, (state, action) => {
-        state.loading = false;
-        state.nearbyPlaces = action.payload;
-      })
-      .addCase(fetchNearbyPlaces.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
   },
 });
 
-export const { setAiPlan, loadPlanHistory, loadAiPlan } = placeSlice.actions;
+export const {
+  setUsingNearby,
+  setDistanceRadius,
+  setSelectedCity,
+  setUserLocation,
+  setActiveCategory,
+  setSearchQuery,
+  setSortBy,
+  clearNearby,
+  setAiPlan,
+  loadPlanHistory,
+  loadAiPlan,
+} = placeSlice.actions;
+
+// --- Explore selectors (used by Place components) ---
+export const selectPlaces = (state) => state.place.places;
+export const selectNearbyPlaces = (state) => state.place.nearbyPlaces;
+export const selectUsingNearby = (state) => state.place.usingNearby;
+export const selectDistanceRadius = (state) => state.place.distanceRadius;
+export const selectSelectedCity = (state) => state.place.selectedCity;
+export const selectUserLocation = (state) => state.place.userLocation;
+export const selectActiveCategory = (state) => state.place.activeCategory;
+export const selectSearchQuery = (state) => state.place.searchQuery;
+export const selectSortBy = (state) => state.place.sortBy;
+export const selectPlacesLoading = (state) => state.place.loadingPlaces;
+export const selectNearbyLoading = (state) => state.place.loadingNearby;
+export const selectPlacesError = (state) => state.place.errorPlaces;
+export const selectNearbyError = (state) => state.place.errorNearby;
+export const selectPagination = (state) => state.place.pagination;
+
 export default placeSlice.reducer;

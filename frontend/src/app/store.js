@@ -34,7 +34,6 @@ export const store = configureStore({
     place: placeReducer,
     search : searchReducer,
     review : reviewReducer,
-    place : placeReducer,
     restaurant : restaurantReducer,
     food : foodReducer,
     cart : cartReducer,

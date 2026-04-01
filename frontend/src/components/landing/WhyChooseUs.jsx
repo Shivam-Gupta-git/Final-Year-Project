@@ -18,7 +18,7 @@ const MOCK_DB = [
   {
     id: 2,
     active: true,
-    route: "/places",
+    route: "/explore",
     icon: "🗺️",
     tag: "EXPLORE",
     title: "Hidden Destinations",
@@ -92,61 +92,414 @@ const MOCK_DB = [
 // ─── API ─────────────────────────────────────────────
 async function fetchFeatures() {
   return new Promise((resolve) =>
-    setTimeout(() => resolve({ data: MOCK_DB }), 800)
+    setTimeout(() => resolve({ data: MOCK_DB }), 800),
   );
 }
 
-// ─── Particles ─────────────────────────────────────────────
-function Particles() {
-  const dots = Array.from({ length: 28 }, (_, i) => ({
-    id: i,
-    size: 2 + Math.random() * 4,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    dur: 6 + Math.random() * 10,
-    delay: Math.random() * 8,
-    opacity: 0.06 + Math.random() * 0.16,
-  }));
+// ─── Styles injector ─────────────────────────────────────────────
+const injectStyles = () => {
+  if (document.getElementById("why-choose-styles")) return;
 
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      {dots.map((d) => (
-        <div
-          key={d.id}
-          style={{
-            position: "absolute",
-            left: `${d.x}%`,
-            top: `${d.y}%`,
-            width: d.size,
-            height: d.size,
-            borderRadius: "50%",
-            background: "#fff",
-            opacity: d.opacity,
-            animation: `floatDot ${d.dur}s ${d.delay}s ease-in-out infinite alternate`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+  const link = document.createElement("link");
+  link.id = "why-choose-font";
+  link.rel = "stylesheet";
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap";
+  document.head.appendChild(link);
 
-// ─── Feature Card (UNCHANGED LOGIC) ─────────────────────
+  const style = document.createElement("style");
+  style.id = "why-choose-styles";
+  style.textContent = `
+    #why-choose-us {
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: rgba(201, 168, 76, 0.10);
+      --gold-border: rgba(201, 168, 76, 0.25);
+      --ink: #080809;
+      --smoke: #0f0f12;
+      --panel: #121215;
+      --panel-hover: #18181d;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(201,168,76,0.28);
+      --cream: #f5f0e8;
+      --muted: rgba(255,255,255,0.36);
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'DM Sans', sans-serif;
+      background: var(--ink);
+      font-family: var(--sans);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle background texture */
+    #why-choose-us::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Ambient glow blobs */
+    #why-choose-us::after {
+      content: '';
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wcu-inner {
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: 110px 48px 120px;
+      position: relative;
+      z-index: 1;
+    }
+    @media (max-width: 768px) {
+      .wcu-inner { padding: 72px 24px 80px; }
+    }
+
+    /* ── Header ── */
+    .wcu-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 40px;
+      margin-bottom: 64px;
+    }
+    @media (max-width: 900px) {
+      .wcu-header { flex-direction: column; align-items: flex-start; margin-bottom: 48px; }
+    }
+
+    .wcu-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--sans);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+    }
+    .wcu-eyebrow-line {
+      display: inline-block;
+      width: 36px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.7;
+    }
+
+    .wcu-title {
+      font-family: var(--serif);
+      font-size: clamp(48px, 6.5vw, 88px);
+      font-weight: 300;
+      line-height: 0.93;
+      color: var(--cream);
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .wcu-title em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    .wcu-header-right {
+      max-width: 380px;
+      padding-bottom: 6px;
+    }
+    .wcu-subtitle {
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.8;
+      letter-spacing: 0.025em;
+      margin: 0 0 28px;
+    }
+
+    /* ── Filter pills ── */
+    .wcu-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wcu-pill {
+      padding: 8px 20px;
+      font-family: var(--sans);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border-radius: 1px;
+      position: relative;
+      overflow: hidden;
+    }
+    .wcu-pill::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold-dim);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .wcu-pill:hover { border-color: var(--gold-border); color: var(--gold); }
+    .wcu-pill:hover::before { opacity: 1; }
+    .wcu-pill.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: var(--gold-dim);
+    }
+
+    /* ── Divider ── */
+    .wcu-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.2), transparent);
+      margin-bottom: 48px;
+    }
+
+    /* ── Grid ── */
+    .wcu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(201,168,76,0.05);
+    }
+    @media (max-width: 960px) { .wcu-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 580px) { .wcu-grid { grid-template-columns: 1fr; } }
+
+    /* ── Card ── */
+    .wcu-card {
+      background: var(--panel);
+      padding: 40px 36px 32px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: wcuFadeUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+    .wcu-card:hover { background: var(--panel-hover); }
+
+    /* Gold left accent on hover */
+    .wcu-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--gold), var(--gold-light));
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .wcu-card:hover::before { transform: scaleY(1); }
+
+    /* Top border reveal */
+    .wcu-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.05s;
+    }
+    .wcu-card:hover::after { transform: scaleX(1); }
+
+    @keyframes wcuFadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* Tag */
+    .wcu-card-tag {
+      font-family: var(--sans);
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .wcu-card-tag-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    /* Icon */
+    .wcu-card-icon {
+      font-size: 26px;
+      margin-bottom: 20px;
+      display: block;
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .wcu-card:hover .wcu-card-icon { transform: translateY(-3px); }
+
+    /* Title */
+    .wcu-card-title {
+      font-family: var(--serif);
+      font-size: clamp(22px, 2.2vw, 32px);
+      font-weight: 300;
+      color: var(--cream);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin: 0 0 14px;
+      transition: color 0.3s;
+    }
+    .wcu-card:hover .wcu-card-title { color: #fff; }
+
+    /* Desc */
+    .wcu-card-desc {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.75;
+      letter-spacing: 0.02em;
+      flex: 1;
+      margin: 0 0 28px;
+    }
+
+    /* Stat */
+    .wcu-card-stat-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+    .wcu-card-stat-num {
+      font-family: var(--serif);
+      font-size: clamp(24px, 2.5vw, 34px);
+      font-weight: 300;
+      color: var(--gold-light);
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+    .wcu-card-stat-label {
+      font-family: var(--sans);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* Arrow */
+    .wcu-card-arrow {
+      position: absolute;
+      top: 28px;
+      right: 28px;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translate(4px, -4px);
+      transition: opacity 0.4s, transform 0.4s, background 0.3s, border-color 0.3s;
+    }
+    .wcu-card:hover .wcu-card-arrow {
+      opacity: 1;
+      transform: translate(0, 0);
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    .wcu-card-arrow svg { width: 12px; height: 12px; color: #080809; }
+
+    /* ── Skeleton ── */
+    .wcu-skeleton {
+      background: var(--panel);
+      height: 220px;
+      position: relative;
+      overflow: hidden;
+    }
+    .wcu-skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.04), transparent);
+      animation: wcuShimmer 1.6s infinite;
+    }
+    @keyframes wcuShimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* ── Footer note ── */
+    .wcu-footer {
+      text-align: center;
+      margin-top: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+    .wcu-footer-line {
+      width: 60px; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,168,76,0.3));
+    }
+    .wcu-footer-line:last-child {
+      background: linear-gradient(to left, transparent, rgba(201,168,76,0.3));
+    }
+    .wcu-footer-text {
+      font-family: var(--sans);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.22);
+    }
+
+    /* ── Reveal ── */
+    .wcu-reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: wcuReveal 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+    .wcu-d1 { animation-delay: 0.08s; }
+    .wcu-d2 { animation-delay: 0.18s; }
+    .wcu-d3 { animation-delay: 0.28s; }
+    @keyframes wcuReveal { to { opacity: 1; transform: translateY(0); } }
+  `;
+  document.head.appendChild(style);
+};
+
+// ─── Feature Card ─────────────────────────────────────────────
 function FeatureCard({ feature, index, onNavigate }) {
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), index * 110);
-    return () => clearTimeout(t);
-  }, [index]);
-
-  const [c1, c2] = feature.color;
 
   return (
     <div
       role="button"
       tabIndex={0}
+      className="wcu-card"
+      style={{
+        animationDelay: `${index * 0.08}s`,
+        transform: pressed ? "scale(0.985)" : undefined,
+        display: "flex",
+        flexDirection: "column",
+      }}
       onClick={() => {
         setPressed(true);
         setTimeout(() => {
@@ -156,61 +509,46 @@ function FeatureCard({ feature, index, onNavigate }) {
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative rounded-[20px] p-[32px_28px_28px] cursor-pointer backdrop-blur-[20px] border flex flex-col transition-all duration-300"
-      style={{
-        background: hovered
-          ? "rgba(255,255,255,.17)"
-          : "rgba(255,255,255,.08)",
-        borderColor: hovered
-          ? "rgba(255,255,255,.32)"
-          : "rgba(255,255,255,.13)",
-        boxShadow: hovered
-          ? "0 28px 72px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.18) inset"
-          : "0 8px 32px rgba(0,0,0,.2)",
-        transform: pressed
-          ? "translateY(-2px) scale(.985)"
-          : hovered
-          ? "translateY(-12px) scale(1.015)"
-          : visible
-          ? "translateY(0) scale(1)"
-          : "translateY(32px) scale(.96)",
-        opacity: visible ? 1 : 0,
-      }}
+      onKeyDown={(e) => e.key === "Enter" && onNavigate(feature)}
     >
-      {/* Icon */}
-      <div
-        className="w-13.5 h-13.5 rounded-2xl flex items-center justify-center text-[24px] mb-4.5"
-        style={{
-          background: `linear-gradient(135deg, ${c1}, ${c2})`,
-          boxShadow: `0 8px 24px ${c1}55`,
-        }}
-      >
-        {feature.icon}
-      </div>
-
-      <h3 className="text-white text-[21px] mb-2.5">
-        {feature.title}
-      </h3>
-
-      <p className="text-white/60 text-[13px] mb-5.5 flex-1 leading-[1.7]">
-        {feature.desc}
-      </p>
-
-      <div className="flex items-baseline gap-1.5 border-t border-white/10 pt-4">
-        <span
-          className="text-[24px]"
-          style={{
-            background: `linear-gradient(135deg, ${c1}, ${c2})`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
+      {/* Arrow */}
+      <div className="wcu-card-arrow">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
         >
-          {feature.stat}
-        </span>
-        <span className="text-[11px] text-white/40">
-          {feature.statLabel}
-        </span>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M7 17L17 7M7 7h10v10"
+          />
+        </svg>
       </div>
+
+      {/* Tag */}
+      <div className="wcu-card-tag">
+        <span className="wcu-card-tag-dot" />
+        {feature.tag}
+      </div>
+
+      {/* Icon */}
+      <span className="wcu-card-icon">{feature.icon}</span>
+
+      {/* Title */}
+      <h3 className="wcu-card-title">{feature.title}</h3>
+
+      {/* Desc */}
+      <p className="wcu-card-desc">{feature.desc}</p>
+
+      {/* Stat */}
+      {feature.stat && (
+        <div className="wcu-card-stat-row">
+          <span className="wcu-card-stat-num">{feature.stat}</span>
+          <span className="wcu-card-stat-label">{feature.statLabel}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -224,6 +562,7 @@ export default function WhyChooseUs() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    injectStyles();
     fetchFeatures().then((res) => {
       setFeatures(res.data);
       setLoading(false);
@@ -232,55 +571,58 @@ export default function WhyChooseUs() {
 
   const tags = ["ALL", ...new Set(features.map((f) => f.tag))];
   const visible =
-    filter === "ALL"
-      ? features
-      : features.filter((f) => f.tag === filter);
+    filter === "ALL" ? features : features.filter((f) => f.tag === filter);
 
   return (
-    <section className="relative py-25 px-6 bg-[linear-gradient(135deg,#0d0b20_0%,#1a1040_28%,#0f2040_60%,#0a1628_100%)] font-[Plus_Jakarta_Sans] overflow-hidden">
-      
-      <Particles />
+    <section id="why-choose-us">
+      <div className="wcu-inner">
+        {/* Header */}
+        <div className="wcu-header">
+          <div>
+            <div className="wcu-reveal">
+              <div className="wcu-eyebrow">
+                <span className="wcu-eyebrow-line" />
+                Our Promise To You
+                <span className="wcu-eyebrow-line" />
+              </div>
+            </div>
+            <div className="wcu-reveal wcu-d1">
+              <h2 className="wcu-title">
+                Travel smarter.
+                <br />
+                <em>Experience more.</em>
+              </h2>
+            </div>
+          </div>
 
-      <div className="max-w-285 mx-auto relative z-1">
-
-        {/* HEADER */}
-        <div className="text-center mb-13">
-          <h2 className="text-white text-[clamp(34px,5.5vw,58px)] leading-tight mb-4.5">
-            Travel smarter.
-            <br />
-            <span className="bg-linear-to-r from-blue-400 via-pink-400 to-green-400 bg-clip-text text-transparent">
-              Experience more.
-            </span>
-          </h2>
-
-          <p className="text-white/50 max-w-125 mx-auto text-[15px]">
-            Every feature we've built exists to make your journey effortless.
-          </p>
+          <div className="wcu-header-right wcu-reveal wcu-d2">
+            <p className="wcu-subtitle">
+              Every feature we've built exists to make your journey effortless —
+              from the first search to the final check-out.
+            </p>
+            {/* Filters */}
+            <div className="wcu-filters">
+              {tags.map((tag) => (
+                <button
+                  key={tag}
+                  className={`wcu-pill${filter === tag ? " active" : ""}`}
+                  onClick={() => setFilter(tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* FILTER */}
-        <div className="flex flex-wrap justify-center gap-2 mb-11">
-          {tags.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setFilter(tag)}
-              className={`px-4.5 py-1.75 text-[10px] font-extrabold uppercase tracking-widest rounded-full border backdrop-blur-sm
-              ${
-                filter === tag
-                  ? "bg-white/20 border-white/40 text-white"
-                  : "bg-white/10 border-white/20 text-white/60 hover:bg-white/20"
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
+        {/* Divider */}
+        <div className="wcu-divider wcu-reveal wcu-d3" />
 
-        {/* GRID */}
-        <div className="grid grid-cols-3 gap-5 max-[960px]:grid-cols-2 max-[580px]:grid-cols-1">
+        {/* Grid */}
+        <div className="wcu-grid">
           {loading
             ? Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-45 bg-white/10 animate-pulse rounded-xl" />
+                <div key={i} className="wcu-skeleton" />
               ))
             : visible.map((f, i) => (
                 <FeatureCard
@@ -292,11 +634,13 @@ export default function WhyChooseUs() {
               ))}
         </div>
 
-        {/* FOOTER */}
-        <div className="text-center mt-17">
-          <p className="text-white/30 text-[12px]">
+        {/* Footer */}
+        <div className="wcu-footer">
+          <div className="wcu-footer-line" />
+          <span className="wcu-footer-text">
             No account needed · Free to browse
-          </p>
+          </span>
+          <div className="wcu-footer-line" />
         </div>
       </div>
     </section>

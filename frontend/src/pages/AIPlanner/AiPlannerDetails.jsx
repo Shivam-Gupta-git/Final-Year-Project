@@ -7,7 +7,6 @@ import { getActiveCities } from "../../features/user/citySlice";
 import { loadAiPlan, loadPlanHistory } from "../../features/user/placeSlice";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 
-// ✅ MAP IMPORTS
 import {
   MapContainer,
   TileLayer,
@@ -17,23 +16,18 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-// ✅ FIX MARKER ISSUE
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-// ✅ ICONS
 const createIcon = (color) =>
   new L.Icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
-    shadowUrl:
-      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
   });
@@ -43,6 +37,63 @@ const markerIcons = {
   Hotel: createIcon("red"),
   Restaurant: createIcon("orange"),
 };
+
+/* ── Only pseudo-elements, keyframes, font import & Leaflet overrides stay here ── */
+const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+
+  .apd-wrap * { font-family: 'Outfit', sans-serif; }
+  .font-cormorant { font-family: 'Cormorant Garamond', serif !important; }
+
+  @keyframes apd-fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes apd-fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes apd-slideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .animate-apd-fadeup   { animation: apd-fadeUp .45s ease both; }
+  .animate-apd-fadeup-1 { animation: apd-fadeUp .45s .08s ease both; }
+  .animate-apd-fadeup-2 { animation: apd-fadeUp .45s .16s ease both; }
+  .animate-apd-fadein   { animation: apd-fadeIn .2s ease; }
+  .animate-apd-slideup  { animation: apd-slideUp .25s ease; }
+
+  /* Top amber accent bar on day card — needs ::before */
+  .apd-day-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #c9922a, transparent);
+    opacity: 0;
+    transition: opacity .25s;
+  }
+  .apd-day-card:hover::before { opacity: 1; }
+
+  /* Modal image grid — complex :nth-child radius selectors */
+  .apd-modal-imgs img:first-child          { border-radius: 22px 0 0 0; }
+  .apd-modal-imgs img:last-child:nth-child(n+2) { border-radius: 0 22px 0 0; }
+
+  /* Leaflet dark theme overrides */
+  .apd-map-section .leaflet-tile {
+    filter: brightness(0.85) saturate(0.9);
+  }
+  .apd-map-section .leaflet-popup-content-wrapper {
+    background: #141c27;
+    color: #f5efe6;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .apd-map-section .leaflet-popup-tip { background: #141c27; }
+  .apd-map-section .leaflet-container { border-radius: 0 0 18px 18px; }
+`;
 
 function AiPlannerDetails({ embedded = false } = {}) {
   const dispatch = useDispatch();
@@ -56,12 +107,11 @@ function AiPlannerDetails({ embedded = false } = {}) {
   useEffect(() => {
     dispatch(getActiveCities());
     dispatch(loadPlanHistory());
-
     const lastPlan = JSON.parse(localStorage.getItem("lastAiPlan"));
     if (lastPlan) dispatch(loadAiPlan(lastPlan));
   }, [dispatch]);
 
-  // ✅ Coordinates
+  // ── Coordinates (unchanged logic) ──
   const coordinates = safeAiPlan.flatMap((day) => [
     ...(day.places?.map((p) => [
       p.location.coordinates[1],
@@ -72,145 +122,151 @@ function AiPlannerDetails({ embedded = false } = {}) {
       h.location.coordinates[0],
     ]) || []),
   ]);
-
   const bounds = coordinates.length ? L.latLngBounds(coordinates) : null;
 
   const content = (
-    <div className={embedded ? "space-y-4" : "p-6 max-w-7xl mx-auto space-y-6"}>
-
-      {/* HEADER */}
+    <div className="max-w-275 mx-auto">
+      {/* ── HEADER ── */}
       <div
-        className={
-          embedded
-            ? "rounded-2xl border border-slate-200 bg-white/80 backdrop-blur px-5 py-4 shadow-sm"
-            : "rounded-2xl border border-slate-200 bg-white/70 backdrop-blur px-6 py-5 shadow-sm"
-        }
+        className={`animate-apd-fadeup bg-[#141c27] border border-white/[0.07] rounded-[18px] flex items-center justify-between flex-wrap gap-4 mb-6 ${embedded ? "px-5 py-4.5" : "px-6.5 py-5.5"}`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-          <div>
-            <h1
-              className={
-                embedded
-                  ? "text-lg sm:text-xl font-semibold text-slate-900"
-                  : "text-2xl sm:text-3xl font-semibold text-slate-900"
-              }
-            >
-              Plan overview
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Tap a place card to see details and nearby hotels.
-            </p>
+        <div>
+          <div className="text-[10px] tracking-[.18em] uppercase text-[#c9922a] font-semibold mb-1.5">
+            ✦ Itinerary
           </div>
-          <div className="text-sm text-slate-600">
-            {safeAiPlan?.length ? (
-              <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                {safeAiPlan.length} day plan generated
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-                <span className="h-2 w-2 rounded-full bg-slate-300" />
-                No plan loaded
-              </span>
-            )}
+          <div
+            className={`font-cormorant font-semibold text-[#f5efe6] leading-[1.1] ${embedded ? "text-[20px]" : "text-[28px]"}`}
+          >
+            Plan Overview
           </div>
+          <div className="text-[12px] text-[#7a8a9a] mt-1">
+            Tap a place to see details, images & nearby hotels
+          </div>
+        </div>
+        <div>
+          {safeAiPlan?.length ? (
+            <span className="inline-flex items-center gap-2 text-[12px] font-medium px-3.5 py-2 rounded-full border border-white/12 bg-[#1c2738] text-[#d8cfc4] whitespace-nowrap">
+              <span className="w-1.75 h-1.75 rounded-full bg-[#34d399] shadow-[0_0_6px_rgba(52,211,153,0.4)] shrink-0" />
+              {safeAiPlan.length} day plan loaded
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-2 text-[12px] font-medium px-3.5 py-2 rounded-full border border-white/12 bg-[#1c2738] text-[#d8cfc4] whitespace-nowrap">
+              <span className="w-1.75 h-1.75 rounded-full bg-[#7a8a9a] shrink-0" />
+              No plan loaded
+            </span>
+          )}
         </div>
       </div>
 
-      {/* EMPTY STATE */}
+      {/* ── EMPTY STATE ── */}
       {safeAiPlan?.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center">
-          <p className="text-base font-medium text-slate-800">
-            No plan generated yet
-          </p>
-          <p className="text-sm text-slate-500 mt-1">
-            Go back to the planner and generate a new itinerary.
-          </p>
+        <div className="animate-apd-fadeup border border-dashed border-white/10 rounded-[18px] py-13 px-6 text-center">
+          <div className="text-[36px] mb-3 opacity-50">🗺️</div>
+          <div className="font-cormorant text-[22px] text-[#f5efe6] mb-2">
+            No itinerary yet
+          </div>
+          <div className="text-[13px] text-[#7a8a9a]">
+            Go back to the planner and generate a new trip.
+          </div>
         </div>
       )}
 
-      {/* ================= CARDS ================= */}
-      <div
-        className={
-          embedded
-            ? "grid grid-cols-1 gap-4"
-            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        }
-      >
-        {safeAiPlan.map((day, index) => (
-          <div
-            key={index}
-            className="p-4 bg-white/80 backdrop-blur rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-lg text-slate-900">
-                Day {day.day}
-              </h2>
-              <span className="text-xs text-slate-500">
-                {(day.places?.length || 0)} places
-              </span>
-            </div>
-
-            {day.places?.map((p, idx) => (
-              <div
-                key={idx}
-                onClick={() =>
-                  setModalData({ type: "place", data: p, day })
-                }
-                className="p-3 mb-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:shadow-sm transition cursor-pointer flex items-center gap-3"
-              >
-                {p.images?.[0] && (
-                  <img
-                    src={p.images[0]}
-                    alt={p.name}
-                    className="w-16 h-16 object-cover rounded-xl"
-                  />
-                )}
-                <div>
-                  <p className="font-semibold text-slate-900 leading-snug line-clamp-1">
-                    {p.name}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {p.category}
-                  </p>
+      {/* ── DAY CARDS ── */}
+      {safeAiPlan?.length > 0 && (
+        <div
+          className={`animate-apd-fadeup-1 grid gap-4.5 ${embedded ? "grid-cols-1" : "grid-cols-[repeat(auto-fill,minmax(300px,1fr))]"}`}
+        >
+          {safeAiPlan.map((day, index) => (
+            <div
+              key={index}
+              className="apd-day-card bg-[#141c27] border border-white/[0.07] rounded-[18px] p-5 relative overflow-hidden transition-all duration-250 hover:border-[#c9922a]/25 hover:shadow-[0_0_40px_rgba(201,146,42,0.12)]"
+            >
+              {/* Day header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-[10px] bg-[#c9922a]/12 border border-[#c9922a]/20 grid place-items-center font-cormorant text-[16px] font-semibold text-[#e8b84b] shrink-0">
+                    {day.day}
+                  </div>
+                  <div className="font-cormorant text-[18px] font-semibold text-[#f5efe6]">
+                    Day {day.day}
+                  </div>
                 </div>
+                <span className="text-[11px] text-[#7a8a9a] tracking-[.06em] bg-[#1c2738] px-2.5 py-1 rounded-full border border-white/[0.07]">
+                  {day.places?.length || 0} place
+                  {(day.places?.length || 0) !== 1 ? "s" : ""}
+                </span>
               </div>
-            ))}
-          </div>
-        ))}
-      </div>
 
-      {/* ================= GLOBAL MAP ================= */}
+              {/* Place rows */}
+              {day.places?.map((p, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 p-3 mb-2 last:mb-0 rounded-xl border border-white/[0.07] bg-[#1c2738] cursor-pointer transition-all duration-200 hover:border-[#c9922a]/30 hover:bg-[#243044] hover:translate-x-0.75"
+                  onClick={() => setModalData({ type: "place", data: p, day })}
+                >
+                  {p.images?.[0] ? (
+                    <img
+                      src={p.images[0]}
+                      alt={p.name}
+                      className="w-13 h-13 object-cover rounded-[10px] shrink-0 border border-white/[0.07]"
+                    />
+                  ) : (
+                    <div className="w-13 h-13 rounded-[10px] bg-[#243044] border border-white/[0.07] shrink-0 grid place-items-center text-[20px] opacity-50">
+                      📍
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[14px] font-medium text-[#f5efe6] leading-snug whitespace-nowrap overflow-hidden text-ellipsis max-w-45">
+                      {p.name}
+                    </div>
+                    <div className="text-[11px] text-[#7a8a9a] mt-0.75 tracking-[.04em]">
+                      {p.category}
+                    </div>
+                  </div>
+                  <span className="ml-auto text-[#7a8a9a] text-[16px] shrink-0 transition-all duration-200 group-hover:text-[#c9922a]">
+                    →
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── MAP ── */}
       {coordinates.length > 0 && (
-        <div className="mt-8 bg-white/80 backdrop-blur p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex items-end justify-between gap-3 mb-3">
+        <div className="apd-map-section animate-apd-fadeup-2 mt-7 bg-[#141c27] border border-white/[0.07] rounded-[18px] overflow-hidden">
+          <div className="px-6 pt-5 pb-4 border-b border-white/[0.07] flex items-center justify-between flex-wrap gap-2.5">
             <div>
-              <h2 className="text-xl font-semibold text-slate-900">
-                Map overview
-              </h2>
-              <p className="text-sm text-slate-500">
-                Visualize the route across selected places and hotels.
-              </p>
+              <div className="font-cormorant text-[22px] font-semibold text-[#f5efe6]">
+                Route Map
+              </div>
+              <div className="text-[12px] text-[#7a8a9a] mt-0.75">
+                Visualize places and hotels across your itinerary
+              </div>
+            </div>
+            <div className="flex items-center gap-3.5 flex-wrap">
+              <div className="flex items-center gap-1.5 text-[11px] text-[#7a8a9a] tracking-[.04em]">
+                <div className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0" />
+                Places
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] text-[#7a8a9a] tracking-[.04em]">
+                <div className="w-2 h-2 rounded-full bg-[#ef4444] shrink-0" />
+                Hotels
+              </div>
             </div>
           </div>
 
           <MapContainer
             bounds={bounds}
             scrollWheelZoom={true}
-            style={{ height: embedded ? "320px" : "450px", width: "100%" }}
+            style={{ height: embedded ? "300px" : "440px", width: "100%" }}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
             {safeAiPlan.map((day) =>
               [
-                ...(day.places || []).map((p) => ({
-                  ...p,
-                  type: "Place",
-                })),
-                ...(day.hotels || []).map((h) => ({
-                  ...h,
-                  type: "Hotel",
-                })),
+                ...(day.places || []).map((p) => ({ ...p, type: "Place" })),
+                ...(day.hotels || []).map((h) => ({ ...h, type: "Hotel" })),
               ].map((loc, idx) => (
                 <Marker
                   key={`${day.day}-${idx}`}
@@ -226,111 +282,133 @@ function AiPlannerDetails({ embedded = false } = {}) {
                     {loc.type}
                   </Popup>
                 </Marker>
-              ))
+              )),
             )}
-
-            <Polyline positions={coordinates} />
+            <Polyline
+              positions={coordinates}
+              color="#c9922a"
+              weight={2}
+              opacity={0.7}
+              dashArray="6,8"
+            />
           </MapContainer>
         </div>
       )}
 
-      {/* ================= MODAL ================= */}
+      {/* ── MODAL ── */}
       {modalData &&
         createPortal(
-        <div
-          className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4"
-          onClick={() => setModalData(null)}
-        >
           <div
-            className="bg-white p-5 sm:p-6 rounded-2xl w-full max-w-5xl max-h-[85vh] overflow-y-auto shadow-xl relative border border-slate-200"
-            onClick={(e) => e.stopPropagation()}
+            className="animate-apd-fadein fixed inset-0 bg-black/75 backdrop-blur-[6px] flex items-center justify-center z-9999 p-5"
+            onClick={() => setModalData(null)}
           >
-            <button
-              className="absolute top-3 right-3 text-3xl text-slate-500 hover:text-slate-900 transition"
-              onClick={() => setModalData(null)}
-              aria-label="Close details"
+            <div
+              className="animate-apd-slideup bg-[#141c27] border border-white/12 rounded-[22px] w-full max-w-215 max-h-[88vh] overflow-y-auto relative shadow-[0_32px_80px_rgba(0,0,0,0.6),0_0_40px_rgba(201,146,42,0.12)] [scrollbar-width:thin] [scrollbar-color:#1c2738_transparent]"
+              onClick={(e) => e.stopPropagation()}
             >
-              <IoIosCloseCircleOutline />
-            </button>
-
-            {/* PLACE DETAILS */}
-            {modalData.type === "place" && (
-              <>
-                <h2 className="text-2xl sm:text-3xl font-semibold mb-2 text-slate-900 pr-10">
-                  {modalData.data.name}
-                </h2>
-
-                <p className="text-slate-600 mb-3">
-                  {modalData.data.description}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {modalData.data.category && (
-                    <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
-                      {modalData.data.category}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
-                    ₹{modalData.data.entryfees} • {modalData.data.timeRequired} hrs
-                  </span>
-                </div>
-
-                {/* IMAGES */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
-                  {modalData.data.images?.map((img, i) => (
+              {/* Hero image strip */}
+              {modalData.data.images?.length > 0 && (
+                <div
+                  className="apd-modal-imgs grid gap-0.75 mb-0"
+                  style={{
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(180px, 1fr))",
+                  }}
+                >
+                  {modalData.data.images.slice(0, 4).map((img, i) => (
                     <img
                       key={i}
                       src={img}
-                      alt={`${modalData.data.name}-${i + 1}`}
-                      className="w-full h-28 sm:h-32 object-cover rounded-xl border border-slate-200"
+                      alt={`${modalData.data.name}-${i}`}
+                      className="w-full h-40 object-cover"
                     />
                   ))}
                 </div>
+              )}
 
-                {/* HOTELS */}
-                <h3 className="text-lg font-semibold mb-2 text-slate-900">
-                  Nearby hotels
-                </h3>
+              <div className="px-7.5 pt-7 pb-8">
+                {/* Close button */}
+                <button
+                  className="absolute top-4.5 right-4.5 bg-[#1c2738] border border-white/12 text-[#7a8a9a] rounded-[10px] w-9 h-9 grid place-items-center cursor-pointer z-1 transition-all duration-200 hover:text-[#f5efe6] hover:border-[#c9922a] hover:bg-[#c9922a]/8"
+                  onClick={() => setModalData(null)}
+                  aria-label="Close"
+                >
+                  <IoIosCloseCircleOutline size={18} />
+                </button>
 
-                <div className="grid grid-cols-1 gap-2 mb-4">
-                  {modalData.day?.hotels?.map((h, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 rounded-xl border border-slate-200 bg-white flex gap-3"
-                    >
-                      {h.images?.[0] && (
-                        <img
-                          src={h.images[0]}
-                          alt={h.name}
-                          className="w-16 h-16 rounded-md"
-                        />
-                      )}
-                      <div>
-                        <p className="font-semibold text-slate-900 line-clamp-1">
-                          {h.name}
-                        </p>
-                        <p className="text-sm text-slate-500">
-                          ₹{h.cheapestRoom?.pricePerNight}/night
-                        </p>
-                      </div>
+                {modalData.type === "place" && (
+                  <>
+                    <div className="font-cormorant text-[30px] font-semibold text-[#f5efe6] mb-2.5 pr-11 leading-[1.15]">
+                      {modalData.data.name}
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+                    <div className="text-[14px] text-[#d8cfc4] leading-[1.7] mb-4.5">
+                      {modalData.data.description}
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {modalData.data.category && (
+                        <span className="text-[11px] font-medium tracking-[.08em] px-3 py-1.25 rounded-full border border-[#c9922a]/30 bg-[#c9922a]/8 text-[#e8b84b]">
+                          {modalData.data.category}
+                        </span>
+                      )}
+                      <span className="text-[11px] font-medium tracking-[.08em] px-3 py-1.25 rounded-full border border-white/12 bg-[#1c2738] text-[#d8cfc4]">
+                        ₹{modalData.data.entryfees} entry
+                      </span>
+                      <span className="text-[11px] font-medium tracking-[.08em] px-3 py-1.25 rounded-full border border-white/12 bg-[#1c2738] text-[#d8cfc4]">
+                        {modalData.data.timeRequired} hrs
+                      </span>
+                    </div>
+
+                    {/* Nearby Hotels */}
+                    {modalData.day?.hotels?.length > 0 && (
+                      <>
+                        <div className="text-[10px] tracking-[.18em] uppercase font-semibold text-[#c9922a] mb-3.5">
+                          ✦ Nearby Hotels
+                        </div>
+                        {modalData.day.hotels.map((h, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-3.5 px-4 py-3.5 mb-2.5 last:mb-0 rounded-[14px] border border-white/[0.07] bg-[#1c2738]"
+                          >
+                            {h.images?.[0] && (
+                              <img
+                                src={h.images[0]}
+                                alt={h.name}
+                                className="w-15 h-15 object-cover rounded-[10px] shrink-0"
+                              />
+                            )}
+                            <div>
+                              <div className="text-[14px] font-medium text-[#f5efe6]">
+                                {h.name}
+                              </div>
+                              <div className="text-[12px] text-[#e8b84b] font-medium mt-0.75">
+                                ₹{h.cheapestRoom?.pricePerNight}/night
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 
-  return embedded ? (
-    content
-  ) : (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100">
-      {content}
-    </div>
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      <div
+        className={`apd-wrap ${embedded ? "p-5" : "min-h-screen bg-[#0d1117] p-9 max-[900px]:p-5"}`}
+      >
+        {content}
+      </div>
+    </>
   );
 }
 
