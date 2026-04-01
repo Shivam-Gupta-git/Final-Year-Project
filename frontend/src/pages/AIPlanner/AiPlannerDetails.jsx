@@ -102,6 +102,8 @@ function AiPlannerDetails({ embedded = false } = {}) {
   const { aiPlan } = useSelector((state) => state.place);
   const safeAiPlan = aiPlan || [];
 
+  console.log(aiPlan);
+
   useEffect(() => {
     dispatch(getActiveCities());
     dispatch(loadPlanHistory());

@@ -205,7 +205,7 @@ function OrdersDashboard() {
                 </button>
               )}
 
-              {selectedOrder.status === "preparing" && (
+              {/* {selectedOrder.status === "preparing" && (
                 <button
                   onClick={() =>
                     dispatch(
@@ -220,6 +220,10 @@ function OrdersDashboard() {
                 >
                   Out for Delivery
                 </button>
+              )} */}
+
+              {selectedOrder.status === "preparing" && (
+                <Link to={`/admin/AdminAssignDeliveryBoy/${selectedOrder._id}`} className="bg-gray-500 text-white px-4 py-2 rounded" >Assign Order</Link>
               )}
 
               <Link

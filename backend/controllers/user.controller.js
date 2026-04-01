@@ -8,6 +8,7 @@ import { sendOtpMail } from "../verifyEmail/sendOtpMail.js";
 import { City } from "../model/city.model.js";
 import { Hotel } from "../model/hotel.model.js";
 import { Place } from "../model/place.model.js";
+import { DeliveryBoy } from "../model/deliveryBoy.model.js";
 
 export const userRegistration = async (req, res) => {
   try {
@@ -23,7 +24,7 @@ export const userRegistration = async (req, res) => {
         message: "All fields are required",
       });
     }
-    
+
     const userExistance = await User.findOne({ email });
     if (userExistance) {
       return res.status(400).json({
@@ -395,7 +396,7 @@ export const superAdminLogin = async (req, res) => {
       message: "Super-admin logged in successfully",
       accessToken,
       refreshToken,
-      superAdmin
+      superAdmin,
     });
   } catch (error) {
     return res.status(500).json({
@@ -435,16 +436,18 @@ export const superAdminLogout = async (req, res) => {
 export const getSuperAdminProfile = async (req, res) => {
   try {
     const superAdminId = req.user.id;
-    if(!superAdminId){
-      return res.status(400).json({success: false, message: "superAdminId not found"})
+    if (!superAdminId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "superAdminId not found" });
     }
 
-    const superAdmin = await User.findById(superAdminId).select("-password")
-    return res.status(200).json({success: true, superAdmin})
+    const superAdmin = await User.findById(superAdminId).select("-password");
+    return res.status(200).json({ success: true, superAdmin });
   } catch (error) {
-    return res.status(500).json({success: false, message: error.message})
+    return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const updateSuperAdminProfile = async (req, res) => {
   try {
@@ -492,7 +495,7 @@ export const updateSuperAdminProfile = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Super Admin Profile updated successfully",
-      superAdmin: updatedUser
+      superAdmin: updatedUser,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -504,7 +507,7 @@ export const createAdminRegistration = async (req, res) => {
     const { userName, email, contactNumber, password, host } = req.body || {};
 
     if (
-      [userName, email, contactNumber, password, host ].some(
+      [userName, email, contactNumber, password, host].some(
         (field) => !field || field.trim() === ""
       )
     ) {
@@ -514,11 +517,22 @@ export const createAdminRegistration = async (req, res) => {
       });
     }
 
-     // validate host value
-    const allowedHosts = ["hotel", "restaurant", "travelOption", "driver"];
-    if (!allowedHosts.includes(host)){
-      return res.status(400).json({success: false, message: `Host must be one of: ${allowedHosts.join(", ")}`})
-    }    
+    // validate host value
+    const allowedHosts = [
+      "hotel",
+      "restaurant",
+      "travelOption",
+      "driver",
+      "delivery_boy",
+    ];
+    if (!allowedHosts.includes(host)) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: `Host must be one of: ${allowedHosts.join(", ")}`,
+        });
+    }
 
     const userExistance = await User.findOne({ email });
     if (userExistance) {
@@ -540,20 +554,34 @@ export const createAdminRegistration = async (req, res) => {
       host,
       isActive: false,
       isVerified: false,
+      createdBy: req.user.id,
     });
+
+    // Create extra delivery profile only if host = delivery_boy
+    if (host === "delivery_boy") {
+      await DeliveryBoy.create({
+        user: admin._id,
+        phone: contactNumber,
+        isAvailable: true,
+        isOnline: false,
+      });
+    }
 
     const token = jwt.sign({ id: admin._id }, process.env.SECRET_KET, {
       expiresIn: "1d",
     });
     admin.token = token;
     verifyEmail(email, token);
-    
-    await admin.save()
+
+    await admin.save();
     console.log(token);
 
     return res.status(201).json({
       success: true,
-      message: "Admin created. Awaiting super-admin approval.",
+      message:
+        host === "delivery_boy"
+          ? "Delivery boy account created successfully"
+          : "Admin created successfully",
       adminId: admin._id,
     });
   } catch (error) {
@@ -627,7 +655,7 @@ export const adminLogin = async (req, res) => {
       message: "admin login successfully",
       accessToken,
       refreshToken,
-      data: registredAdmin
+      data: registredAdmin,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -668,12 +696,12 @@ export const getAdminProfile = async (req, res) => {
         .json({ success: false, message: "user is not found" });
     }
 
-    const admin = await User.findById(adminId).select("-password")
+    const admin = await User.findById(adminId).select("-password");
     return res.status(200).json({ success: true, admin });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
-}
+};
 
 export const updateAdminProfile = async (req, res) => {
   try {

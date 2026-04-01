@@ -270,6 +270,40 @@ export const updateStatusThunk = createAsyncThunk(
   }
 );
 
+// ADMIN - GET ORDER BY ID FOR ADMIN
+export const getOrderByIdThunk = createAsyncThunk(
+  "food/getOrderById",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await apiClient.get(`/api/food/admin/foodOrder/${orderId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.order;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
+
+// ADMIN - ASSIGN DELIVERY BOY
+export const assignDeliveryBoyThunk = createAsyncThunk(
+  "admin/assignDeliveryBoy",
+  async ({ orderId, deliveryBoyId }, { rejectWithValue }) => {
+    console.log(orderId, deliveryBoyId);
+    try {
+      const token = localStorage.getItem("adminToken")
+      const response = await apiClient.post(`/api/food/assign/${orderId}`, { deliveryBoyId },{
+        headers: { Authorization: `Bearer ${token}` },
+      } );
+      return response.order;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
+
+
 const initialState = {
   foods: [],
   userFoodDetail: null,
@@ -284,6 +318,7 @@ const initialState = {
   totalPages: 1,
   orders: [],
   orderDetails: null,
+  order: null
 };
 
 const foodSlice = createSlice({
@@ -521,7 +556,7 @@ const foodSlice = createSlice({
       state.error = action.payload;
     });
 
-    // ADMIN - . UPDATE STATUS
+    // ADMIN - UPDATE STATUS
     builder
   .addCase(updateStatusThunk.pending, (state) => {
     state.loading = true;
@@ -535,6 +570,41 @@ const foodSlice = createSlice({
     state.loading = false;
     state.error = action.payload;
   });
+
+  // ADMIN - GET ORDER BY ID FOR ADMIN
+  builder
+  .addCase(getOrderByIdThunk.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(getOrderByIdThunk.fulfilled, (state, action) => {
+    state.loading = false;
+    state.order = action.payload; // single selected order
+  })
+  .addCase(getOrderByIdThunk.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload || "Failed to fetch order";
+  })
+
+  // ADMIN - ASSIGN DELIVERY BOY
+  builder
+  // Assign Delivery Boy
+  .addCase(assignDeliveryBoyThunk.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(assignDeliveryBoyThunk.fulfilled, (state, action) => {
+    state.loading = false;
+    // Update order in orders list
+    const index = state.orders.findIndex(o => o._id === action.payload._id);
+    if (index !== -1) state.orders[index] = action.payload;
+    else state.orders.push(action.payload); // fallback if not found
+  })
+  .addCase(assignDeliveryBoyThunk.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  });
+
 
   },
 });

@@ -5,6 +5,7 @@ import { Place } from "../model/place.model.js";
 import mongoose from "mongoose";
 import { Hotel } from "../model/hotel.model.js";
 import { Room } from "../model/room.model.js";
+import { Restaurant } from "../model/restaurant.model.js"
 
 // SuperAdmin - Create Place
 export const createPlace = async (req, res) => {
@@ -546,7 +547,7 @@ export const generateTravelPlan = async (req, res) => {
         .json({ success: false, message: "All fields are required" });
     }
 
-    // 1️⃣ Fetch active places, hotels, restaurants
+    // Fetch active places, hotels, restaurants
     const places = await Place.find({
       city: cityId,
       status: "active",
@@ -563,13 +564,18 @@ export const generateTravelPlan = async (req, res) => {
       pricePerNight: { $lte: budget },
     });
 
-    // const restaurants = await Restaurant.find({
-    //   city: cityId,
-    //   status: "active",
-    //   avgCost: { $lte: budget },
-    // });
+    const restaurants = await Restaurant.find({
+      city: new mongoose.Types.ObjectId(cityId),
+      status: "active",
+      avgCostForOne: { $lte: Number(budget) },
+    });
+    
+    const sortedRestaurants = restaurants.sort(
+      (a, b) => (b.averageRating || 0) - (a.averageRating || 0)
+    );
 
-    if (!places.length && !hotels.length) {
+  
+    if (!places.length && !hotels.length && !restaurants.length) {
       return res
         .status(404)
         .json({ success: false, message: "No options found in this city" });
@@ -579,6 +585,8 @@ export const generateTravelPlan = async (req, res) => {
     const sortedPlaces = places.sort(
       (a, b) => b.priorityScore - a.priorityScore,
     );
+    // Sort by priority/ratings
+    const sortedPlaces = places.sort((a, b) => b.priorityScore - a.priorityScore);
 
     // Map hotels with cheapest room
     const hotelsWithCheapestRoom = await Promise.all(
@@ -601,12 +609,12 @@ export const generateTravelPlan = async (req, res) => {
     const sortedHotels = filteredHotels.sort((a, b) => {
       const scoreA = 1 / (a.cheapestRoom.pricePerNight || 1) + (a.rating || 0);
       const scoreB = 1 / (b.cheapestRoom.pricePerNight || 1) + (b.rating || 0);
-      return scoreB - scoreA; // descending
+      return scoreB - scoreA; 
     });
 
     // const sortedRestaurants = restaurants.sort((a, b) => b.rating - a.rating);
 
-    // 3️⃣ Allocate per day
+    // Allocate per day
     let totalBudget = budget;
     let plan = [];
     let hoursPerDay = 8;
@@ -629,19 +637,25 @@ export const generateTravelPlan = async (req, res) => {
         (h) => h.cheapestRoom.pricePerNight <= totalBudget,
       );
       // const restaurant = sortedRestaurants.find((r) => r.avgCost <= totalBudget);
+      const hotel = sortedHotels.find((h) => h.cheapestRoom.pricePerNight <= totalBudget);
+      const restaurant = sortedRestaurants.find((r) => r.avgCostForOne <= totalBudget);
 
       // Push to plan
       plan.push({
         day: currentDay,
         places: [place],
         hotels: hotel ? [hotel] : [],
-        // restaurants: restaurant ? [restaurant] : [],
+        restaurants: restaurant ? [restaurant] : [],
         // travel: [], // optional: add travel distance objects here
       });
 
       // Deduct budget
       totalBudget -= place.avgCost + (hotel?.cheapestRoom.pricePerNight || 0);
       // + (restaurant?.avgCost || 0);
+      totalBudget -=
+        place.avgCost +
+        (hotel?.cheapestRoom.pricePerNight || 0) 
+        + (restaurant?.avgCostForOne || 0);
 
       usedHours += place.visitDurationHours;
     }

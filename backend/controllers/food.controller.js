@@ -3,8 +3,8 @@ import fs from "fs";
 import { Food } from "../model/food.model.js";
 import { Restaurant } from "../model/restaurant.model.js";
 import mongoose from "mongoose";
-import { FoodOrder } from "../model/FoodOrder.model.js";
-
+import { FoodOrder } from "../model/foodOrder.model.js";
+import { DeliveryBoy } from "../model/deliveryBoy.model.js";
 
 // ADMIN - CREATE FOOD
 export const createFood = async (req, res) => {
@@ -159,7 +159,6 @@ export const getAllFoodByRestaurantId = async (req, res) => {
 // ADMIN - UPDATE FOOD
 export const updateFood = async (req, res) => {
   try {
-    
     const { foodId } = req.params;
     const { name, description, price, category, isVeg } = req.body;
     // Find Food
@@ -207,11 +206,11 @@ export const updateFood = async (req, res) => {
 
     await food.save();
   } catch (error) {
-    return res.status(500).json({success: false, message: error.message})
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// ADMIN - Toggle Availability 
+// ADMIN - Toggle Availability
 export const toggleFoodAvailability = async (req, res) => {
   try {
     const { id } = req.params;
@@ -236,10 +235,7 @@ export const toggleFoodAvailability = async (req, res) => {
     }
 
     // ✅ Ownership check (ADMIN)
-    if (
-      req.user.role === "admin" &&
-      !restaurant.owner.equals(req.user.id)
-    ) {
+    if (req.user.role === "admin" && !restaurant.owner.equals(req.user.id)) {
       return res.status(403).json({
         success: false,
         message: "You cannot update other admin's food",
@@ -260,12 +256,9 @@ export const toggleFoodAvailability = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Food is now ${
-        food.isAvailable ? "Available" : "Unavailable"
-      }`,
+      message: `Food is now ${food.isAvailable ? "Available" : "Unavailable"}`,
       data: food,
     });
-
   } catch (error) {
     console.error("TOGGLE FOOD ERROR:", error);
     return res.status(500).json({
@@ -299,10 +292,7 @@ export const deleteFood = async (req, res) => {
     }
 
     // Ownership check (IMPORTANT)
-    if (
-      req.user.role === "admin" &&
-      !restaurant.owner.equals(req.user.id)
-    ) {
+    if (req.user.role === "admin" && !restaurant.owner.equals(req.user.id)) {
       return res.status(403).json({
         success: false,
         message: "You cannot delete food from another admin's restaurant",
@@ -316,7 +306,6 @@ export const deleteFood = async (req, res) => {
       success: true,
       message: "Food deleted successfully",
     });
-
   } catch (error) {
     console.error("DELETE FOOD ERROR:", error);
     return res.status(500).json({
@@ -340,7 +329,8 @@ export const getFoodByIdForUser = async (req, res) => {
 
     const food = await Food.findById(id).populate({
       path: "restaurantId",
-      select: "name city status images address avgCostForOne foodType famousFood",
+      select:
+        "name city status images address avgCostForOne foodType famousFood",
       populate: { path: "city", select: "name state" },
     });
 
@@ -378,7 +368,7 @@ export const getFoodByIdForUser = async (req, res) => {
   }
 };
 
-// GET SINGLE FOOD By ID
+// GET SINGLE FOOD BY ID
 export const getFoodById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -411,7 +401,6 @@ export const getFoodById = async (req, res) => {
       success: true,
       data: food,
     });
-
   } catch (error) {
     console.error("GET FOOD BY ID ERROR:", error);
 
@@ -441,16 +430,10 @@ export const getFoodById = async (req, res) => {
 //   }
 // };
 
-// USER - GET ALL FOOD 
+// USER - GET ALL FOOD
 export const getAllFoodForUser = async (req, res) => {
   try {
-    const {
-      page = 1,
-      limit = 10,
-      restaurantId,
-      category,
-      isVeg,
-    } = req.query;
+    const { page = 1, limit = 10, restaurantId, category, isVeg } = req.query;
 
     const skip = (page - 1) * limit;
 
@@ -536,7 +519,6 @@ export const getAllOrdersAdmin = async (req, res) => {
       currentPage: Number(page),
       totalPages: Math.ceil(totalOrders / limit),
     });
-
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -599,21 +581,28 @@ export const getOrderDetailsAdmin = async (req, res) => {
   }
 };
 
-// ADMIN - ACCEPT ORDER 
+// ADMIN - ACCEPT ORDER
 export const acceptOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
     const adminId = req.user._id; // Assuming you have admin auth middleware
 
     // Find the order
-    const order = await FoodOrder.findById(orderId).populate("user", "name email phone");
+    const order = await FoodOrder.findById(orderId).populate(
+      "user",
+      "name email phone"
+    );
 
     if (!order) return res.status(404).json({ message: "Order not found" });
-    if (order.status !== "pending") return res.status(400).json({ message: `Order already ${order.status}` });
+    if (order.status !== "pending")
+      return res.status(400).json({ message: `Order already ${order.status}` });
 
     // Optional: fetch restaurant info from admin or restaurant model
     const restaurant = await Restaurant.findOne({ admin: adminId });
-    if (!restaurant) return res.status(400).json({ message: "Restaurant not found for this admin" });
+    if (!restaurant)
+      return res
+        .status(400)
+        .json({ message: "Restaurant not found for this admin" });
 
     order.status = "confirmed";
     order.restaurantInfo = {
@@ -643,13 +632,18 @@ export const rejectOrder = async (req, res) => {
     const { orderId } = req.params;
 
     // Find the order
-    const order = await FoodOrder.findById(orderId).populate("user", "name email phone");
+    const order = await FoodOrder.findById(orderId).populate(
+      "user",
+      "name email phone"
+    );
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
     // Only allow cancelling pending/confirmed orders
     if (["cancelled", "failed", "delivered"].includes(order.status)) {
-      return res.status(400).json({ message: `Cannot cancel order, status is ${order.status}` });
+      return res
+        .status(400)
+        .json({ message: `Cannot cancel order, status is ${order.status}` });
     }
 
     order.status = "cancelled";
@@ -706,30 +700,140 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
+// ADMIN - GET ORDER BY ID FOR ADMIN
+export const getOrderByIdForAdmin = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await FoodOrder.findById(orderId)
+      .populate("user", "userName email phone")
+      .populate({
+        path: "deliveryBoy",
+        populate: {
+          path: "user",
+          select: "userName email",
+        },
+      });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.error("Get Order By Id For Admin Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+    });
+  }
+};
+
 // ADMIN - ASSIGN DELIVERY BOY
-// export const assignDeliveryBoy = async (req, res) => {
-//   try {
-//     const { deliveryBoyId } = req.body;
+export const assignDeliveryBoy = async (req, res) => {
+  const session = await mongoose.startSession();
 
-//     const order = await FoodOrder.findById(req.params.orderId);
-//     const rider = await DeliveryBoy.findById(deliveryBoyId);
+  try {
+    session.startTransaction();
 
-//     if (!order || !rider) {
-//       return res.status(404).json({ message: "Not found" });
-//     }
+    const { deliveryBoyId } = req.body;
+    const { orderId } = req.params;
 
-//     order.deliveryPartner = {
-//       name: rider.name,
-//       phone: rider.phone,
-//     };
+    console.log("Assigning:", orderId, deliveryBoyId);
 
-//     await order.save();
+    // Find order
+    const order = await FoodOrder.findById(orderId).session(session);
 
-//     res.json({ message: "Delivery boy assigned", order });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
+    if (!order) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    } 
+
+    console.log(order);
+
+    // Cannot assign if already assigned
+    if (order.deliveryBoy) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Order already assigned",
+      });
+    }
+
+    if (["delivered", "cancelled"].includes(order.status)) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: `Cannot assign delivery boy to ${order.status} order`,
+      });
+    }
+
+    // Find delivery boy
+    const deliveryBoy = await DeliveryBoy.findById(deliveryBoyId)
+      .session(session)
+      .populate("user");
+
+    console.log("Found delivery boy:", deliveryBoy);
+
+    if (!deliveryBoy) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "Delivery boy not found",
+      });
+    }
+
+    if (!deliveryBoy.isAvailable) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Delivery boy is not available",
+      });
+    }
+
+    // Assign order
+    order.deliveryBoy = deliveryBoy._id;
+    order.status = "assigned";
+    order.assignedAt = new Date();
+
+    deliveryBoy.isAvailable = false;
+    deliveryBoy.currentOrder = order._id;
+
+    await order.save({ session });
+    await deliveryBoy.save({ session });
+
+    await session.commitTransaction();
+
+    return res.status(200).json({
+      success: true,
+      message: "Delivery boy assigned successfully",
+      order,
+      deliveryBoy,
+    });
+
+  } catch (error) {
+    await session.abortTransaction();
+    console.error("Assign Delivery Boy Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  } finally {
+    session.endSession();
+  }
+};
 
 // FILTER ORDERS
 export const getOrdersByStatus = async (req, res) => {

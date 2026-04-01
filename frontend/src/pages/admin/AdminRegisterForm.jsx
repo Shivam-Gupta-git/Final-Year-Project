@@ -163,6 +163,7 @@ function AdminRegisterForm() {
               <option value="restaurant">Restaurant</option>
               <option value="travelOption">Travel Option</option>
               <option value="driver">Driver</option>
+              <option value="delivery_boy">Delivery Boy</option>
             </select>
           </div>
   

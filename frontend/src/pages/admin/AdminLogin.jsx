@@ -42,6 +42,8 @@ function AdminLogin() {
         navigate("/admin/adminDashboard");
       } else if (admin?.admin?.host === "restaurant") {
         navigate("/admin/restaurantDashboard");
+      } else if (admin?.admin?.host === "delivery_boy"){
+        navigate("/admin/deliveryBoy-dashboard")
       }
     }
   }, [loginSuccess, navigate, admin]);

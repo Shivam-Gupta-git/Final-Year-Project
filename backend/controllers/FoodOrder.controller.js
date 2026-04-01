@@ -1,4 +1,4 @@
-import { FoodOrder } from "../model/FoodOrder.model.js";
+import { FoodOrder } from "../model/foodOrder.model.js";
 
 // USER - CREATE ORDER
 export const createOrder = async (req, res) => {
@@ -6,10 +6,13 @@ export const createOrder = async (req, res) => {
     return res.status(401).json({ message: "Login required" });
   }
 
-  const { items, totalAmount, paymentMethod, deliveryAddress, isSynced } = req.body;
+  const { items, totalAmount, paymentMethod, deliveryAddress, isSynced } =
+    req.body;
 
   if (!items || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ message: "Order must have at least one item" });
+    return res
+      .status(400)
+      .json({ message: "Order must have at least one item" });
   }
 
   // Ensure items array has proper structure
@@ -19,7 +22,7 @@ export const createOrder = async (req, res) => {
       name: i.food?.name || i.name,
       quantity: i.food?.quantity || i.quantity,
       price: i.food?.price || i.price,
-      image: i.food?.image || i.image || "", 
+      image: i.food?.image || i.image || "",
     },
   }));
 
@@ -67,7 +70,6 @@ export const getMyOrders = async (req, res) => {
       totalPages: Math.ceil(total / limit),
       totalOrders: total,
     });
-
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -80,24 +82,52 @@ export const getOrderById = async (req, res) => {
 
     const order = await FoodOrder.findById(orderId)
       .populate("items.restaurant", "name")
-      .populate("restaurantInfo", "name phone address");
+      .populate("restaurantInfo", "name phone address")
+      .populate({
+        path: "deliveryBoy",
+        select: "phone isOnline isAvailable totalDeliveredOrders location",
+        populate: {
+          path: "user",
+          select: "userName contactNumber email",
+        },
+      });
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({
+        message: "Order not found",
+      });
     }
 
+    // Ensure user can only access their own order
     if (!order.user.equals(req.user.id)) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
+    // Hide delivery boy info if order is delivered or cancelled
+    const deliveryBoyData = ["delivered", "cancelled"].includes(order.status)
+      ? null
+      : order.deliveryBoy;
+
+    if (!order.user.equals(req.user.id)) {
+      return res.status(403).json({
+        message: "Unauthorized",
+      });
+    }
+
     res.json({
-      order,
+      order: {
+        ...order.toObject(),
+        deliveryBoy: deliveryBoyData,
+      },
       restaurantDetails:
         order.status !== "pending" ? order.restaurantInfo : null,
     });
-
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Get Order By Id Error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
 
@@ -144,4 +174,3 @@ export const cancelOrder = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-

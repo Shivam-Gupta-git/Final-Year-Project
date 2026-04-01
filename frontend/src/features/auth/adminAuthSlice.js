@@ -21,6 +21,7 @@ const initialState = {
 export const adminRegistration = createAsyncThunk(
   "admin/adminRegistration",
   async (data, thunkAPI) => {
+    console.log(data);
     try {
       const response = await apiClient.post(
         "/api/admin/admin-registration",

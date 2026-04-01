@@ -90,6 +90,20 @@ export default function PlaceCard({ place, distanceInKm, onClick }) {
                            text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
             {place.entryfees === 0 ? "Free" : `₹${place.entryfees}`}
           </span>
+      {/* FIX: aspect-video instead of fixed h-40 so it scales on all screens */}
+      <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-gray-100">
+        {image ? (
+          <img
+            src={image}
+            alt={place?.name || "Place"}
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          // NEW: placeholder when no image available
+          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-50 to-gray-100">
+            <span className="text-3xl">🗺️</span>
+          </div>
         )}
 
         {/* Distance badge */}
