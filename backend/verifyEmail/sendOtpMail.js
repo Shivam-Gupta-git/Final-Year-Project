@@ -1,19 +1,19 @@
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
 export const sendOtpMail = async (email, otp) => {
- const transporter = nodemailer.createTransport({
-  service: email,
-  auth:{
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASSWORD
-  }
- })
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASSWORD,
+    },
+  });
 
- const mailOptions = {
-  from: process.env.MAIL_USER,
-  to: email,
-  subject: 'Passwod reset OTP',
-  html: `
+  const mailOptions = {
+    from: process.env.MAIL_USER,
+    to: email,
+    subject: "Password Reset OTP",
+    html: `
   <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb;">
     
     <h2 style="color: #111827; text-align: center; margin-bottom: 16px;">
@@ -52,7 +52,7 @@ export const sendOtpMail = async (email, otp) => {
       If you did not request this, please ignore this email.
     </p>
   </div>
-`
- }
- await transporter.sendMail(mailOptions)
-}
+`,
+  };
+  await transporter.sendMail(mailOptions);
+};

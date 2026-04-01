@@ -62,7 +62,7 @@ export const verifyEmail = async (email, token) => {
 `,
   };
 
-  transporter.sendMail(mailConfiguration, function(error, info){
+  await transporter.sendMail(mailConfiguration, function(error, info){
     if(error){
       throw new Error(error)
     }
