@@ -5,6 +5,7 @@ import { Place } from "../model/place.model.js";
 import mongoose from "mongoose";
 import { Hotel } from "../model/hotel.model.js";
 import { Room } from "../model/room.model.js";
+import { Restaurant } from "../model/restaurant.model.js"
 
 // SuperAdmin - Create Place
 export const createPlace = async (req, res) => {
@@ -563,13 +564,18 @@ export const generateTravelPlan = async (req, res) => {
       pricePerNight: { $lte: budget },
     });
 
-    // const restaurants = await Restaurant.find({
-    //   city: cityId,
-    //   status: "active",
-    //   avgCost: { $lte: budget },
-    // });
+    const restaurants = await Restaurant.find({
+      city: new mongoose.Types.ObjectId(cityId),
+      status: "active",
+      avgCostForOne: { $lte: Number(budget) },
+    });
+    
+    // const sortedRestaurants = restaurants.sort(
+    //   (a, b) => (b.averageRating || 0) - (a.averageRating || 0)
+    // );
 
-    if (!places.length && !hotels.length) {
+  
+    if (!places.length && !hotels.length && !restaurants.length) {
       return res
         .status(404)
         .json({ success: false, message: "No options found in this city" });
@@ -596,7 +602,7 @@ export const generateTravelPlan = async (req, res) => {
       return scoreB - scoreA; // descending
     });
 
-    // const sortedRestaurants = restaurants.sort((a, b) => b.rating - a.rating);
+    const sortedRestaurants = restaurants.sort((a, b) => b.rating - a.rating);
 
     // 3️⃣ Allocate per day
     let totalBudget = budget;
@@ -618,14 +624,14 @@ export const generateTravelPlan = async (req, res) => {
 
       // Pick hotel and restaurant for the day
       const hotel = sortedHotels.find((h) => h.cheapestRoom.pricePerNight <= totalBudget);
-      // const restaurant = sortedRestaurants.find((r) => r.avgCost <= totalBudget);
+      const restaurant = sortedRestaurants.find((r) => r.avgCostForOne <= totalBudget);
 
       // Push to plan
       plan.push({
         day: currentDay,
         places: [place],
         hotels: hotel ? [hotel] : [],
-        // restaurants: restaurant ? [restaurant] : [],
+        restaurants: restaurant ? [restaurant] : [],
         // travel: [], // optional: add travel distance objects here
       });
 
@@ -633,10 +639,12 @@ export const generateTravelPlan = async (req, res) => {
       totalBudget -=
         place.avgCost +
         (hotel?.cheapestRoom.pricePerNight || 0) 
-        // + (restaurant?.avgCost || 0);
+        + (restaurant?.avgCostForOne || 0);
 
       usedHours += place.visitDurationHours;
     }
+
+    console.log(plan);
 
     return res.status(200).json({
       success: true,
