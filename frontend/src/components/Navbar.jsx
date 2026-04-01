@@ -19,6 +19,7 @@ import { selectCartItemCount } from "../features/user/cartSlice";
 import { BiTrip } from "react-icons/bi";
 import { FaHeart } from "react-icons/fa6";
 import { IoMdSettings } from "react-icons/io";
+import { MdOutlineCancel } from "react-icons/md";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -439,6 +440,18 @@ function Navbar() {
                           </Link>
                         )}
 
+                        {admin?.host === "delivery_boy" && (
+                          <Link
+                            to="/admin/deliveryBoy-dashboard"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                          >
+                            <RxDashboard className="text-lg" />
+                            <span className="text-sm">
+                              Delivery Boy Dashboard
+                            </span>
+                          </Link>
+                        )}
+
                         {/* Settings */}
                         <Link
                           to="/settings"
@@ -583,16 +596,16 @@ function Navbar() {
             }
           }}
         >
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-[90%] max-w-lg p-6 relative">
+          <div className="bg-transparent rounded-xl shadow-xl relative mt-7 text-gray-900 dark:text-white">
             {/* Close Button */}
             <button
               onClick={() => setShowLocationSection(false)}
-              className="absolute top-3 right-4 text-xl text-gray-500 hover:text-red-500"
+              className="absolute right-2 top-2 text-2xl rounded-full bg-black backdrop-blur-xl border border-black text-white hover:text-white hover:bg-black cursor-pointer duration-300 z-50"
             >
-              ✕
+              <MdOutlineCancel />
             </button>
 
-            <h2 className="text-xl font-semibold mb-4">Add Your Location</h2>
+           
 
             {/* Location Component */}
             <UpdateUserLocation />

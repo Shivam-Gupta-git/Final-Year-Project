@@ -3,6 +3,7 @@ import { authorize, isAuthenticated } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
 import {
   acceptOrder,
+  assignDeliveryBoy,
   createFood,
   deleteFood,
   getAllFoodByRestaurantId,
@@ -10,6 +11,7 @@ import {
   getAllOrdersAdmin,
   getFoodById,
   getFoodByIdForUser,
+  getOrderByIdForAdmin,
   getOrderDetailsAdmin,
   rejectOrder,
   toggleFoodAvailability,
@@ -85,5 +87,14 @@ foodRouter.patch("/admin/rejectOrder/:orderId", isAuthenticated, authorize("admi
 
 // ADMIN - . UPDATE STATUS
 foodRouter.patch("/admin/updateOrder/:orderId", isAuthenticated, authorize("admin"), updateOrderStatus)
+
+// ADMIN - ASSIGN DELIVERY BOY
+foodRouter.post("/assign/:orderId", isAuthenticated, authorize("admin"), assignDeliveryBoy)
+
+// ADMIN - GET ORDER BY ID FOR ADMIN
+foodRouter.get("/admin/foodOrder/:orderId", isAuthenticated, authorize("admin"), getOrderByIdForAdmin)
+
+// // ADMIN - GET AVAILABLE DELIVERY BOY
+// foodRouter.get("/available", getAvailableDeliveryBoys);
 
 export default foodRouter;

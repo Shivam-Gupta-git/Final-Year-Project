@@ -61,31 +61,14 @@ function SuperAdminDashboard() {
           </div>
   
           {/* RIGHT BUTTON */}
-          <button
-            onClick={() => setShowAdminForm(true)}
+          <Link to={"/superAdmin/admin-registration"}
+            
             className="px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition"
           >
             + Register Admin
-          </button>
+          </Link>
         </div>
       </div>
-  
-      {/* MODAL */}
-      {showAdminForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-2xl w-[80%]  relative border border-gray-200 dark:border-gray-700 ">
-  
-            <button
-              onClick={() => setShowAdminForm(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-lg"
-            >
-              ✕
-            </button>
-  
-            <AdminRegisterForm closeForm={() => setShowAdminForm(false)} />
-          </div>
-        </div>
-      )}
   
       {/* DASHBOARD CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -122,7 +122,7 @@ function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 text-gray-900 dark:text-white">
       <div className="max-w-4xl mx-auto space-y-6">
 
         {/* 🧾 HEADER */}

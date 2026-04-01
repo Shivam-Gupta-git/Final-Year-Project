@@ -63,7 +63,7 @@ const PlaceCard = ({
           />
         ) : (
           // NEW: placeholder when no image available
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-50 to-gray-100">
+          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-indigo-50 to-gray-100">
             <span className="text-3xl">🗺️</span>
           </div>
         )}
