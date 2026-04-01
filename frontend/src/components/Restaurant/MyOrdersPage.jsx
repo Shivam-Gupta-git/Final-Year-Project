@@ -51,25 +51,25 @@ function MyOrdersPage() {
         <div className="space-y-4">
           {orders.map((order) => (
             <div
-              key={order._id}
+              key={order?._id}
               className="bg-white dark:bg-gray-900 p-5 rounded-2xl shadow"
             >
               <div className="flex justify-between mb-2">
-                <p className="font-semibold">₹{order.totalAmount}</p>
+                <p className="font-semibold">₹{order?.totalAmount}</p>
                 <span
                   className={`text-xs px-2 py-1 rounded ${
-                    order.status === "delivered"
+                    order?.status === "delivered"
                       ? "bg-green-100 text-green-600"
                       : "bg-yellow-100 text-yellow-600"
                   }`}
                 >
-                  {order.status}
+                  {order?.status}
                 </span>
               </div>
 
               {/* ITEMS */}
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                {order.items.map((item, i) => (
+                {order?.items.map((item, i) => (
                   <p key={i}>
                     {item.food.name} × {item.food.quantity}
                   </p>
@@ -78,12 +78,12 @@ function MyOrdersPage() {
 
               {/* DATE */}
               <p className="text-xs text-gray-400 mt-2">
-                {new Date(order.createdAt).toLocaleString()}
+                {new Date(order?.createdAt).toLocaleString()}
               </p>
               {/* detail button */}
               <div className="mt-3">
                 <Link
-                  to={`/OrderDetailsPage/${order._id}`}
+                  to={`/OrderDetailsPage/${order?._id}`}
                   className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-orange-500 to-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition"
                 >
                   View Details →

@@ -1,7 +1,12 @@
 // PendingOrders.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { acceptOrderThunk, getPendingOrdersThunk } from "../../../features/user/deliveryBoySlice";
+import {
+  acceptOrderThunk,
+  deliverOrderThunk,
+  getPendingOrdersThunk,
+  pickupOrderThunk,
+} from "../../../features/user/deliveryBoySlice";
 
 function PendingOrders() {
   const dispatch = useDispatch();
@@ -146,27 +151,58 @@ function PendingOrders() {
                       </h2>
                     </div>
                     <div className="w-[50%] flex flex-col items-end justify-end gap-3">
-                    <span
-                      className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide ${
-                        order.status === "assigned"
-                          ? "border border-amber-300/30 bg-amber-400/20 text-amber-100"
-                          : order.status === "accepted_by_delivery_boy"
-                          ? "border border-cyan-300/30 bg-cyan-400/20 text-cyan-100"
-                          : "border border-emerald-300/30 bg-emerald-400/20 text-emerald-100"
-                      }`}
-                    >
-                      {order.status.replaceAll("_", " ")}
-                    </span>
-                    <div>
-                      <button
-                        onClick={() => dispatch(acceptOrderThunk(order._id))}
-                        disabled={order.status !== "assigned"}
-                        className="rounded-xl bg-green-600 px-4 py-2 text-white font-semibold hover:bg-green-700 disabled:opacity-50"
+                      <span
+                        className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide ${
+                          order.status === "assigned"
+                            ? "border border-amber-300/30 bg-amber-400/20 text-amber-100"
+                            : order.status === "accepted_by_delivery_boy"
+                            ? "border border-cyan-300/30 bg-cyan-400/20 text-cyan-100"
+                            : "border border-emerald-300/30 bg-emerald-400/20 text-emerald-100"
+                        }`}
                       >
-                        Accept Order
-                      </button>
-                    </div>
+                        {order.status.replaceAll("_", " ")}
+                      </span>
+                      <div>
+                        {/* actions */}
 
+                        {order.status === "assigned" && (
+                          <button
+                            onClick={() =>
+                              dispatch(acceptOrderThunk(order._id))
+                            }
+                            disabled={order.status !== "assigned"}
+                            className="rounded-xl bg-green-600 px-4 py-2 text-white font-semibold hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Accept Order
+                          </button>
+                        )}
+
+                        {order.status === "accepted_by_delivery_boy" && (
+                          <button
+                            onClick={() =>
+                              dispatch(pickupOrderThunk(order._id))
+                            }
+                            disabled={
+                              order.status !== "accepted_by_delivery_boy"
+                            }
+                            className="rounded-xl bg-orange-600 px-4 py-2 text-white font-semibold hover:bg-orange-700 disabled:opacity-50"
+                          >
+                            Pickup Order
+                          </button>
+                        )}
+
+                        {order.status === "out_for_delivery" && (
+                          <button
+                            onClick={() =>
+                              dispatch(deliverOrderThunk(order._id))
+                            }
+                            disabled={loading}
+                            className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            Mark as Delivered
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

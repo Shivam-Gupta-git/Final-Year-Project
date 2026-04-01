@@ -25,15 +25,19 @@ export const getDeliveryBoyProfileThunk = createAsyncThunk(
 
 // DELIVERY BOY - UPDATE DELIVERY BOY STATUS
 export const updateDeliveryBoyStatus = createAsyncThunk(
-  "deliveryBoy/updateStatus",   
+  "deliveryBoy/updateStatus",
   async ({ id, isOnline, isAvailable }, thunkAPI) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await apiClient.put(`/api/deliveryBoy/status/${id}`, { isOnline, isAvailable },{
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.put(
+        `/api/deliveryBoy/status/${id}`,
+        { isOnline, isAvailable },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       return response.deliveryBoy;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -71,13 +75,15 @@ export const getPendingOrdersThunk = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const token = localStorage.getItem("adminToken");
-      
+
       const response = await apiClient.get("/api/deliveryBoy/orders/pending", {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.orders;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch orders");
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch orders"
+      );
     }
   }
 );
@@ -95,13 +101,13 @@ export const getAvailableDeliveryBoysThunk = createAsyncThunk(
   }
 );
 
-// DELIVRY BOY - ACCEPT ORDER 
+// DELIVRY BOY - ACCEPT ORDER
 export const acceptOrderThunk = createAsyncThunk(
   "deliveryBoy/acceptOrder",
   async (orderId, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("adminToken");
-    
+
       const res = await apiClient.put(
         `/api/deliveryBoy/accept-order/${orderId}`,
         {},
@@ -111,7 +117,6 @@ export const acceptOrderThunk = createAsyncThunk(
           },
         }
       );
-      
       return res.data;
     } catch (error) {
       return rejectWithValue(
@@ -121,7 +126,54 @@ export const acceptOrderThunk = createAsyncThunk(
   }
 );
 
+// DELIVERY BOY - PICKUP ORDER
+export const pickupOrderThunk = createAsyncThunk(
+  "deliveryBoy/getAvailable",
+  async (orderId, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await apiClient.put(
+        `/api/deliveryBoy/pickup-order/${orderId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return res.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch orders"
+      );
+    }
+  }
+);
 
+// DELIVERY BOY - DELIVER ORDER
+export const deliverOrderThunk = createAsyncThunk(
+  "deliveryBoy/deliverOrder",
+  async (orderId, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await apiClient.put(
+        `/api/deliveryBoy/deliver-order/${orderId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Failed to fetch orders"
+      );
+    }
+  }
+);
 
 const initialState = {
   deliveryBoys: [],
@@ -142,8 +194,7 @@ const deliveryBoySlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-  
-  // DELIVERY BOY - Get Delivery Boy Profile  
+    // DELIVERY BOY - Get Delivery Boy Profile
     builder
       .addCase(getDeliveryBoyProfileThunk.pending, (state) => {
         state.loading = true;
@@ -161,37 +212,37 @@ const deliveryBoySlice = createSlice({
       });
 
     // DELIVERY BOY - UPDATE DELIVERY BOY STATUS
-    builder  
-    .addCase(updateDeliveryBoyStatus.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(updateDeliveryBoyStatus.fulfilled, (state, action) => {
-      state.loading = false;
-      state.profile = action.payload; // update profile with latest DeliveryBoy doc
-    })
-    .addCase(updateDeliveryBoyStatus.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
+    builder
+      .addCase(updateDeliveryBoyStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateDeliveryBoyStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.profile = action.payload; // update profile with latest DeliveryBoy doc
+      })
+      .addCase(updateDeliveryBoyStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
     // DELIVERY BOY - UPDATE LIVE LOCATION
     builder
-  .addCase(updateLiveLocationThunk.pending, (state) => {
-    state.loading = true;
-    state.error = null;
-  })
-  .addCase(updateLiveLocationThunk.fulfilled, (state, action) => {
-    state.loading = false;
-    state.profile = action.payload; // update profile with latest location
-  })
-  .addCase(updateLiveLocationThunk.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  });
+      .addCase(updateLiveLocationThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateLiveLocationThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.profile = action.payload; // update profile with latest location
+      })
+      .addCase(updateLiveLocationThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
-  // DELIVERY BOY - GET PENDING ORDERS
-  builder
+    // DELIVERY BOY - GET PENDING ORDERS
+    builder
       .addCase(getPendingOrdersThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -205,7 +256,7 @@ const deliveryBoySlice = createSlice({
         state.error = action.payload;
       });
 
-      builder
+    builder
       .addCase(getAvailableDeliveryBoysThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -217,19 +268,19 @@ const deliveryBoySlice = createSlice({
       .addCase(getAvailableDeliveryBoysThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Failed to fetch";
-      }); 
-      
-      // DELIVRY BOY - ACCEPT ORDER 
-      builder
+      });
+
+    // DELIVRY BOY - ACCEPT ORDER
+    builder
       .addCase(acceptOrderThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(acceptOrderThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.successMessage = action.payload.message;
+        state.successMessage = action.payload;
 
-        const updatedOrder = action.payload.order;
+        const updatedOrder = action.payload;
 
         state.orders = state.orders.map((order) =>
           order._id === updatedOrder._id ? updatedOrder : order
@@ -239,7 +290,50 @@ const deliveryBoySlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-    
+
+    // DELIVERY BOY - PICKUP ORDER
+    // builder
+    // .addCase(pickupOrderThunk.pending, (state) => {
+    //   state.loading = true;
+    //   state.error = null;
+    // })
+    // .addCase(pickupOrderThunk.fulfilled, (state, action) => {
+    //   state.loading = false;
+    //   state.successMessage = action.payload.message;
+
+    //   const pickupdOrder = action.payload.order;
+
+    //   state.orders = state.orders.map((order) =>
+    //     order._id === pickupdOrder._id ? pickupdOrder : order
+    //   );
+    // })
+    // .addCase(pickupOrderThunk.rejected, (state, action) => {
+    //   state.loading = false;
+    //   state.error = action.payload;
+    // });
+
+    // DELIVERY BOY - DELIVER ORDER
+    builder
+    .addCase(deliverOrderThunk.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+  
+    .addCase(deliverOrderThunk.fulfilled, (state, action) => {
+      state.loading = false;
+      state.successMessage = action.payload.message;
+  
+      const updatedOrder = action.payload.order;
+  
+      state.orders = state.orders.map((order) =>
+        order._id === updatedOrder._id ? updatedOrder : order
+      );
+    })
+  
+    .addCase(deliverOrderThunk.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
   },
 });
 

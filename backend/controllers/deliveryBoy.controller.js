@@ -1,6 +1,7 @@
 import { FoodOrder } from "../model/foodOrder.model.js";
 import { DeliveryBoy } from "../model/deliveryBoy.model.js";
 import { User } from "../model/user.model.js";
+import mongoose from "mongoose";
 
 
 // DELIVERY BOY - Get Delivery Boy Profile
@@ -210,8 +211,6 @@ export const getPendingOrders = async (req, res) => {
 
 // DELIVRY BOY - ACCEPT ORDER 
 export const acceptOrder = async (req, res) => {
-  console.log("req.user", req.user);
-  console.log("orderId", req.params.id);
   try {  
     const userId = req.user._id;
     const orderId = req.params.id;
@@ -264,72 +263,181 @@ export const acceptOrder = async (req, res) => {
   }
 };
 
-// ─── 3. Pickup Order ───────────────────────────────────────────────────
+// DELIVERY BOY - PICKUP ORDER
 export const pickupOrder = async (req, res) => {
   try {
-    const deliveryBoyId = req.user._id;
+    const userId = req.user._id;
     const orderId = req.params.id;
 
-    const order = await FoodOrder.findOne({ _id: orderId, deliveryBoy: deliveryBoyId });
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
-    if (!["accepted", "assigned"].includes(order.status))
-      return res.status(400).json({ success: false, message: "Cannot pickup this order" });
+    const deliveryBoy = await DeliveryBoy.findOne({ userId });
+
+    if (!deliveryBoy) {
+      return res.status(404).json({
+        success: false,
+        message: "Delivery boy not found",
+      });
+    }
+
+    const order = await FoodOrder.findOne({
+      _id: orderId,
+      deliveryBoy: deliveryBoy._id,
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (
+      !["accepted_by_delivery_boy", "assigned"].includes(order.status)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot pickup this order",
+      });
+    }
 
     order.status = "out_for_delivery";
     order.pickedUpAt = new Date();
+
     await order.save();
 
-    return res.status(200).json({ success: true, message: "Order picked up", order });
+    return res.status(200).json({
+      success: true,
+      message: "Order picked up successfully",
+      order,
+    });
   } catch (error) {
     console.error("Pickup Order Error:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
 };
 
-// ─── 4. Deliver Order ──────────────────────────────────────────────────
+// DELIVERY BOY - DELIVER ORDER 
 export const deliverOrder = async (req, res) => {
   const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
 
-    const deliveryBoyId = req.user._id;
+  try {
+    await session.startTransaction();
+
+    const userId = req.user._id;
     const orderId = req.params.id;
 
-    const order = await FoodOrder.findOne({ _id: orderId, deliveryBoy: deliveryBoyId }).session(session);
-    if (!order) {
-      await session.abortTransaction();
-      return res.status(404).json({ success: false, message: "Order not found" });
-    }
+    // Find delivery boy linked to logged in user
+    const deliveryBoy = await DeliveryBoy.findOne({
+      user: userId,
+    }).session(session);
 
-    if (order.status !== "out_for_delivery") {
-      await session.abortTransaction();
-      return res.status(400).json({ success: false, message: "Cannot deliver this order" });
-    }
-
-    const deliveryBoy = await DeliveryBoy.findById(deliveryBoyId).session(session);
     if (!deliveryBoy) {
       await session.abortTransaction();
-      return res.status(404).json({ success: false, message: "Delivery boy not found" });
+
+      return res.status(404).json({
+        success: false,
+        message: "Delivery boy not found",
+      });
+    }
+
+    // Find order assigned to this delivery boy
+    const order = await FoodOrder.findOne({
+      _id: orderId,
+      deliveryBoy: deliveryBoy._id,
+    }).session(session);
+
+    if (!order) {
+      await session.abortTransaction();
+
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Only out_for_delivery orders can be delivered
+    if (order.status !== "out_for_delivery") {
+      await session.abortTransaction();
+
+      return res.status(400).json({
+        success: false,
+        message: "Only out_for_delivery orders can be marked delivered",
+      });
     }
 
     // Update order
     order.status = "delivered";
     order.deliveredAt = new Date();
 
+    // Optional: stop live tracking after delivery
+    order.liveLocation = null;
+
     // Update delivery boy
     deliveryBoy.isAvailable = true;
     deliveryBoy.currentOrder = null;
+    deliveryBoy.totalDeliveredOrders =
+      (deliveryBoy.totalDeliveredOrders || 0) + 1;
 
     await order.save({ session });
     await deliveryBoy.save({ session });
 
     await session.commitTransaction();
 
-    return res.status(200).json({ success: true, message: "Order delivered successfully", order });
+    // Return fully populated order
+    const updatedOrder = await FoodOrder.findById(order._id)
+      .populate("user", "userName email contactNumber")
+      .populate("restaurant", "name address contactNumber")
+      .populate({
+        path: "deliveryBoy",
+        populate: {
+          path: "user",
+          select: "userName email contactNumber",
+        },
+      });
+
+    // Optional realtime socket events
+    const io = req.app.get("io");
+
+    if (io) {
+      io.to(`user_${updatedOrder.user._id}`).emit("orderDelivered", {
+        orderId: updatedOrder._id,
+        status: "delivered",
+        message: "Your order has been delivered successfully",
+      });
+
+      if (updatedOrder.restaurant?._id) {
+        io.to(`restaurant_${updatedOrder.restaurant._id}`).emit(
+          "orderDelivered",
+          {
+            orderId: updatedOrder._id,
+            status: "delivered",
+            message: "Order delivered to customer",
+          }
+        );
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Order delivered successfully",
+      order: updatedOrder,
+      deliveryBoyStats: {
+        totalDeliveredOrders: deliveryBoy.totalDeliveredOrders,
+        isAvailable: deliveryBoy.isAvailable,
+      },
+    });
   } catch (error) {
     await session.abortTransaction();
+
     console.error("Deliver Order Error:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   } finally {
     session.endSession();
   }
