@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   acceptOrderThunk,
@@ -6,86 +6,235 @@ import {
   rejectOrderThunk,
   updateStatusThunk,
 } from "../../../features/user/foodSlice";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import {
+  Search,
+  ShoppingBag,
+  Clock3,
+  CircleDollarSign,
+  User,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  Package,
+} from "lucide-react";
 
 function OrdersDashboard() {
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const { orders = [], loading } = useSelector((state) => state.food);
 
-  // 🔥 MODAL STATES
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-
-  const statusColor = {
-    pending: "bg-yellow-100 text-yellow-700",
-    confirmed: "bg-blue-100 text-blue-700",
-    preparing: "bg-purple-100 text-purple-700",
-    out_for_delivery: "bg-indigo-100 text-indigo-700",
-    delivered: "bg-green-100 text-green-700",
-    failed: "bg-red-100 text-red-700",
-    cancelled: "bg-red-100 text-red-700",
-  };
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     dispatch(fetchAdminOrders());
-  }, [dispatch]);
+  }, [dispatch, location.pathname]);
 
-  useEffect(() => {
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const query = search.toLowerCase();
+      return (
+        order._id?.toLowerCase().includes(query) ||
+        order.user?.email?.toLowerCase().includes(query) ||
+        order.deliveryAddress?.name?.toLowerCase().includes(query)
+      );
+    });
+  }, [orders, search]);
 
-  }, [orders])
+  const stats = {
+    total: orders.length,
+    pending: orders.filter((o) => o.status === "pending").length,
+    revenue: orders
+      .filter((o) => ["confirmed", "delivered"].includes(o.status))
+      .reduce((a, b) => a + b.totalAmount, 0),
+    delivered: orders.filter((o) => o.status === "delivered").length,
+  };
 
-
+  const statusStyles = {
+    pending:
+      "bg-yellow-500/15 text-yellow-300 border border-yellow-500/20",
+    confirmed:
+      "bg-sky-500/15 text-sky-300 border border-sky-500/20",
+    preparing:
+      "bg-purple-500/15 text-purple-300 border border-purple-500/20",
+    out_for_delivery:
+      "bg-indigo-500/15 text-indigo-300 border border-indigo-500/20",
+    delivered:
+      "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20",
+    failed:
+      "bg-red-500/15 text-red-300 border border-red-500/20",
+    cancelled:
+      "bg-red-500/15 text-red-300 border border-red-500/20",
+  };
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen text-gray-600 dark:text-gray-300">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
-        Orders Dashboard
-      </h1>
+    <div className="min-h-screen bg-black text-white px-4 md:px-6 py-6">
+      {/* HEADER */}
+      <div className="mb-8 rounded-3xl border border-white/10 bg-linear-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-6 md:p-8 shadow-[0_20px_80px_rgba(0,0,0,0.55)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-purple-500/10 blur-3xl" />
 
-      {loading ? (
-        <p className="text-gray-500">Loading...</p>
-      ) : (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-              <tr>
-                <th className="p-4">Order ID</th>
-                <th className="p-4">User</th>
-                <th className="p-4">Amount</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-center">Action</th>
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
+            <p className="mb-2 text-sm uppercase tracking-[0.3em] text-zinc-500">
+              Admin Panel
+            </p>
+            <h1 className="text-3xl md:text-5xl font-black bg-linear-to-r from-white via-blue-100 to-blue-400 bg-clip-text text-transparent">
+              Orders Dashboard
+            </h1>
+            <p className="mt-3 max-w-2xl text-zinc-400 text-sm md:text-base">
+              Manage customer orders, update statuses, assign delivery partners,
+              and monitor real-time activity from one place.
+            </p>
+          </div>
+
+          <div className="w-full lg:w-85">
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-xl transition focus-within:border-blue-500/40 focus-within:bg-white/10">
+              <Search className="h-5 w-5 text-zinc-500" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search orders, customer, ID..."
+                className="w-full bg-transparent text-sm text-white placeholder:text-zinc-500 outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+        {[
+          {
+            label: "Total Orders",
+            value: stats.total,
+            icon: ShoppingBag,
+            color: "from-blue-600/20 to-cyan-500/10",
+          },
+          {
+            label: "Pending",
+            value: stats.pending,
+            icon: Clock3,
+            color: "from-yellow-600/20 to-orange-500/10",
+          },
+          {
+            label: "Revenue",
+            value: `₹${stats.revenue}`,
+            icon: CircleDollarSign,
+            color: "from-emerald-600/20 to-green-500/10",
+          },
+          {
+            label: "Delivered",
+            value: stats.delivered,
+            icon: CheckCircle2,
+            color: "from-purple-600/20 to-indigo-500/10",
+          },
+        ].map((card, idx) => {
+          const Icon = card.icon;
+          return (
+            <div
+              key={idx}
+              className={`rounded-3xl border border-white/10 bg-linear-to-br ${card.color} p-5 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300`}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-zinc-400">{card.label}</p>
+                  <h2 className="mt-3 text-3xl font-bold text-white">
+                    {card.value}
+                  </h2>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
+                  <Icon className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* TABLE */}
+      <div className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-950/90 shadow-[0_20px_80px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+          <div>
+            <h2 className="text-xl font-bold text-white">Recent Orders</h2>
+            <p className="text-sm text-zinc-500 mt-1">
+              Showing {filteredOrders.length} orders
+            </p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-212.5">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/3 text-left text-xs uppercase tracking-wider text-zinc-500">
+                <th className="px-6 py-4">Order</th>
+                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Action</th>
               </tr>
             </thead>
+
             <tbody>
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <tr
                   key={order._id}
-                  className="border-b hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                   onClick={() => setSelectedOrder(order)}
+                  className="cursor-pointer border-b border-white/5 transition-all duration-300 hover:bg-white/4"
                 >
-                  <td className="p-4 font-medium">#{order._id.slice(-6)}</td>
-                  <td className="p-4">{order.user?.email}</td>
-                  <td className="p-4 font-semibold">₹{order.totalAmount}</td>
-                  <td className="p-4">
+                  <td className="px-6 py-5">
+                    <div>
+                      <p className="font-semibold text-white">
+                        #{order._id.slice(-6)}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        {new Date(order.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/15 text-blue-300">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-zinc-200">
+                          {order.deliveryAddress?.name}
+                        </p>
+                        <p className="text-sm text-zinc-500">
+                          {order.user?.email}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5 text-lg font-bold text-emerald-400">
+                    ₹{order.totalAmount}
+                  </td>
+
+                  <td className="px-6 py-5">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        statusColor[order.status]
-                      }`}
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${statusStyles[order.status]}`}
                     >
-                      {order.status.replace("_", " ")}
+                      {order.status.replaceAll("_", " ")}
                     </span>
                   </td>
+
                   <td
-                    className="p-4 text-center"
+                    className="px-6 py-5 text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
                       onClick={() => setSelectedOrder(order)}
-                      className="text-blue-600 hover:underline text-sm"
+                      className="rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition hover:bg-blue-500/20"
                     >
-                      View
+                      View Order
                     </button>
                   </td>
                 </tr>
@@ -93,98 +242,103 @@ function OrdersDashboard() {
             </tbody>
           </table>
         </div>
-      )}
+      </div>
 
-      {/* 🔥 ORDER DETAILS MODAL */}
+      {/* SIDEBAR MODAL */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/40 flex justify-end z-50">
-          <div className="w-full max-w-lg bg-white dark:bg-gray-900 p-6 overflow-y-auto">
-            {/* CLOSE BUTTON */}
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="mb-4 text-sm text-gray-500"
-            >
-              ← Back
-            </button>
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm">
+          <div className="h-full w-full max-w-xl overflow-y-auto border-l border-white/10 bg-zinc-950 p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-500">Order Details</p>
+                <h2 className="mt-1 text-2xl font-bold text-white">
+                  #{selectedOrder._id.slice(-6)}
+                </h2>
+              </div>
 
-            {/* HEADER */}
-            <h2 className="text-xl font-bold mb-4">
-              Order #{selectedOrder._id.slice(-6)}
-            </h2>
-
-            {/* STATUS */}
-            <div className="mb-4">
-              <span
-                className={`px-3 py-1 rounded-full text-xs ${
-                  statusColor[selectedOrder.status]
-                }`}
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="rounded-2xl border border-white/10 bg-white/5 p-3 text-zinc-400 transition hover:bg-white/10 hover:text-white"
               >
-                {selectedOrder.status.replace("_", " ")}
-              </span>
+                <X className="h-5 w-5" />
+              </button>
             </div>
 
-            {/* USER */}
-            <p className="text-sm mb-2">👤 {selectedOrder.user?.email}</p>
-
-            {/* ITEMS */}
-            <div className="border-t pt-3 mt-3">
-              <h3 className="font-semibold mb-2">Items</h3>
-              {selectedOrder.items.map((item, i) => (
-                <div key={i} className="flex justify-between text-sm mb-1">
-                  <p>
-                    {item.food.name} × {item.food.quantity}
+            <div className="mb-6 rounded-2xl border border-white/10 bg-white/3 p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-zinc-500">Customer</p>
+                  <p className="mt-1 font-semibold text-white">
+                    {selectedOrder.user?.email}
                   </p>
-                  <p>₹{item.food.price * item.food.quantity}</p>
                 </div>
-              ))}
+
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[selectedOrder.status]}`}
+                >
+                  {selectedOrder.status.replaceAll("_", " ")}
+                </span>
+              </div>
             </div>
 
-            {/* TOTAL */}
-            <div className="mt-4 flex justify-between font-bold">
-              <span>Total</span>
-              <span>₹{selectedOrder.totalAmount}</span>
+            <div className="mb-6 rounded-2xl border border-white/10 bg-white/3 p-5">
+              <div className="mb-4 flex items-center gap-2 text-white font-semibold">
+                <Package className="h-5 w-5 text-blue-400" />
+                Ordered Items
+              </div>
+
+              <div className="space-y-3">
+                {selectedOrder.items.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/3 p-4"
+                  >
+                    <div>
+                      <p className="font-medium text-white">{item.food.name}</p>
+                      <p className="text-sm text-zinc-500">
+                        Qty: {item.food.quantity}
+                      </p>
+                    </div>
+                    <p className="font-bold text-emerald-400">
+                      ₹{item.food.price * item.food.quantity}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-lg font-bold text-white">
+                <span>Total</span>
+                <span className="text-emerald-400">
+                  ₹{selectedOrder.totalAmount}
+                </span>
+              </div>
             </div>
 
-            {/* DELIVERY ADDRESS */}
-            <div className="mt-4 bg-gray-100 dark:bg-gray-800 p-3 rounded-xl text-sm">
-              <p className="font-medium">📍 Address</p>
-              <p>{selectedOrder.deliveryAddress?.name}</p>
-              <p className="text-xs">
-                {selectedOrder.deliveryAddress?.street},{" "}
-                {selectedOrder.deliveryAddress?.city} -{" "}
+            <div className="mb-6 rounded-2xl border border-white/10 bg-white/3 p-5">
+              <p className="mb-2 font-semibold text-white">Delivery Address</p>
+              <p className="text-zinc-300">{selectedOrder.deliveryAddress?.name}</p>
+              <p className="mt-2 text-sm text-zinc-500 leading-6">
+                {selectedOrder.deliveryAddress?.street},
+                {selectedOrder.deliveryAddress?.city},
                 {selectedOrder.deliveryAddress?.pincode}
               </p>
             </div>
 
-            {/* CANCEL INFO */}
-            {(selectedOrder.status === "cancelled" ||
-              selectedOrder.status === "failed") && (
-              <div className="mt-4 bg-red-50 p-3 rounded-xl text-sm">
-                <p className="text-red-600 font-medium">Cancelled</p>
-                <p>Reason: {selectedOrder.cancelReason}</p>
-              </div>
-            )}
-
-            {/* ACTIONS */}
-            <div className="mt-4 flex gap-2 flex-wrap">
+            <div className="flex flex-wrap gap-3">
               {selectedOrder.status === "pending" && (
                 <>
                   <button
-                    onClick={() =>
-                      dispatch(acceptOrderThunk(selectedOrder._id))
-                    }
-                    className="bg-green-500 text-white px-4 py-2 rounded"
+                    onClick={() => dispatch(acceptOrderThunk(selectedOrder._id))}
+                    className="rounded-2xl bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-500"
                   >
-                    Accept
+                    Accept Order
                   </button>
 
                   <button
-                    onClick={() => {
-                      setShowCancelModal(true);
-                    }}
-                    className="bg-red-500 text-white px-4 py-2 rounded"
+                    onClick={() => setShowCancelModal(true)}
+                    className="rounded-2xl bg-red-600/90 px-5 py-3 font-semibold text-white transition hover:bg-red-500"
                   >
-                    Reject
+                    Reject Order
                   </button>
                 </>
               )}
@@ -197,117 +351,29 @@ function OrdersDashboard() {
                         orderId: selectedOrder._id,
                         status: "preparing",
                       })
-                    ) 
+                    )
                   }
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                  className="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-500"
                 >
                   Start Preparing
                 </button>
               )}
 
-              {/* {selectedOrder.status === "preparing" && (
-                <button
-                  onClick={() =>
-                    dispatch(
-                      updateStatusThunk({
-                        orderId: selectedOrder._id,
-                        status: "out_for_delivery",
-                      
-                      })
-                      )
-                    }
-                  className="bg-purple-500 text-white px-4 py-2 rounded"
-                >
-                  Out for Delivery
-                </button>
-              )} */}
-
               {selectedOrder.status === "preparing" && (
-                <Link to={`/admin/AdminAssignDeliveryBoy/${selectedOrder._id}`} className="bg-gray-500 text-white px-4 py-2 rounded" >Assign Order</Link>
+                <Link
+                  to={`/admin/AdminAssignDeliveryBoy/${selectedOrder._id}`}
+                  className="rounded-2xl bg-purple-600 px-5 py-3 font-semibold text-white transition hover:bg-purple-500"
+                >
+                  Assign Delivery Boy
+                </Link>
               )}
 
               <Link
                 to={`/admin/AdminOrderDetails/${selectedOrder._id}`}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white/10"
               >
-                View Details
+                Full Details
               </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 🔥 CANCEL MODAL */}
-      {showCancelModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold mb-3 text-gray-800 dark:text-white">
-              Cancel Order
-            </h2>
-            <p className="text-sm text-gray-500 mb-3">
-              Select reason or write your own
-            </p>
-
-            {/* SUGGESTIONS */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {[
-                "Item not available",
-                "Restaurant closed",
-                "Out of stock",
-                "Too busy",
-              ].map((reason) => (
-                <button
-                  key={reason}
-                  onClick={() => setCancelReason(reason)}
-                  className={`px-3 py-1 rounded-full text-xs border ${
-                    cancelReason === reason
-                      ? "bg-red-500 text-white"
-                      : "bg-gray-100 dark:bg-gray-800"
-                  }`}
-                >
-                  {reason}
-                </button>
-              ))}
-            </div>
-
-            {/* INPUT */}
-            <textarea
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="Write custom reason..."
-              className="w-full border rounded-lg p-2 text-sm dark:bg-gray-800 dark:border-gray-700"
-            />
-
-            {/* ACTIONS */}
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={() => {
-                  setShowCancelModal(false);
-                  setCancelReason("");
-                }}
-                className="px-4 py-2 text-sm rounded-lg bg-gray-200 dark:bg-gray-700"
-              >
-                Close
-              </button>
-
-              <button
-                disabled={!cancelReason.trim()}
-                onClick={() => {
-                  dispatch(
-                    rejectOrderThunk({
-                      orderId: selectedOrder._id,
-                      reason: cancelReason,
-                    })
-                  );
-                  setShowCancelModal(false);
-                  setCancelReason("");
-                }}
-                className={`px-4 py-2 text-sm rounded-lg text-white ${
-                  cancelReason ? "bg-red-500" : "bg-gray-400 cursor-not-allowed"
-                }`}
-              >
-                Confirm Cancel
-              </button>
             </div>
           </div>
         </div>

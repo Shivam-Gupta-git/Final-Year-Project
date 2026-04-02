@@ -4,10 +4,10 @@ import {
   getAllActiveRestaurant,
   inactiveRestaurantByAdmin,
 } from "../../../features/user/restaurantSlice";
-import { motion } from "framer-motion";
-import { FaUtensils } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { IoIosCloseCircleOutline } from "react-icons/io";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaUtensils, FaMapMarkerAlt, FaClock } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 
 function AdminActiveRestaurant() {
   const dispatch = useDispatch();
@@ -21,231 +21,272 @@ function AdminActiveRestaurant() {
     dispatch(getAllActiveRestaurant());
   }, [dispatch]);
 
-  const handelRestaurantInactiveButton = (id) => {
+  const handleInactive = (id) => {
     dispatch(inactiveRestaurantByAdmin(id));
+    setSelectedRestaurant(null);
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-100 via-white to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
-      {/* HEADER */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 p-6 rounded-2xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl shadow-xl  flex flex-col md:flex-row justify-between items-center gap-6"
-      >
-        <div className="flex items-center gap-4">
-          <div className="p-4 bg-linear-to-r from-orange-500 to-red-500 text-white rounded-xl text-2xl shadow">
-            <FaUtensils />
-          </div>
-
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-              Active Restaurants
-            </h1>
-            <p className="text-gray-500">
-              Manage all active restaurants on platform
-            </p>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="flex gap-4">
-          <div className="bg-blue-100 dark:bg-blue-900/40 px-5 py-3 rounded-xl text-center">
-            <p className="text-lg font-bold text-blue-600">
-              {restaurants.length}
-            </p>
-            <p className="text-xs text-gray-500">Total</p>
-          </div>
-
-          <div className="bg-green-100 dark:bg-green-900/40 px-5 py-3 rounded-xl text-center">
-            <p className="text-lg font-bold text-green-600">Active</p>
-            <p className="text-xs text-gray-500">Status</p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* GRID */}
-      {loading ? (
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse bg-white dark:bg-gray-800 rounded-2xl shadow overflow-hidden"
-            >
-              {/* IMAGE SKELETON */}
-              <div className="h-48 bg-gray-300 dark:bg-gray-700"></div>
-
-              {/* TEXT SKELETON */}
-              <div className="p-4 space-y-3">
-                <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-1/2"></div>
-              </div>
+    <div className="min-h-screen bg-black text-white p-6 overflow-hidden">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-30 mb-6 rounded-3xl border border-white/10 bg-zinc-900/95 backdrop-blur-xl px-8 py-6 shadow-2xl">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 text-2xl shadow-lg">
+              <FaUtensils />
             </div>
-          ))}
+
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                Active Restaurants
+              </h1>
+              <p className="mt-1 text-sm text-zinc-400">
+                View and manage all currently active restaurants
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="rounded-2xl border border-white/10 bg-zinc-800 px-5 py-3 text-center">
+              <p className="text-2xl font-bold text-white">
+                {restaurants.length}
+              </p>
+              <p className="text-xs uppercase tracking-wider text-zinc-400">
+                Restaurants
+              </p>
+            </div>
+          </div>
         </div>
-      ) : restaurants.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-80 text-center">
-          {/* ICON */}
-          <div className="text-6xl mb-4 animate-bounce">🍽️</div>
+      </div>
 
-          {/* TITLE */}
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
-            No Restaurants Found
-          </h2>
+      <div className="flex gap-6">
+        {/* Main Table */}
+        <div
+          className={`transition-all duration-300 ${
+            selectedRestaurant ? "w-[68%]" : "w-full"
+          }`}
+        >
+          <div className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-900 shadow-2xl">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-225">
+                <thead className="bg-zinc-800 text-left text-sm uppercase tracking-wide text-zinc-400">
+                  <tr>
+                    <th className="px-6 py-5">Restaurant</th>
+                    <th className="px-6 py-5">City</th>
+                    <th className="px-6 py-5">Food Type</th>
+                    <th className="px-6 py-5">Cost</th>
+                    <th className="px-6 py-5">Status</th>
+                    <th className="px-6 py-5">Action</th>
+                  </tr>
+                </thead>
 
-          {/* SUBTEXT */}
-          <p className="text-gray-500 mt-2 text-sm max-w-sm">
-            Looks like there are no active restaurants available right now. Try
-            adding a new one or check back later.
-          </p>
+                <tbody>
+                  {loading ? (
+                    [...Array(8)].map((_, index) => (
+                      <tr
+                        key={index}
+                        className="border-t border-white/5 animate-pulse"
+                      >
+                        <td className="px-6 py-5">
+                          <div className="h-10 w-40 rounded-xl bg-zinc-800" />
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="h-5 w-24 rounded bg-zinc-800" />
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="h-5 w-28 rounded bg-zinc-800" />
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="h-5 w-16 rounded bg-zinc-800" />
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="h-8 w-20 rounded-full bg-zinc-800" />
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="h-9 w-24 rounded-xl bg-zinc-800" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : restaurants.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan="6"
+                        className="px-6 py-16 text-center text-zinc-500"
+                      >
+                        No active restaurants found.
+                      </td>
+                    </tr>
+                  ) : (
+                    restaurants.map((restaurant) => (
+                      <tr
+                        key={restaurant._id}
+                        onClick={() => setSelectedRestaurant(restaurant)}
+                        className={`cursor-pointer border-t border-white/5 transition-all duration-200 hover:bg-zinc-800/80 ${
+                          selectedRestaurant?._id === restaurant._id
+                            ? "bg-zinc-800"
+                            : ""
+                        }`}
+                      >
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-4">
+                            <img
+                              src={restaurant.images?.[0] || "/no-image.jpg"}
+                              alt={restaurant.name}
+                              className="h-14 w-14 rounded-2xl object-cover"
+                            />
 
-          {/* ACTION BUTTON */}
-          <Link
-            to="/admin/add-restaurant"
-            className="mt-5 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition"
-          >
-            + Add Restaurant
-          </Link>
+                            <div>
+                              <p className="font-semibold text-white">
+                                {restaurant.name}
+                              </p>
+                              <p className="text-sm text-zinc-500">
+                                {restaurant.famousFood}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-5 text-zinc-300">
+                          {restaurant.city?.name}
+                        </td>
+
+                        <td className="px-6 py-5 text-zinc-300">
+                          {restaurant.foodType}
+                        </td>
+
+                        <td className="px-6 py-5 text-zinc-300">
+                          ₹{restaurant.avgCostForOne}
+                        </td>
+
+                        <td className="px-6 py-5">
+                          <span className="rounded-full bg-emerald-500/20 px-4 py-1 text-sm font-medium text-emerald-400 border border-emerald-500/20">
+                            {restaurant.status}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-5">
+                          <button className="rounded-xl border border-white/10 bg-zinc-800 px-4 py-2 text-sm text-white hover:bg-zinc-700">
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {restaurants.map((restaurant) => (
+
+        {/* Right Side Panel */}
+        <AnimatePresence>
+          {selectedRestaurant && (
             <motion.div
-              key={restaurant._id}
-              whileHover={{ y: -8, scale: 1.03 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-2xl transition cursor-pointer overflow-hidden "
-              onClick={() => setSelectedRestaurant(restaurant)}
+              initial={{ x: 60, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 60, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="sticky top-28 h-[calc(100vh-8rem)] w-[32%] overflow-y-auto rounded-3xl border border-white/10 bg-zinc-900 p-6 shadow-2xl"
             >
-              {/* IMAGE */}
-              <div className="h-48 relative">
-                <img
-                  src={restaurant.images?.[0] || "/no-image.jpg"}
-                  className="w-full h-full object-cover"
-                  alt={restaurant.name}
-                />
+              <div className="mb-5 flex items-start justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">
+                    {selectedRestaurant.name}
+                  </h2>
+                  <p className="mt-1 text-sm text-zinc-400">
+                    {selectedRestaurant.city?.name}
+                  </p>
+                </div>
 
-                <span className="absolute top-3 right-3 text-xs px-3 py-1 bg-green-500 text-white rounded-full">
-                  {restaurant.status}
-                </span>
+                <button
+                  onClick={() => setSelectedRestaurant(null)}
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-800 text-xl text-zinc-400 hover:bg-red-500 hover:text-white"
+                >
+                  <IoClose />
+                </button>
               </div>
 
-              {/* INFO */}
-              <div className="p-4">
-                <h3 className="font-semibold text-lg">{restaurant.name}</h3>
+              <img
+                src={selectedRestaurant.images?.[0] || "/no-image.jpg"}
+                alt={selectedRestaurant.name}
+                className="mb-6 h-56 w-full rounded-3xl object-cover"
+              />
 
-                <p className="text-sm text-gray-500">
-                  📍 {restaurant.city?.name}
-                </p>
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-white/10 bg-zinc-800 p-4">
+                  <p className="mb-2 text-xs uppercase tracking-widest text-zinc-500">
+                    Food Type
+                  </p>
+                  <p className="text-lg font-semibold text-white">
+                    {selectedRestaurant.foodType}
+                  </p>
+                </div>
 
-                <p className="text-sm text-gray-400 mt-1">
-                  {restaurant.foodType} • ₹{restaurant.avgCostForOne}
-                </p>
+                <div className="rounded-2xl border border-white/10 bg-zinc-800 p-4">
+                  <p className="mb-2 flex items-center gap-2 text-xs uppercase tracking-widest text-zinc-500">
+                    <FaMapMarkerAlt /> Address
+                  </p>
+                  <p className="text-sm leading-6 text-zinc-300">
+                    {selectedRestaurant.address}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-white/10 bg-zinc-800 p-4">
+                    <p className="text-xs uppercase tracking-widest text-zinc-500">
+                      Cost
+                    </p>
+                    <p className="mt-2 text-xl font-bold text-white">
+                      ₹{selectedRestaurant.avgCostForOne}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-zinc-800 p-4">
+                    <p className="flex items-center gap-2 text-xs uppercase tracking-widest text-zinc-500">
+                      <FaClock /> Timing
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-white">
+                      {selectedRestaurant.openingHours?.open} - {selectedRestaurant.openingHours?.close}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-zinc-800 p-4">
+                  <p className="mb-2 text-xs uppercase tracking-widest text-zinc-500">
+                    Famous Food
+                  </p>
+                  <p className="text-sm text-zinc-300">
+                    {selectedRestaurant.famousFood}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3">
+                <Link
+                  to={`/admin/get-All-Food/${selectedRestaurant._id}`}
+                  className="flex items-center justify-center rounded-2xl bg-zinc-700 px-4 py-3 font-medium text-white transition hover:bg-zinc-600"
+                >
+                  Show Food Menu
+                </Link>
+
+                <Link
+                  to={`/admin/update-restaurant/${selectedRestaurant._id}`}
+                  className="flex items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 font-medium text-white transition hover:bg-blue-500"
+                >
+                  Update Restaurant
+                </Link>
+
+                <button
+                  onClick={() => handleInactive(selectedRestaurant._id)}
+                  className="rounded-2xl bg-red-600 px-4 py-3 font-medium text-white transition hover:bg-red-500"
+                >
+                  Mark Inactive
+                </button>
               </div>
             </motion.div>
-          ))}
-        </div>
-      )}
-
-      {/* MODAL */}
-      {selectedRestaurant && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-          <motion.div
-            initial={{ scale: 0.85 }}
-            animate={{ scale: 1 }}
-            className="bg-white dark:bg-gray-900 w-[95%] md:w-237.5 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
-          >
-            {/* CLOSE */}
-            <button
-              onClick={() => setSelectedRestaurant(null)}
-              className="absolute right-4 top-4 text-gray-400 hover:bg-red-500 hover:text-white text-3xl rounded-full duration-300 cursor-pointer"
-            >
-              <IoIosCloseCircleOutline />
-            </button>
-
-            <h2 className="text-2xl font-bold">{selectedRestaurant.name}</h2>
-
-            <p className="text-gray-500 mb-4">
-              {selectedRestaurant.city?.name}
-            </p>
-
-            {/* IMAGES */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {selectedRestaurant.images?.map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  className="h-32 w-full object-cover rounded"
-                />
-              ))}
-            </div>
-
-            {/* DETAILS */}
-            <div className="grid md:grid-cols-2 gap-3 mt-5 text-sm">
-              <p>
-                <b>Food Type:</b> {selectedRestaurant.foodType}
-              </p>
-              <p>
-                <b>Famous Food:</b> {selectedRestaurant.famousFood}
-              </p>
-              <p>
-                <b>Cost:</b> ₹{selectedRestaurant.avgCostForOne}
-              </p>
-              <p>
-                <b>Best Time:</b> {selectedRestaurant.bestTime}
-              </p>
-              <p>
-                <b>Status:</b> {selectedRestaurant.status}
-              </p>
-              <p>
-                <b>Address:</b> {selectedRestaurant.address}
-              </p>
-
-              <p>
-                <b>Opening:</b> {selectedRestaurant.openingHours?.open} -{" "}
-                {selectedRestaurant.openingHours?.close}
-              </p>
-
-              <p>
-                <b>Map:</b>{" "}
-                <a
-                  href={`https://maps.google.com?q=${selectedRestaurant.location?.coordinates?.[1]},${selectedRestaurant.location?.coordinates?.[0]}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  View Location
-                </a>
-              </p>
-            </div>
-
-            {/* ACTIONS */}
-            <div className="flex gap-3 mt-6 justify-end">
-              <Link
-                to={`/admin/get-All-Food/${selectedRestaurant._id}`}
-                className="px-4 py-2 bg-gray-400 hover:bg-gray-500 duration-300 text-white rounded-lg"
-              >
-                Show Food Menu
-              </Link>
-
-              <Link
-                to={`/admin/update-restaurant/${selectedRestaurant._id}`}
-                className="px-4 py-2 bg-blue-400 hover:bg-blue-500 duration-300 text-white rounded-lg"
-              >
-                Update
-              </Link>
-
-              <button
-                onClick={() =>
-                  handelRestaurantInactiveButton(selectedRestaurant._id)
-                }
-                className="px-4 py-2 bg-red-400 hover:bg-red-500 duration-300 text-white rounded-lg"
-              >
-                Inactive
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
