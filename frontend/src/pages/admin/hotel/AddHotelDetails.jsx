@@ -98,192 +98,219 @@ function AddHotelDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-100 via-white to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
-  
-      {/* HEADER */}
-      <div className="mb-8 p-6 rounded-2xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl shadow-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
-        <div className="p-4 bg-linear-to-r from-green-500 to-emerald-600 text-white rounded-xl text-xl shadow">
+<div className="min-h-screen bg-black px-4 md:px-6 py-6 text-white">
+  {/* Header */}
+  <div className="relative mb-8 overflow-hidden rounded-4xl border border-white/10 bg-linear-to-br from-zinc-950 via-zinc-900 to-black p-6 md:p-8 shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
+    <div className="absolute -top-10 right-0 h-44 w-44 rounded-full bg-orange-500/20 blur-3xl" />
+    <div className="absolute bottom-0 left-0 h-36 w-36 rounded-full bg-red-500/20 blur-3xl" />
+
+    <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div className="flex items-center gap-5">
+        <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-linear-to-br from-orange-500 to-red-600 text-3xl shadow-[0_10px_30px_rgba(249,115,22,0.45)]">
           🏨
         </div>
+
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+          <p className="mb-2 text-xs uppercase tracking-[0.35em] text-zinc-500">
+            Hotel Management
+          </p>
+
+          <h1 className="text-3xl md:text-5xl font-black bg-linear-to-r from-white via-orange-100 to-orange-400 bg-clip-text text-transparent">
             Create Hotel
           </h1>
-          <p className="text-gray-500">
-            Add new hotel details and location
+
+          <p className="mt-2 text-sm md:text-base text-zinc-400">
+            Add hotel details, location, facilities and images
           </p>
         </div>
       </div>
-  
-      {/* FORM CARD */}
-      <div className="bg-white dark:bg-gray-900 w-full max-w-5xl mx-auto rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white">
-  
-        <form onSubmit={handleSubmit} className="space-y-6">
-  
-          {/* NAME */}
+
+      <div className="rounded-2xl border border-orange-500/20 bg-orange-500/10 px-5 py-3 text-sm text-orange-300 backdrop-blur-xl">
+        Fill all required details carefully
+      </div>
+    </div>
+  </div>
+
+  {/* Form Card */}
+  <div className="mx-auto max-w-6xl rounded-4xl border border-white/10 bg-zinc-950/90 p-6 md:p-8 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Basic Details */}
+      <div>
+        <h2 className="mb-5 text-xl font-bold text-white">Basic Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="text-sm text-gray-600 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-zinc-400">
               Hotel Name
             </label>
             <input
               type="text"
               name="name"
               placeholder="Enter hotel name"
-              className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-zinc-500 outline-none transition-all duration-300 focus:border-orange-500/50 focus:bg-white/10"
               onChange={handleChange}
             />
           </div>
-  
-          {/* CITY */}
+
           <div>
-            <label className="text-sm text-gray-600 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-zinc-400">
+              Hotel Type
+            </label>
+            <input
+              type="text"
+              name="type"
+              placeholder="e.g. Resort, Motel, Lodge"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-zinc-500 outline-none transition-all duration-300 focus:border-orange-500/50 focus:bg-white/10"
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Location Details */}
+      <div>
+        <h2 className="mb-5 text-xl font-bold text-white">Location Details</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-zinc-400">
               Select City
             </label>
             <select
               name="city"
-              className="w-full border p-3 rounded-xl bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-all duration-300 focus:border-orange-500/50 focus:bg-white/10"
               onChange={handleChange}
             >
-              <option value="">Select City</option>
+              <option className="bg-zinc-900" value="">
+                Select City
+              </option>
               {cities.map((city) => (
-                <option key={city._id} value={city._id}>
+                <option className="bg-zinc-900" key={city._id} value={city._id}>
                   {city.name}
                 </option>
               ))}
             </select>
           </div>
-  
-          {/* ADDRESS */}
+
           <div>
-            <label className="text-sm text-gray-600 dark:text-gray-300">
-              Address
+            <label className="mb-2 block text-sm font-medium text-zinc-400">
+              Full Address
             </label>
             <input
               type="text"
               name="address"
-              placeholder="Enter address"
-              className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter hotel address"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-zinc-500 outline-none transition-all duration-300 focus:border-orange-500/50 focus:bg-white/10"
               onChange={handleChange}
             />
           </div>
-  
-          {/* DESCRIPTION */}
-          <div>
-            <label className="text-sm text-gray-600 dark:text-gray-300">
-              Description
-            </label>
-            <textarea
-              name="description"
-              rows="4"
-              placeholder="Enter description"
-              className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500"
-              onChange={handleChange}
-            />
-          </div>
-  
-          {/* LOCATION */}
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-              Location
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <input
-                type="text"
-                value={formData.latitude}
-                readOnly
-                placeholder="Latitude"
-                className="border p-3 rounded-xl bg-gray-100 dark:bg-gray-800"
-              />
-              <input
-                type="text"
-                value={formData.longitude}
-                readOnly
-                placeholder="Longitude"
-                className="border p-3 rounded-xl bg-gray-100 dark:bg-gray-800"
-              />
-              <button
-                type="button"
-                onClick={handleGetLocation}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
-              >
-                Get Location
-              </button>
-            </div>
-          </div>
-  
-          {/* FACILITIES */}
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-              Facilities
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {facilitiesList.map((f) => (
-                <div
-                  key={f}
-                  onClick={() => toggleFacility(f)}
-                  className={`cursor-pointer p-3 rounded-xl text-center transition ${
-                    formData.facilities.includes(f)
-                      ? "bg-blue-600 text-white shadow"
-                      : "bg-gray-100 dark:bg-gray-800"
-                  }`}
-                >
-                  {f}
-                </div>
-              ))}
-            </div>
-          </div>
-  
-          {/* IMAGES */}
-          <div>
-            <label className="text-sm text-gray-600 dark:text-gray-300">
-              Upload Images
-            </label>
-  
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-2">
-              {formData.images.map((img, i) => (
-                <label
-                  key={i}
-                  className="border h-24 flex items-center justify-center rounded-xl cursor-pointer overflow-hidden"
-                >
-                  {img ? (
-                    <img
-                      src={URL.createObjectURL(img)}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-gray-400 text-xl">+</span>
-                  )}
-                  <input
-                    hidden
-                    type="file"
-                    onChange={(e) =>
-                      handleImageChange(i, e.target.files[0])
-                    }
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
-  
-          {/* BUTTON */}
-          <button
-            disabled={loading}
-            className="w-full bg-linear-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl text-lg font-semibold hover:opacity-90 transition"
-          >
-            {loading ? "Creating..." : "Create Hotel"}
-          </button>
-  
-          {/* SUCCESS */}
-          {createSuccess && (
-            <p className="text-green-600 text-center">
-              Hotel created & pending approval
-            </p>
-          )}
-  
-        </form>
+        </div>
       </div>
-    </div>
+
+      {/* Facilities */}
+      <div>
+        <h2 className="mb-5 text-xl font-bold text-white">Facilities</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {facilitiesList.map((f) => (
+            <div
+              key={f}
+              onClick={() => toggleFacility(f)}
+              className={`cursor-pointer rounded-2xl p-3 text-center text-sm transition ${
+                formData.facilities.includes(f)
+                  ? "bg-orange-500 text-black shadow"
+                  : "bg-white/5 text-white border border-white/10"
+              }`}
+            >
+              {f}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Coordinates */}
+      <div>
+        <h2 className="mb-5 text-xl font-bold text-white">Hotel Coordinates</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <input
+            type="text"
+            name="latitude"
+            value={formData.latitude}
+            placeholder="Latitude"
+            readOnly
+            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-zinc-500 outline-none transition-all duration-300"
+          />
+          <input
+            type="text"
+            name="longitude"
+            value={formData.longitude}
+            placeholder="Longitude"
+            readOnly
+            className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-zinc-500 outline-none transition-all duration-300"
+          />
+          <button
+            type="button"
+            onClick={handleGetLocation}
+            className="w-full rounded-2xl border border-blue-500/20 bg-blue-500/15 px-4 py-3 font-semibold text-blue-300 transition-all duration-300 hover:bg-blue-500/25 hover:border-blue-500/40"
+          >
+            Auto Detect Location
+          </button>
+        </div>
+      </div>
+
+      {/* Images */}
+      <div>
+        <h2 className="mb-5 text-xl font-bold text-white">Hotel Images</h2>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {formData.images.map((img, i) => (
+            <label
+              key={i}
+              className="group relative flex h-32 cursor-pointer items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/3 transition-all duration-300 hover:border-orange-500/40 hover:bg-white/5"
+            >
+              {img ? (
+                <>
+                  <img
+                    src={URL.createObjectURL(img)}
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    alt=""
+                  />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 transition group-hover:opacity-100" />
+                </>
+              ) : (
+                <div className="text-center">
+                  <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-2xl text-zinc-500 group-hover:text-orange-400">
+                    +
+                  </div>
+                  <p className="text-xs text-zinc-500">Upload</p>
+                </div>
+              )}
+              <input
+                hidden
+                type="file"
+                onChange={(e) => handleImageChange(i, e.target.files[0])}
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Submit */}
+      <div className="pt-2">
+        <button
+          disabled={loading}
+          className="w-full rounded-3xl bg-linear-to-r from-orange-500 to-red-600 py-4 text-lg font-bold text-white shadow-[0_12px_40px_rgba(249,115,22,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(249,115,22,0.45)] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Creating Hotel..." : "Create Hotel"}
+        </button>
+
+        {createSuccess && (
+          <p className="mt-4 text-center text-sm font-medium text-emerald-400">
+            Hotel created successfully and is pending approval.
+          </p>
+        )}
+      </div>
+    </form>
+  </div>
+</div>
   );
+
 }
 
 export default AddHotelDetails;

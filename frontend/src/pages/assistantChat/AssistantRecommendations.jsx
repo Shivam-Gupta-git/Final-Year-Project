@@ -31,43 +31,53 @@ function AssistantRecommendations() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 sm:p-6">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
-          >
-            Back
-          </button>
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-950 to-black p-6">
+    <div className="mx-auto max-w-5xl">
+      {/* Header */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">{title}</h1>
+          <p className="text-gray-400 mt-1 text-sm">
+            Manage and view detailed recommendations with ease.
+          </p>
         </div>
-
-        {!items.length ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-            No detailed recommendations available.
-          </div>
-        ) : (
-          <div className="grid gap-3">
-            {items.map((item) => (
-              <button
-                key={item._id || item.name}
-                type="button"
-                onClick={() => handleOpen(item)}
-                className="w-full rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-blue-300 hover:bg-blue-50/40"
-              >
-                <p className="font-semibold text-slate-900">{item.name}</p>
-                <p className="mt-1 text-xs text-slate-500">{item.address}</p>
-                <p className="mt-2 text-xs text-slate-700">
-                  {item.distance ? `${item.distance} km away` : ""}
-                </p>
-              </button>
-            ))}
-          </div>
-        )}
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 rounded-xl bg-gray-800 px-5 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition"
+        >
+          ← Back
+        </button>
       </div>
+  
+      {/* Empty State */}
+      {!items.length ? (
+        <div className="rounded-2xl border border-gray-700 bg-gray-900 p-8 text-center text-gray-400 shadow-lg">
+          <div className="text-6xl mb-4">📍</div>
+          <h2 className="text-2xl font-semibold text-white mb-2">No Recommendations</h2>
+          <p className="text-gray-400">Currently, there are no detailed recommendations available.</p>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {items.map((item) => (
+            <div
+              key={item._id || item.name}
+              onClick={() => handleOpen(item)}
+              className="cursor-pointer rounded-2xl bg-gray-900 border border-gray-700 p-5 shadow-md hover:shadow-xl hover:border-blue-500 transition-all duration-300"
+            >
+              <div className="flex flex-col gap-2">
+                <p className="text-lg font-semibold text-white truncate">{item.name}</p>
+                <p className="text-sm text-gray-400 truncate">{item.address}</p>
+                {item.distance && (
+                  <p className="text-xs text-gray-500 mt-1">{item.distance} km away</p>
+                )}
+              </div>
+              <div className="mt-3 h-0.5 w-full bg-gray-700 rounded-full"></div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
+  </div>
   );
 }
 

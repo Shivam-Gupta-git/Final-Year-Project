@@ -1,136 +1,188 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getHotelsStatus } from "../../../features/user/hotelSlice";
-import { Link } from "react-router-dom";
-
+import { motion } from "framer-motion";
+import { FaHotel, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 function ShowHotelStatus() {
   const dispatch = useDispatch();
   const { hotels = [], loading } = useSelector((state) => state.hotel);
-
   const [status, setStatus] = useState("active");
 
   useEffect(() => {
     dispatch(getHotelsStatus(status));
-  }, [status, dispatch]);
+  }, [dispatch, status]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-100 via-white to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
-  
-      {/* HEADER */}
-      <div className="mb-8 p-6 rounded-2xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl shadow-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
-        <div className="p-4 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-xl text-xl shadow">
-          🏨
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-            Hotel Status
-          </h1>
-          <p className="text-gray-500">
-            Manage and monitor hotel approval status
-          </p>
-        </div>
-      </div>
-  
-      {/* TABS */}
-      <div className="flex gap-3 mb-8 flex-wrap">
-        {["pending", "active", "rejected"].map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatus(s)}
-            className={`px-5 py-2 rounded-xl capitalize font-medium transition ${
-              status === s
-                ? "bg-blue-600 text-white shadow"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-            }`}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-  
-      {/* LOADING */}
-      {loading && (
-        <p className="text-center text-lg text-gray-600 dark:text-gray-300">
-          Loading hotels...
-        </p>
-      )}
-  
-      {/* EMPTY STATE */}
-      {!loading && hotels?.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20">
-  
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-full mb-4 shadow-lg">
-            <span className="text-5xl">🏨</span>
-          </div>
-  
-          <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-200">
-            No Hotels Found
-          </h2>
-  
-          <p className="text-gray-500 mt-2 text-center max-w-md">
-            There are no hotels available under this status.
-            Try switching status tab or add a new hotel.
-          </p>
-  
-          <Link
-            to={"/admin/hotel-dashboard"}
-            className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
-      )}
-  
-      {/* HOTEL GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  
-        {hotels?.map((hotel) => (
-          <div
-            key={hotel._id}
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition"
-          >
-            {/* IMAGE */}
-            <div className="relative">
-              <img
-                src={hotel.images?.[0]}
-                alt={hotel.name}
-                className="h-48 w-full object-cover"
-              />
-  
-              {/* STATUS BADGE */}
-              <span
-                className={`absolute top-3 right-3 text-xs px-3 py-1 rounded-full font-medium ${
-                  hotel.status === "pending"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : hotel.status === "active"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {hotel.status}
-              </span>
+    <div className="min-h-screen bg-[#050505] text-white p-6">
+      {/* FIXED HEADER */}
+      <div className="sticky top-0 z-30 bg-[#050505] pb-6">
+        <div className="rounded-3xl border border-white/10 bg-[#111111] px-8 py-6 shadow-2xl flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="h-16 w-16 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-3xl shadow-lg">
+              <FaHotel />
             </div>
-  
-            {/* INFO */}
-            <div className="p-4">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                {hotel.name}
-              </h2>
-  
-              <p className="text-sm text-gray-500 mt-1">
-                {hotel.address}
+            <div>
+              <h1 className="text-3xl font-bold tracking-wide">Hotel Status</h1>
+              <p className="text-gray-400 mt-1 text-sm">
+                Monitor all pending, active, and rejected hotels
               </p>
-  
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-xs bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-gray-600 dark:text-gray-300">
-                  {hotel.city?.name}
-                </span>
-              </div>
             </div>
           </div>
-        ))}
-  
+
+          {/* STATUS TABS */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setStatus("pending")}
+              className={`px-5 py-2.5 rounded-2xl font-medium transition-all duration-300 border ${
+                status === "pending"
+                  ? "bg-yellow-500 text-black border-yellow-500 shadow-lg"
+                  : "bg-[#171717] border-white/10 text-gray-300 hover:bg-[#222]"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <FaClock /> Pending
+              </span>
+            </button>
+
+            <button
+              onClick={() => setStatus("active")}
+              className={`px-5 py-2.5 rounded-2xl font-medium transition-all duration-300 border ${
+                status === "active"
+                  ? "bg-green-500 text-black border-green-500 shadow-lg"
+                  : "bg-[#171717] border-white/10 text-gray-300 hover:bg-[#222]"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <FaCheckCircle /> Active
+              </span>
+            </button>
+
+            <button
+              onClick={() => setStatus("rejected")}
+              className={`px-5 py-2.5 rounded-2xl font-medium transition-all duration-300 border ${
+                status === "rejected"
+                  ? "bg-red-500 text-black border-red-500 shadow-lg"
+                  : "bg-[#171717] border-white/10 text-gray-300 hover:bg-[#222]"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <FaTimesCircle /> Rejected
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* TABLE SECTION */}
+      <div className="mt-6 rounded-3xl border border-white/10 bg-[#111111] overflow-hidden shadow-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-175">
+            <thead className="bg-[#181818] border-b border-white/10 sticky top-0 z-20">
+              <tr className="text-left text-sm uppercase tracking-wider text-gray-400">
+                <th className="px-6 py-5">Hotel</th>
+                <th className="px-6 py-5">City</th>
+                <th className="px-6 py-5">Address</th>
+                <th className="px-6 py-5">Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                [...Array(8)].map((_, i) => (
+                  <tr
+                    key={i}
+                    className="border-b border-white/5 animate-pulse"
+                  >
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl bg-[#222]" />
+                        <div>
+                          <div className="h-4 w-36 bg-[#222] rounded mb-2" />
+                          <div className="h-3 w-24 bg-[#1a1a1a] rounded" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="h-4 w-20 bg-[#222] rounded" />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="h-4 w-44 bg-[#222] rounded" />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="h-8 w-24 rounded-full bg-[#222]" />
+                    </td>
+                  </tr>
+                ))
+              ) : hotels.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="py-20 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-6xl mb-4">🏨</div>
+                      <h2 className="text-2xl font-semibold text-white">
+                        No Hotels Found
+                      </h2>
+                      <p className="text-gray-400 mt-2 max-w-md text-sm">
+                        There are no hotels with this status right now.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                hotels.map((hotel, index) => (
+                  <motion.tr
+                    key={hotel._id}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.04 }}
+                    className="border-b border-white/5 hover:bg-[#1a1a1a] transition duration-300 cursor-pointer"
+                  >
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={hotel.images?.[0] || "/no-image.jpg"}
+                          alt={hotel.name}
+                          className="w-16 h-16 rounded-2xl object-cover border border-white/10"
+                        />
+
+                        <div>
+                          <h3 className="font-semibold text-white text-base">
+                            {hotel.name}
+                          </h3>
+                          <p className="text-xs text-gray-500 mt-1">
+                            ID: {hotel._id.slice(-8)}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5 text-gray-300">
+                      {hotel.city?.name || "N/A"}
+                    </td>
+
+                    <td className="px-6 py-5 text-gray-400 max-w-xs truncate">
+                      {hotel.address || "N/A"}
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <span
+                        className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide ${
+                          hotel.status === "pending"
+                            ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
+                            : hotel.status === "active"
+                            ? "bg-green-500/20 text-green-300 border border-green-500/30"
+                            : "bg-red-500/20 text-red-300 border border-red-500/30"
+                        }`}
+                      >
+                        {hotel.status}
+                      </span>
+                    </td>
+                  </motion.tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
