@@ -585,8 +585,7 @@ export const generateTravelPlan = async (req, res) => {
     const sortedPlaces = places.sort(
       (a, b) => b.priorityScore - a.priorityScore,
     );
-    // Sort by priority/ratings
-    const sortedPlaces = places.sort((a, b) => b.priorityScore - a.priorityScore);
+    
 
     // Map hotels with cheapest room
     const hotelsWithCheapestRoom = await Promise.all(
@@ -632,10 +631,7 @@ export const generateTravelPlan = async (req, res) => {
       }
       if (currentDay > days) break;
 
-      // Pick hotel and restaurant for the day
-      const hotel = sortedHotels.find(
-        (h) => h.cheapestRoom.pricePerNight <= totalBudget,
-      );
+      
       // const restaurant = sortedRestaurants.find((r) => r.avgCost <= totalBudget);
       const hotel = sortedHotels.find((h) => h.cheapestRoom.pricePerNight <= totalBudget);
       const restaurant = sortedRestaurants.find((r) => r.avgCostForOne <= totalBudget);

@@ -18,6 +18,7 @@ import roomRouter from "./routes/room.routes.js";
 import hotelBookingRouter from "./routes/hotelBooking.routes.js";
 import foodRouter from "./routes/food.routes.js";
 import foodOrderRouter from "./routes/foodOrder.routes.js";
+import BookingRouter from "./routes/Booking.routes.js";
 import deliveryBoyRouter from "./routes/deliveryBoy.routes.js";
 import aiRouter from "./routes/ai.routes.js";
 
@@ -25,6 +26,7 @@ import aiRouter from "./routes/ai.routes.js";
 const app = express();
 
 dotenv.config();
+
 const PORT = process.env.PORT || 3002;
 connectDB({
   path: "./.env",
@@ -54,6 +56,7 @@ app.use("/api/review" , reviewRouter)
 app.use("/api/driver", driverRouter)
 app.use("/api/food", foodRouter)
 app.use("/api/foodOrder", foodOrderRouter)
+app.use("/api/booking" , BookingRouter)
 app.use("/api/deliveryBoy", deliveryBoyRouter)
 app.use("/api/ai", aiRouter)
 

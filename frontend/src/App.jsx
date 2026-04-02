@@ -653,7 +653,14 @@ function App() {
             </AdminProtectedRouter>
           }
         />
-        <Route path="/assistantChat" element={<UserProtectedRouter><AssistantChat/></UserProtectedRouter>}/>
+        <Route
+          path="/assistantChat"
+          element={
+            <UserProtectedRouter>
+              <AssistantChat />
+            </UserProtectedRouter>
+          }
+        />
         <Route
           path="/assistantChat/recommendations"
           element={
