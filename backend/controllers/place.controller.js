@@ -189,12 +189,12 @@ export const rejectPlace = async (req, res) => {
 // SuperAdmin - Pending Place
 export const pendingPlace = async (req, res) => {
   try {
-    const place = await Place.find({ status: "pending" }).populate(
-      "createdBy",
-      "userName email role",
-    );
+    const place = await Place.find({ status: "pending" })
+    .populate("createdBy", "userName email role")
+    .populate("city", "name state");
 
-    console.log("Place: ", place);
+
+    // console.log("Place: ", place);
 
     return res.status(200).json({
       success: true,
