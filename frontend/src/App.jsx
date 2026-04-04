@@ -101,6 +101,8 @@ import PendingOrders from "./pages/admin/deliverBoy/PendingOrders";
 import AdminAssignDeliveryBoy from "./pages/admin/deliverBoy/AdminAssignDeliveryBoy";
 import AssistantChat from "./pages/assistantChat/AssistantChat";
 import AssistantRecommendations from "./pages/assistantChat/AssistantRecommendations";
+import UpdateUserLocation from "./components/UpdateUserLocation";
+import GlobalMap from "./components/globalMap/GlobalMap";
 
 function App() {
   return (
@@ -669,6 +671,8 @@ function App() {
             </UserProtectedRouter>
           }
         />
+        <Route path="/updateUserLocation" element={<UpdateUserLocation/>}/>
+        <Route path="/globalMap" element={<GlobalMap/>}/>
       </Routes>
     </>
   );

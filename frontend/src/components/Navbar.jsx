@@ -21,6 +21,7 @@ import { FaHeart } from "react-icons/fa6";
 import { IoMdSettings } from "react-icons/io";
 import { MdOutlineCancel } from "react-icons/md";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
+import { LuMapPinned } from "react-icons/lu";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -170,8 +171,8 @@ function Navbar() {
 
               {/* Location */}
               {(token || adminToken) && (
-                <button
-                  onClick={() => setShowLocationSection(true)}
+                <Link
+                  to={"/updateUserLocation"}
                   className="hidden sm:flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 transition hover:border-blue-500/30 hover:bg-zinc-800 hover:text-white"
                 >
                   <GrLocationPin className="text-blue-400" />
@@ -181,7 +182,18 @@ function Navbar() {
                       ? `${currentUser.location.city}, ${currentUser.location.state}`
                       : "Add Location"}
                   </span>
-                </button>
+                </Link>
+              )}
+              {/* global map */}
+              {token && (
+                <Link to={"/globalMap"}>
+                  <div className="flex items-center gap-1 p-1  rounded-full bg-linear-to-br from-gray-600 via-gray-600 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer group">
+                    {/* Icon Circle */}
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white/20 text-white shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <LuMapPinned className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
+                </Link>
               )}
             </div>
 
@@ -356,15 +368,12 @@ function Navbar() {
                                   </p>
                                 </div>
 
-                                <button
-                                  onClick={() => {
-                                    setShowLocationSection(true);
-                                    setProfileOpen(false);
-                                  }}
+                                <Link
+                                  to={"/updateUserLocation"}
                                   className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-medium text-blue-400 transition hover:bg-blue-600 hover:text-white"
                                 >
                                   Update
-                                </button>
+                                </Link>
                               </div>
                             </div>
                           )}
@@ -526,15 +535,14 @@ function Navbar() {
                                   🍽️
                                 </div>
                                 <div className="flex flex-col">
-                                <p className="font-medium text-white">
+                                  <p className="font-medium text-white">
                                     Food Cart
                                   </p>
                                   <p className="text-sm text-zinc-400">
-                                  Saved favourites
+                                    Saved favourites
                                   </p>
                                 </div>
-                                
-                                 
+
                                 {cartCount > 0 && (
                                   <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white shadow-lg">
                                     {cartCount > 99 ? "99+" : cartCount}
@@ -738,31 +746,6 @@ function Navbar() {
           </div>
         )}
       </nav>
-
-      {/* Location Popup Modal */}
-      {showLocationSection && (
-        <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowLocationSection(false);
-            }
-          }}
-        >
-          <div className="bg-transparent rounded-xl shadow-xl relative mt-7 text-gray-900 dark:text-white">
-            {/* Close Button */}
-            <button
-              onClick={() => setShowLocationSection(false)}
-              className="absolute right-2 top-2 text-2xl rounded-full bg-black backdrop-blur-xl border border-black text-white hover:text-white hover:bg-black cursor-pointer duration-300 z-50"
-            >
-              <MdOutlineCancel />
-            </button>
-
-            {/* Location Component */}
-            <UpdateUserLocation />
-          </div>
-        </div>
-      )}
     </>
   );
 }
