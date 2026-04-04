@@ -20,6 +20,7 @@ import { BiTrip } from "react-icons/bi";
 import { FaHeart } from "react-icons/fa6";
 import { IoMdSettings } from "react-icons/io";
 import { MdOutlineCancel } from "react-icons/md";
+import { HiOutlineMenuAlt3 } from "react-icons/hi";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -150,437 +151,589 @@ function Navbar() {
   return (
     <>
       <nav
-        className="bg-white/90 dark:bg-gray-900 shadow-md sticky top-0 z-50"
+        className="sticky top-0 z-50 border-b border-white/10 bg-black/95 backdrop-blur-xl"
         ref={dropdownRef}
       >
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* LEFT SIDE */}
-            <div className="flex items-center gap-2">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* LEFT */}
+            <div className="flex items-center gap-3">
               {/* Logo */}
               <Link
                 to="/"
-                className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors duration-200"
+                className="text-2xl font-black tracking-tight text-white transition hover:text-blue-400"
               >
-                NotDefine
-              </Link>
-
-              <Link
-                to="/cart"
-                className="relative ml-2 inline-flex items-center justify-center rounded-xl p-2 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                aria-label="Cart"
-              >
-                <ShoppingBagIcon className="h-6 w-6" />
-                {cartCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[11px] font-bold text-white">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
+                <span className="bg-linear-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">
+                  NotDefine
+                </span>
               </Link>
 
               {/* Location */}
               {(token || adminToken) && (
-                <div className="flex items-center gap-1 px-3 py-1 rounded-lg">
-                  <img
-                    className="w-5 mb-1"
-                    src="https://cdn-icons-png.flaticon.com/128/684/684908.png"
-                    alt=""
-                  />
+                <button
+                  onClick={() => setShowLocationSection(true)}
+                  className="hidden sm:flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 transition hover:border-blue-500/30 hover:bg-zinc-800 hover:text-white"
+                >
+                  <GrLocationPin className="text-blue-400" />
 
-                  <button
-                    onClick={() => setShowLocationSection(true)}
-                    className="text-sm font-medium text-blue-700 hover:text-blue-900 transition"
-                  >
-                    {" "}
+                  <span className="max-w-37.5 truncate">
                     {currentUser?.location?.city
                       ? `${currentUser.location.city}, ${currentUser.location.state}`
-                      : "Add Location"}{" "}
-                  </button>
-                </div>
+                      : "Add Location"}
+                  </span>
+                </button>
               )}
             </div>
 
-            {/* SUPER ADMIN NAV LINKS */}
-            <div>
-              {superAdmin?.role === "super_admin" && (
-                <div className="flex items-center gap-8 ml-8">
-                  {/* Dashboard */}
+            {/* CENTER SUPER ADMIN LINKS */}
+            {superAdmin?.role === "super_admin" && (
+              <div className="hidden xl:flex items-center gap-2">
+                {[
+                  {
+                    to: "/superAdmin/superAdminDashboard",
+                    label: "Dashboard",
+                  },
+                  {
+                    to: "/superAdmin/cityDashboard",
+                    label: "City",
+                  },
+                  {
+                    to: "/superAdmin/hotelDashboard",
+                    label: "Hotel",
+                  },
+                  {
+                    to: "/superAdmin/place-dashboard",
+                    label: "Place",
+                  },
+                  {
+                    to: "/superAdmin/restaurant-dashboard",
+                    label: "Restaurant",
+                  },
+                ].map((item) => (
                   <NavLink
-                    to="/superAdmin/superAdminDashboard"
+                    key={item.to}
+                    to={item.to}
                     className={({ isActive }) =>
-                      `relative font-medium transition ${
+                      `rounded-2xl px-4 py-2 text-sm font-medium transition-all duration-300 ${
                         isActive
-                          ? "text-blue-600"
-                          : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
+                          ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                          : "text-zinc-300 hover:bg-zinc-900 hover:text-white"
                       }`
                     }
                   >
-                    {" "}
-                    Dashboard{" "}
-                    <span
-                      className={({ isActive }) =>
-                        `absolute left-0 -bottom-1 h-0.5 bg-blue-600 transition-all duration-300 ${
-                          isActive ? "w-full" : "w-0 group-hover:w-full"
-                        }`
-                      }
-                    ></span>{" "}
+                    {item.label}
                   </NavLink>
+                ))}
 
-                  {/* City */}
-                  <NavLink
-                    to="/superAdmin/cityDashboard"
-                    className={({ isActive }) =>
-                      `relative font-medium transition ${
-                        isActive
-                          ? "text-blue-600"
-                          : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
-                      }`
-                    }
-                  >
-                    City{" "}
-                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
-                  </NavLink>
+                <div className="mx-2 h-6 w-px bg-white/10" />
 
-                  {/* Hotel */}
-                  <NavLink
-                    to="/superAdmin/hotelDashboard"
-                    className={({ isActive }) =>
-                      `relative font-medium transition 
-    ${
-      isActive
-        ? "text-blue-600"
-        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
-    }`
-                    }
-                  >
-                    Hotel
-                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
-                  </NavLink>
+                <NavLink
+                  to="/superadmin/adminApprovel"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                      isActive
+                        ? "bg-orange-600 text-white shadow-lg shadow-orange-600/20"
+                        : "bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-white"
+                    }`
+                  }
+                >
+                  <FaUserShield className="text-base" />
+                  Admin Approval
+                </NavLink>
+              </div>
+            )}
 
-                  {/* Place */}
-                  <NavLink
-                    to="/superAdmin/place-dashboard"
-                    className={({ isActive }) =>
-                      `relative font-medium transition 
-    ${
-      isActive
-        ? "text-blue-600"
-        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
-    }`
-                    }
-                  >
-                    Place
-                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
-                  </NavLink>
-
-                  {/* Restaurant */}
-                  <NavLink
-                    to="/superAdmin/restaurant-dashboard"
-                    className={({ isActive }) =>
-                      `relative font-medium transition 
-    ${
-      isActive
-        ? "text-blue-600"
-        : "text-gray-700 dark:text-gray-300 hover:text-blue-600"
-    }`
-                    }
-                  >
-                    Restaurant
-                    <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
-                  </NavLink>
-
-                  {/* Divider */}
-                  <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
-
-                  {/* Admin Approval CTA */}
-                  <NavLink
-                    to="/superadmin/adminApprovel"
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300
-    ${
-      isActive
-        ? "bg-blue-700 text-white"
-        : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"
-    }`
-                    }
-                  >
-                    <FaUserShield className="text-lg" />
-                    Admin Approval
-                  </NavLink>
-                </div>
-              )}
-            </div>
-
-            {/* Desktop Auth */}
-            <div className="hidden md:flex items-center space-x-4">
-              {!token && !(superAdminToken || loginSuccess) && !adminToken ? (
+            {/* RIGHT */}
+            <div className="flex items-center gap-3">
+              {!token && !superAdminToken && !adminToken ? (
                 <>
-                  <Link to="/loginPage">
-                    <button className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
+                  <div className="hidden md:flex items-center gap-3">
+                    <Link
+                      to="/loginPage"
+                      className="rounded-2xl border border-white/10 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-300 transition-all duration-300 hover:border-white/20 hover:bg-zinc-800 hover:text-white"
+                    >
                       Login
-                    </button>
-                  </Link>
-                  <Link to="/signUp">
-                    <button className="px-5 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200">
+                    </Link>
+
+                    <Link
+                      to="/signUp"
+                      className="rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-600/20 transition-all duration-300 hover:bg-blue-500"
+                    >
                       Register
-                    </button>
-                  </Link>
+                    </Link>
+                  </div>
                 </>
               ) : (
                 <div className="relative">
-                  {/* Avatar Button */}
+                  {/* Avatar */}
                   <button
                     type="button"
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center border overflow-hidden"
+                    className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all duration-300 hover:scale-105"
                   >
                     {currentUser?.avatar ? (
                       <img
                         src={currentUser.avatar}
-                        alt={currentUser.userName || "User"}
-                        className="w-full h-full object-cover"
+                        alt={currentUser?.userName || "User"}
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      getInitials(user?.userName)
+                      getInitials(currentUser?.userName || user?.userName)
                     )}
+
+                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-black bg-green-500" />
                   </button>
 
-                  {/* Dropdown */}
+                  {/* PROFILE SIDEBAR */}
                   {profileOpen && (
-                    <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transform transition-all duration-300 ease-out animate-dropdown z-50">
-                      {/* Menu Items */}
-                      <div className="py-2">
-                        {token ? (
-                          <Link
-                            to="/user-profile"
-                            className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
-                          >
-                            <FaRegUserCircle className="text-blue-500 text-2xl bg-blue-100 rounded-full p-1" />
-                            <span className="font-medium">User Profile</span>
-                          </Link>
-                        ) : superAdminToken ? (
-                          <Link
-                            to="/superAdmin/superAdminProfile"
-                            className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
-                          >
-                            <FaRegUserCircle className="text-blue-500 text-2xl bg-blue-100 rounded-full p-1" />
-                            <span className="font-medium">
-                              Super Admin Profile
-                            </span>
-                          </Link>
-                        ) : adminToken ? (
-                          <Link
-                            to="/admin/adminProfile"
-                            className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
-                          >
-                            <FaRegUserCircle className="text-blue-500 text-2xl bg-blue-100 rounded-full p-1" />
-                            <span className="font-medium">Admin Profile</span>
-                          </Link>
-                        ) : null}
+                    <>
+                      {/* Overlay */}
+                      <div
+                        className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+                        onClick={() => setProfileOpen(false)}
+                      />
 
-                        {/* User-specific Links */}
-                        {token && (
-                          <>
-                            <Link
-                              to="/trips"
-                              className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                      {/* Sidebar */}
+                      <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-sm overflow-y-auto border-l border-white/10 bg-black shadow-[0_0_60px_rgba(0,0,0,0.8)]">
+                        {/* Header */}
+                        <div className="sticky top-0 border-b border-white/10 bg-black/95 p-6 backdrop-blur-xl">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 to-cyan-500 text-lg font-bold text-white">
+                                {currentUser?.avatar ? (
+                                  <img
+                                    src={currentUser.avatar}
+                                    alt={currentUser?.userName}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  getInitials(
+                                    currentUser?.userName || user?.userName
+                                  )
+                                )}
+                              </div>
+
+                              <div>
+                                <h2 className="max-w-45 truncate text-lg font-semibold text-white">
+                                  {currentUser?.userName ||
+                                    user?.userName ||
+                                    "User"}
+                                </h2>
+
+                                <p className="text-sm capitalize text-zinc-400">
+                                  {currentUser?.role ||
+                                    admin?.host ||
+                                    superAdmin?.role ||
+                                    "Member"}
+                                </p>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => setProfileOpen(false)}
+                              className="rounded-xl border border-white/10 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-white"
                             >
-                              <span><BiTrip /></span>
-                              <span className="text-sm">My Trips</span>
-                            </Link>
+                              <MdOutlineCancel className="text-xl" />
+                            </button>
+                          </div>
 
+                          {(token || adminToken) && (
+                            <div className="mt-5 rounded-2xl border border-white/10 bg-zinc-900 p-4 mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="rounded-xl bg-blue-500/10 p-3 text-blue-400">
+                                  <GrLocationPin className="text-lg" />
+                                </div>
+
+                                <div className="flex-1">
+                                  <p className="text-[11px] uppercase tracking-wider text-zinc-500">
+                                    Current Location
+                                  </p>
+
+                                  <p className="mt-1 text-sm font-medium text-white">
+                                    {currentUser?.location?.city
+                                      ? `${currentUser.location.city}, ${currentUser.location.state}`
+                                      : "Location not added"}
+                                  </p>
+                                </div>
+
+                                <button
+                                  onClick={() => {
+                                    setShowLocationSection(true);
+                                    setProfileOpen(false);
+                                  }}
+                                  className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-medium text-blue-400 transition hover:bg-blue-600 hover:text-white"
+                                >
+                                  Update
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Hotel Admin Profile */}
+                          {admin?.host === "hotel" && (
                             <Link
-                              to="/wishlist"
-                              className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                              to="/admin/adminProfile"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-emerald-500/40 hover:bg-emerald-500/10"
                             >
-                              <span><FaHeart /></span>
-                              <span className="text-sm">Wishlist</span>
-                            </Link>
+                              <div className="rounded-xl bg-emerald-500/10 p-3 text-emerald-400">
+                                <FaRegUserCircle className="text-xl" />
+                              </div>
 
+                              <div>
+                                <p className="font-medium text-white">
+                                  Hotel Admin Profile
+                                </p>
+                                <p className="text-sm text-zinc-400">
+                                  Manage hotel admin account
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+
+                          {/* Restaurant Admin Profile */}
+                          {admin?.host === "restaurant" && (
                             <Link
-                              to="/My-Food-orders"
-                              className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                              to="/admin/adminProfile"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-yellow-500/40 hover:bg-yellow-500/10"
                             >
-                              <span>🍽️</span>
-                              <span className="text-sm">Food Orders</span>
+                              <div className="rounded-xl bg-yellow-500/10 p-3 text-yellow-400">
+                                <FaRegUserCircle className="text-xl" />
+                              </div>
+
+                              <div>
+                                <p className="font-medium text-white">
+                                  Restaurant Admin Profile
+                                </p>
+                                <p className="text-sm text-zinc-400">
+                                  Manage restaurant admin account
+                                </p>
+                              </div>
                             </Link>
-                          </>
-                        )}
+                          )}
 
-                        {/* Admin/SuperAdmin Dashboards */}
-                        {superAdmin?.role === "super_admin" && (
+                          {/* Delivery Boy Profile */}
+                          {admin?.host === "delivery_boy" && (
+                            <Link
+                              to="/admin/adminProfile"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-indigo-500/40 hover:bg-indigo-500/10"
+                            >
+                              <div className="rounded-xl bg-indigo-500/10 p-3 text-indigo-400">
+                                <FaRegUserCircle className="text-xl" />
+                              </div>
+
+                              <div>
+                                <p className="font-medium text-white">
+                                  Delivery Profile
+                                </p>
+                                <p className="text-sm text-zinc-400">
+                                  Manage delivery account
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+                        </div>
+
+                        {/* Menu */}
+                        <div className="space-y-3 p-5">
+                          {token && (
+                            <>
+                              <Link
+                                to="/user-profile"
+                                onClick={() => setProfileOpen(false)}
+                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-blue-500/40 hover:bg-blue-500/10"
+                              >
+                                <div className="rounded-xl bg-blue-500/10 p-3 text-blue-400">
+                                  <FaRegUserCircle className="text-xl" />
+                                </div>
+
+                                <div>
+                                  <p className="font-medium text-white">
+                                    My Profile
+                                  </p>
+                                  <p className="text-sm text-zinc-400">
+                                    Manage your account
+                                  </p>
+                                </div>
+                              </Link>
+
+                              <Link
+                                to="/trips"
+                                onClick={() => setProfileOpen(false)}
+                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-purple-500/40 hover:bg-purple-500/10"
+                              >
+                                <div className="rounded-xl bg-purple-500/10 p-3 text-purple-400">
+                                  <BiTrip className="text-xl" />
+                                </div>
+
+                                <div>
+                                  <p className="font-medium text-white">
+                                    My Trips
+                                  </p>
+                                  <p className="text-sm text-zinc-400">
+                                    View travel history
+                                  </p>
+                                </div>
+                              </Link>
+
+                              <Link
+                                to="/wishlist"
+                                onClick={() => setProfileOpen(false)}
+                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-pink-500/40 hover:bg-pink-500/10"
+                              >
+                                <div className="rounded-xl bg-pink-500/10 p-3 text-pink-400">
+                                  <FaHeart className="text-xl" />
+                                </div>
+
+                                <div>
+                                  <p className="font-medium text-white">
+                                    Wishlist
+                                  </p>
+                                  <p className="text-sm text-zinc-400">
+                                    Saved favourites
+                                  </p>
+                                </div>
+                              </Link>
+
+                              <Link
+                                to="/My-Food-orders"
+                                onClick={() => setProfileOpen(false)}
+                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-orange-500/40 hover:bg-orange-500/10"
+                              >
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-400">
+                                  🍽️
+                                </div>
+
+                                <div>
+                                  <p className="font-medium text-white">
+                                    Food Orders
+                                  </p>
+                                  <p className="text-sm text-zinc-400">
+                                    Track food orders
+                                  </p>
+                                </div>
+                              </Link>
+
+                              {/* Cart */}
+                              <Link
+                                to="/cart"
+                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-orange-500/40 hover:bg-orange-500/10"
+                                aria-label="Cart"
+                              >
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-400">
+                                  🍽️
+                                </div>
+                                <div className="flex flex-col">
+                                <p className="font-medium text-white">
+                                    Food Cart
+                                  </p>
+                                  <p className="text-sm text-zinc-400">
+                                  Saved favourites
+                                  </p>
+                                </div>
+                                
+                                 
+                                {cartCount > 0 && (
+                                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white shadow-lg">
+                                    {cartCount > 99 ? "99+" : cartCount}
+                                  </span>
+                                )}
+                              </Link>
+                            </>
+                          )}
+
+                          {/* Super Admin Profile */}
+                          {superAdmin?.role === "super_admin" && (
+                            <Link
+                              to="/superAdmin/superAdminProfile"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-cyan-500/40 hover:bg-cyan-500/10"
+                            >
+                              <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-400">
+                                <FaRegUserCircle className="text-xl" />
+                              </div>
+
+                              <div>
+                                <p className="font-medium text-white">
+                                  Super Admin Profile
+                                </p>
+                                <p className="text-sm text-zinc-400">
+                                  Manage super admin account
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+
+                          {superAdmin?.role === "super_admin" && (
+                            <Link
+                              to="/superAdmin/superAdminDashboard"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-cyan-500/40 hover:bg-cyan-500/10"
+                            >
+                              <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-400">
+                                <RxDashboard className="text-xl" />
+                              </div>
+
+                              <div>
+                                <p className="font-medium text-white">
+                                  Super Admin Dashboard
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+
+                          {admin?.host === "hotel" && (
+                            <Link
+                              to="/admin/adminDashboard"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-emerald-500/40 hover:bg-emerald-500/10"
+                            >
+                              <div className="rounded-xl bg-emerald-500/10 p-3 text-emerald-400">
+                                <RxDashboard className="text-xl" />
+                              </div>
+
+                              <div>
+                                <p className="font-medium text-white">
+                                  Hotel Dashboard
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+
+                          {admin?.host === "restaurant" && (
+                            <Link
+                              to="/admin/restaurantDashboard"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-yellow-500/40 hover:bg-yellow-500/10"
+                            >
+                              <div className="rounded-xl bg-yellow-500/10 p-3 text-yellow-400">
+                                <RxDashboard className="text-xl" />
+                              </div>
+
+                              <div>
+                                <p className="font-medium text-white">
+                                  Restaurant Dashboard
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+
+                          {admin?.host === "delivery_boy" && (
+                            <Link
+                              to="/admin/deliveryBoy-dashboard"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-indigo-500/40 hover:bg-indigo-500/10"
+                            >
+                              <div className="rounded-xl bg-indigo-500/10 p-3 text-indigo-400">
+                                <RxDashboard className="text-xl" />
+                              </div>
+
+                              <div>
+                                <p className="font-medium text-white">
+                                  Delivery Dashboard
+                                </p>
+                              </div>
+                            </Link>
+                          )}
+
                           <Link
-                            to="/superAdmin/superAdminDashboard"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                            to="/settings"
+                            onClick={() => setProfileOpen(false)}
+                            className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-white/20 hover:bg-zinc-800"
                           >
-                            <RxDashboard className="text-lg" />
-                            <span className="text-sm">Dashboard</span>
-                          </Link>
-                        )}
+                            <div className="rounded-xl bg-zinc-700 p-3 text-zinc-300">
+                              <IoMdSettings className="text-xl" />
+                            </div>
 
-                        {admin?.host === "hotel" && (
-                          <Link
-                            to="/admin/adminDashboard"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                            <div>
+                              <p className="font-medium text-white">Settings</p>
+                            </div>
+                          </Link>
+                        </div>
+
+                        {/* Logout */}
+                        <div className="sticky bottom-0 border-t border-white/10 bg-black p-5">
+                          <button
+                            type="button"
+                            onClick={
+                              token
+                                ? handelUserLogout
+                                : superAdminToken
+                                ? handeSuperAdminLogout
+                                : adminToken
+                                ? handelAdminLogout
+                                : null
+                            }
+                            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-4 font-medium text-red-400 transition hover:bg-red-500 hover:text-white"
                           >
-                            <RxDashboard className="text-lg" />
-                            <span className="text-sm">Hotel Dashboard</span>
-                          </Link>
-                        )}
-
-                        {admin?.host === "restaurant" && (
-                          <Link
-                            to="/admin/restaurantDashboard"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
-                          >
-                            <RxDashboard className="text-lg" />
-                            <span className="text-sm">
-                              Restaurant Dashboard
-                            </span>
-                          </Link>
-                        )}
-
-                        {admin?.host === "delivery_boy" && (
-                          <Link
-                            to="/admin/deliveryBoy-dashboard"
-                            className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
-                          >
-                            <RxDashboard className="text-lg" />
-                            <span className="text-sm">
-                              Delivery Boy Dashboard
-                            </span>
-                          </Link>
-                        )}
-
-                        {/* Settings */}
-                        <Link
-                          to="/settings"
-                          className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
-                        >
-                          <span><IoMdSettings /></span>
-                          <span className="text-sm">Settings</span>
-                        </Link>
+                            <span>🚪</span>
+                            Logout
+                          </button>
+                        </div>
                       </div>
-
-                      {/* Divider */}
-                      <div className="border-t border-gray-100 dark:border-gray-700"></div>
-
-                      {/* Logout */}
-                      <button
-                        type="button"
-                        onClick={
-                          token
-                            ? handelUserLogout
-                            : superAdminToken
-                            ? handeSuperAdminLogout
-                            : adminToken
-                            ? handelAdminLogout
-                            : null
-                        }
-                        className="flex items-center gap-3 w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-800 transition-colors duration-200 rounded-lg"
-                      >
-                        <span>🚪</span>
-                        <span className="text-sm font-medium">Logout</span>
-                      </button>
-                    </div>
+                    </>
                   )}
                 </div>
               )}
-            </div>
 
-            {/* Mobile hamburger button */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden p-1 ml-1 mr-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:shadow-outline transition-all duration-200"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              {/* Mobile Menu Button */}
+              <button
+                onClick={toggleMenu}
+                className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-zinc-900 text-zinc-300 transition hover:bg-zinc-800 md:hidden"
               >
                 {isOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <MdOutlineCancel className="text-xl" />
                 ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                  <HiOutlineMenuAlt3 className="text-xl" />
                 )}
-              </svg>
-            </button>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* MOBILE MENU */}
         {isOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <Link
-                to="/"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
-                onClick={toggleMenu}
-              >
-                Home
-              </Link>
-              <Link
-                to="/cities"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
-                onClick={toggleMenu}
-              >
-                Cities
-              </Link>
-              <Link
-                to="/places"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
-                onClick={toggleMenu}
-              >
-                Places
-              </Link>
-              <Link
-                to="/hotels"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
-                onClick={toggleMenu}
-              >
-                Hotels
-              </Link>
-              <Link
-                to="/restaurants"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
-                onClick={toggleMenu}
-              >
-                Restaurants
-              </Link>
-              <Link
-                to="/travel"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
-                onClick={toggleMenu}
-              >
-                Travel Option
-              </Link>
-              <div className="border-t border-gray-200 pt-4 pb-3 mt-4">
+          <div className="border-t border-white/10 bg-black md:hidden">
+            <div className="space-y-2 px-4 py-4">
+              {[
+                { to: "/", label: "Home" },
+                { to: "/cities", label: "Cities" },
+                { to: "/places", label: "Places" },
+                { to: "/hotels", label: "Hotels" },
+                { to: "/restaurants", label: "Restaurants" },
+                { to: "/travel", label: "Travel Option" },
+              ].map((item) => (
                 <Link
-                  to="/login"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors duration-200"
+                  key={item.to}
+                  to={item.to}
                   onClick={toggleMenu}
+                  className="block rounded-2xl px-4 py-3 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
                 >
-                  Login
+                  {item.label}
                 </Link>
-                <Link
-                  to="/signUp"
-                  className="block w-full px-3 py-2 mt-2 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200"
-                  onClick={toggleMenu}
-                >
-                  Register
-                </Link>
-              </div>
+              ))}
+
+              {!token && !superAdminToken && !adminToken && (
+                <div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4">
+                  <Link
+                    to="/loginPage"
+                    onClick={toggleMenu}
+                    className="rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 text-center text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+                  >
+                    Login
+                  </Link>
+
+                  <Link
+                    to="/signUp"
+                    onClick={toggleMenu}
+                    className="rounded-2xl bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-blue-500"
+                  >
+                    Register
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -604,8 +757,6 @@ function Navbar() {
             >
               <MdOutlineCancel />
             </button>
-
-           
 
             {/* Location Component */}
             <UpdateUserLocation />
