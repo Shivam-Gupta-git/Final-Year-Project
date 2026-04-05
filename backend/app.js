@@ -26,7 +26,6 @@ import aiRouter from "./routes/ai.routes.js";
 const app = express();
 
 dotenv.config();
-
 const PORT = process.env.PORT || 3002;
 connectDB({
   path: "./.env",
@@ -40,6 +39,7 @@ app.use(cors({
     credentials: true,           // 👈 must be true
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
 }))
+
 
 app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter)

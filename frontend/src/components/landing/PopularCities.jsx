@@ -1,523 +1,767 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getActiveCities } from "../../features/user/citySlice";
 
-// Inject Google Fonts & global styles once
-const injectStyles = () => {
-  if (document.getElementById("popular-cities-styles")) return;
-  const link = document.createElement("link");
-  link.id = "popular-cities-styles";
-  link.rel = "stylesheet";
-  link.href =
-    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap";
-  document.head.appendChild(link);
+/* ─────────────────────────────────────────────────────────────
+   Placeholder image helper — inline SVG, zero network request
+───────────────────────────────────────────────────────────── */
+const ph = (w, h, t) =>
+  `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="${w}" height="${h}" fill="#13131a"/><text x="50%" y="50%" fill="#3d6ef5" text-anchor="middle" dy=".3em" font-size="14" font-family="sans-serif">${t}</text></svg>`
+  )}`;
 
-  const style = document.createElement("style");
-  style.id = "popular-cities-css";
-  style.textContent = `
-    #popular-cities {
-      --gold: #c9a84c;
-      --gold-light: #e8c97a;
-      --gold-dim: rgba(201, 168, 76, 0.12);
-      --gold-border: rgba(201, 168, 76, 0.28);
-      --ink: #080809;
-      --smoke: #111114;
-      --ash: #1c1c21;
-      --cream: #f5f0e8;
-      --text-muted: rgba(255,255,255,0.38);
-      --serif: 'Cormorant Garamond', Georgia, serif;
-      --sans: 'DM Sans', sans-serif;
-      background: var(--ink);
-      font-family: var(--sans);
-    }
+/* ─────────────────────────────────────────────────────────────
+   Style injection — fonts + keyframe animations
+   Guards prevent duplicate injection on hot-reload
+───────────────────────────────────────────────────────────── */
+const injectMinimalStyles = () => {
+  if (!document.getElementById("fxc-font")) {
+    const link = document.createElement("link");
+    link.id = "fxc-font";
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Inter:wght@300;400;500&display=swap";
+    document.head.appendChild(link);
+  }
 
-    /* ── Header section ── */
-    .pc-header {
-      max-width: 1520px;
-      margin: 0 auto;
-      padding: 110px 48px 72px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 32px;
+  if (document.getElementById("fxc-styles")) return;
+  const s = document.createElement("style");
+  s.id = "fxc-styles";
+  s.textContent = `
+    @keyframes fxcSlideUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    @media (max-width: 768px) {
-      .pc-header { flex-direction: column; align-items: flex-start; padding: 72px 24px 48px; }
+    @keyframes fxcSlideDown {
+      from { opacity: 0; transform: translateY(-24px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-
-    .pc-header-left {}
-
-    .pc-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-family: var(--sans);
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 28px;
+    @keyframes fxcFadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    .pc-eyebrow-line {
-      display: inline-block;
-      width: 36px;
-      height: 1px;
-      background: var(--gold);
-      opacity: 0.7;
+    @keyframes fxcShimmer {
+      0%   { background-position: 100% 50%; }
+      100% { background-position:   0% 50%; }
     }
-
-    .pc-title {
-      font-family: var(--serif);
-      font-size: clamp(52px, 7vw, 96px);
-      font-weight: 300;
-      line-height: 0.92;
-      color: var(--cream);
-      letter-spacing: -0.025em;
-      margin: 0;
+    @keyframes fxcProgress {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
     }
-    .pc-title em {
-      font-style: italic;
-      color: var(--gold-light);
+    @keyframes fxcFadeCard {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
-
-    .pc-header-right {
-      max-width: 360px;
-      padding-bottom: 8px;
-    }
-    .pc-subtitle {
-      font-family: var(--sans);
-      font-size: 14px;
-      font-weight: 300;
-      color: var(--text-muted);
-      letter-spacing: 0.03em;
-      line-height: 1.8;
-      margin: 0 0 28px;
-    }
-    .pc-count-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 22px;
-      border: 1px solid var(--gold-border);
-      background: var(--gold-dim);
-      border-radius: 2px;
-      font-family: var(--serif);
-      font-size: 13px;
-      font-weight: 400;
-      color: var(--gold);
-      letter-spacing: 0.08em;
-    }
-
-    /* ── Thin separator ── */
-    .pc-sep {
-      max-width: 1520px;
-      margin: 0 auto;
-      padding: 0 48px;
-    }
-    .pc-sep-line {
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(to right, transparent, rgba(201,168,76,0.25), transparent);
-    }
-
-    /* ── Grid ── */
-    .pc-grid-wrap {
-      max-width: 1520px;
-      margin: 0 auto;
-      padding: 0 0 120px;
-    }
-    .pc-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 1px;
-      background: rgba(201,168,76,0.06);
-    }
-
-    .pc-card:nth-child(1) { grid-column: span 7; }
-    .pc-card:nth-child(2) { grid-column: span 5; }
-    .pc-card:nth-child(n+3) { grid-column: span 4; }
-
-    @media (max-width: 1024px) {
-      .pc-card:nth-child(1) { grid-column: span 12; }
-      .pc-card:nth-child(2) { grid-column: span 6; }
-      .pc-card:nth-child(n+3) { grid-column: span 6; }
-    }
-    @media (max-width: 640px) {
-      .pc-card { grid-column: span 12 !important; }
-    }
-
-    /* ── Card ── */
-    .pc-card {
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-      background: var(--smoke);
-      aspect-ratio: 4/3;
-      display: block;
-    }
-    .pc-card:nth-child(1) { aspect-ratio: 16/9; }
-    .pc-card:nth-child(2) { aspect-ratio: 3/4; }
-
-    .pc-card-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  filter 1.4s ease;
-      filter: brightness(0.7) saturate(0.75);
-    }
-    .pc-card:hover .pc-card-img {
-      transform: scale(1.07);
-      filter: brightness(0.45) saturate(1.05);
-    }
-
-    /* Grain overlay */
-    .pc-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      background-size: 200px;
-      z-index: 2;
-      pointer-events: none;
-      opacity: 0.45;
-    }
-
-    /* Vignette gradient */
-    .pc-card-overlay {
-      position: absolute;
-      inset: 0;
+    .anim-slide-up   { animation: fxcSlideUp   0.55s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .anim-slide-down { animation: fxcSlideDown 0.55s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .anim-fade-in-1  { animation: fxcFadeIn 0.55s ease 0.10s both; }
+    .anim-fade-in-2  { animation: fxcFadeIn 0.55s ease 0.18s both; }
+    .anim-fade-in-3  { animation: fxcFadeIn 0.55s ease 0.28s both; }
+    .anim-shimmer {
+      animation: fxcShimmer 1.9s ease-in-out infinite;
       background: linear-gradient(
-        to top,
-        rgba(0,0,0,0.96) 0%,
-        rgba(0,0,0,0.55) 38%,
-        rgba(0,0,0,0.1) 65%,
-        transparent 100%
+        90deg,
+        rgba(255,255,255,0.04) 0%,
+        rgba(255,255,255,0.10) 50%,
+        rgba(255,255,255,0.04) 100%
       );
-      z-index: 3;
+      background-size: 400% 100%;
     }
+    .anim-progress {
+      animation: fxcProgress 3s linear forwards;
+      transform-origin: left center;
+    }
+    .anim-fade-card { animation: fxcFadeCard 0.42s ease forwards; }
+    .no-scrollbar   { scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
 
-    /* Gold left accent */
-    .pc-card-line {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 2px;
-      height: 0%;
-      background: linear-gradient(to top, var(--gold), var(--gold-light));
-      z-index: 5;
-      transition: height 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* FIX: Respect OS reduced-motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .anim-slide-up, .anim-slide-down,
+      .anim-fade-in-1, .anim-fade-in-2, .anim-fade-in-3,
+      .anim-shimmer, .anim-progress, .anim-fade-card {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
     }
-    .pc-card:hover .pc-card-line { height: 100%; }
-
-    /* Top gold border reveal */
-    .pc-card-top-line {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0%;
-      height: 1px;
-      background: var(--gold);
-      z-index: 5;
-      transition: width 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s;
-    }
-    .pc-card:hover .pc-card-top-line { width: 100%; }
-
-    /* Index number */
-    .pc-card-index {
-      position: absolute;
-      top: 22px;
-      left: 22px;
-      font-family: var(--serif);
-      font-size: 10px;
-      font-weight: 400;
-      letter-spacing: 0.22em;
-      color: rgba(255,255,255,0.28);
-      z-index: 5;
-      transition: color 0.4s;
-    }
-    .pc-card:hover .pc-card-index { color: var(--gold); }
-
-    /* Arrow button */
-    .pc-card-arrow {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      z-index: 5;
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(255,255,255,0.18);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transform: translate(6px, -6px);
-      transition: opacity 0.45s ease, transform 0.45s ease,
-                  background 0.3s, border-color 0.3s;
-    }
-    .pc-card:hover .pc-card-arrow {
-      opacity: 1;
-      transform: translate(0, 0);
-      background: var(--gold);
-      border-color: var(--gold);
-    }
-    .pc-card-arrow svg { width: 14px; height: 14px; color: #080809; }
-
-    /* Body */
-    .pc-card-body {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 36px 28px 26px;
-      z-index: 4;
-    }
-
-    .pc-card-tag {
-      font-family: var(--sans);
-      font-size: 8px;
-      font-weight: 500;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 10px;
-      display: block;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.45s ease 0.05s, transform 0.45s ease 0.05s;
-    }
-    .pc-card:hover .pc-card-tag { opacity: 1; transform: translateY(0); }
-
-    .pc-card-name {
-      font-family: var(--serif);
-      font-size: clamp(30px, 3.8vw, 56px);
-      font-weight: 300;
-      color: var(--cream);
-      line-height: 0.95;
-      text-transform: capitalize;
-      letter-spacing: -0.015em;
-      transition: color 0.4s, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-    .pc-card:nth-child(2) .pc-card-name { font-size: clamp(26px, 2.6vw, 44px); }
-    .pc-card:nth-child(n+3) .pc-card-name { font-size: clamp(22px, 2.2vw, 38px); }
-    .pc-card:hover .pc-card-name { color: #fff; transform: translateY(-3px); }
-
-    .pc-card-meta {
-      font-family: var(--sans);
-      font-size: 11px;
-      font-weight: 300;
-      letter-spacing: 0.12em;
-      color: rgba(255,255,255,0.42);
-      margin-top: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.45s ease 0.1s, transform 0.45s ease 0.1s;
-    }
-    .pc-card:hover .pc-card-meta { opacity: 1; transform: translateY(0); }
-    .pc-card-meta-line {
-      display: inline-block;
-      width: 24px;
-      height: 1px;
-      background: var(--gold);
-      transition: width 0.4s;
-    }
-    .pc-card:hover .pc-card-meta-line { width: 40px; }
-
-    /* ── States ── */
-    .pc-state {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 60vh;
-      font-family: var(--serif);
-      font-size: 20px;
-      font-weight: 300;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      background: var(--ink);
-    }
-    .pc-state-error { color: #b56b66; }
-
-    .pc-loader {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .pc-loader span {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--gold);
-      animation: pcPulse 1.3s ease-in-out infinite;
-    }
-    .pc-loader span:nth-child(2) { animation-delay: 0.22s; }
-    .pc-loader span:nth-child(3) { animation-delay: 0.44s; }
-    @keyframes pcPulse {
-      0%, 80%, 100% { transform: scale(0.5); opacity: 0.25; }
-      40% { transform: scale(1); opacity: 1; }
-    }
-
-    /* ── Reveal animations ── */
-    .pc-reveal {
-      opacity: 0;
-      transform: translateY(24px);
-      animation: pcReveal 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    }
-    .pc-reveal-d1 { animation-delay: 0.08s; }
-    .pc-reveal-d2 { animation-delay: 0.18s; }
-    .pc-reveal-d3 { animation-delay: 0.3s; }
-    @keyframes pcReveal { to { opacity: 1; transform: translateY(0); } }
-
-    .pc-card-wrap {
-      opacity: 0;
-      animation: pcFadeIn 0.75s ease forwards;
-    }
-    @keyframes pcFadeIn { to { opacity: 1; } }
   `;
-  document.head.appendChild(style);
+  document.head.appendChild(s);
 };
 
+/* Run once at module load so Skeleton gets shimmer on first paint */
+injectMinimalStyles();
+
+/* ─────────────────────────────────────────────────────────────
+   Skeleton
+───────────────────────────────────────────────────────────── */
+function Skeleton() {
+  return (
+    <div className="w-full h-screen bg-[#0a0a10] relative overflow-hidden">
+      <div className="anim-shimmer absolute inset-0" />
+      {/* Desktop shimmer blocks */}
+      <div className="max-md:hidden">
+        <div className="anim-shimmer absolute left-[72px] bottom-[198px] w-[340px] h-[95px] rounded-md" />
+        <div className="anim-shimmer absolute left-[72px] bottom-[172px] w-[200px] h-[10px] rounded-sm" />
+        <div className="anim-shimmer absolute left-[72px] bottom-[156px] w-[160px] h-[10px] rounded-sm" />
+        <div className="anim-shimmer absolute left-[72px] bottom-[104px] w-[148px] h-[48px] rounded-full" />
+        <div className="anim-shimmer absolute right-[264px] top-1/2 -mt-[145px] w-[185px] h-[290px] rounded-[18px] opacity-50" />
+        <div className="anim-shimmer absolute right-8 top-1/2 -mt-[172px] w-[220px] h-[345px] rounded-[18px]" />
+      </div>
+      {/* Mobile shimmer blocks */}
+      <div className="md:hidden">
+        <div className="anim-shimmer absolute left-9 bottom-[130px] w-[240px] h-[80px] rounded-md" />
+        <div className="anim-shimmer absolute left-9 bottom-[108px] w-[160px] h-[8px] rounded-sm" />
+        <div className="anim-shimmer absolute left-9 bottom-[72px] w-[110px] h-[38px] rounded-full" />
+        <div className="anim-shimmer absolute bottom-[86px] left-4 w-[148px] h-[200px] rounded-[18px]" />
+        <div className="anim-shimmer absolute bottom-[86px] left-[164px] w-[148px] h-[200px] rounded-[18px] opacity-60" />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Star rating helper
+───────────────────────────────────────────────────────────── */
+const Stars = React.memo(({ rating = 4 }) => (
+  <div className="flex gap-[2px]">
+    {[1, 2, 3, 4, 5].map((s) => (
+      <span
+        key={s}
+        className={`text-[10px] ${s > rating ? "text-[#ddd]" : "text-[#f5a623]"}`}
+      >
+        ★
+      </span>
+    ))}
+  </div>
+));
+
+/* ─────────────────────────────────────────────────────────────
+   Card size / transform variants
+───────────────────────────────────────────────────────────── */
+const cardVariantClasses = {
+  sm: [
+    "w-[185px] h-[290px]",
+    "translate-x-6 scale-[0.94] opacity-[0.68] z-[1]",
+    "max-md:!w-[148px] max-md:!h-[200px]",
+    "max-md:!translate-x-0 max-md:!scale-100 max-md:!opacity-100",
+  ].join(" "),
+  md: [
+    "w-[220px] h-[345px]",
+    "scale-100 opacity-100 z-[2]",
+    "shadow-[0_24px_60px_rgba(0,0,0,0.55)]",
+    "max-md:!w-[148px] max-md:!h-[200px] max-md:!shadow-none",
+  ].join(" "),
+  xs: [
+    "w-[165px] h-[260px]",
+    "-translate-x-5 scale-[0.88] opacity-[0.42] z-0",
+    "max-md:!w-[148px] max-md:!h-[200px]",
+    "max-md:!translate-x-0 max-md:!scale-100 max-md:!opacity-100",
+  ].join(" "),
+};
+
+const cardHoverClasses = [
+  "hover:translate-x-0",
+  "hover:-translate-y-[10px]",
+  "hover:scale-[1.04]",
+  "hover:opacity-100",
+  "hover:z-20",
+  "hover:shadow-[0_30px_70px_rgba(0,0,0,0.65)]",
+].join(" ");
+
+/* ─────────────────────────────────────────────────────────────
+   localStorage bookmark helpers
+───────────────────────────────────────────────────────────── */
+const SAVED_KEY = "popularCities_saved";
+const loadSaved = () => {
+  try {
+    const raw = localStorage.getItem(SAVED_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+};
+const persistSaved = (set) => {
+  try {
+    localStorage.setItem(SAVED_KEY, JSON.stringify([...set]));
+  } catch { }
+};
+
+/* ─────────────────────────────────────────────────────────────
+   Main Component
+───────────────────────────────────────────────────────────── */
 function PopularCities() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { cities, loading, error } = useSelector((state) => state.city);
+  /* Granular selectors — each only re-renders when its own value changes */
+  const cities  = useSelector((s) => s.city.cities);
+  const loading = useSelector((s) => s.city.loading);
+  const error   = useSelector((s) => s.city.error);
 
+  /* ── UI state ── */
+  const [activeCityIndex, setActiveCityIndex] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+  const [direction, setDirection] = useState("next"); // "next" | "prev"
+  const [bgCurr, setBgCurr] = useState("");
+  const [bgPrev, setBgPrev] = useState("");
+  const [showPrev, setShowPrev] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const [slideKey, setSlideKey] = useState(0); // bumped on manual nav to restart interval
+  const [savedCities, setSavedCities] = useState(loadSaved);
+
+  const intervalRef  = useRef(null);
+  const exitTimerRef  = useRef(null);
+  const touchStartX   = useRef(null);
+  const touchStartY   = useRef(null);  // track vertical scroll vs horizontal swipe
+  const pauseTimerRef = useRef(null);
+  const isPointerOver = useRef(false); // true only when pointer is physically inside
+  /* Stable refs so the arrow-key listener never needs re-registration */
+  const goNextRef = useRef(null);
+  const goPrevRef = useRef(null);
+
+  /* ── On mount ── */
   useEffect(() => {
-    injectStyles();
+    injectMinimalStyles();
     dispatch(getActiveCities());
+
+    /* FIX: Clean up injected styles on unmount */
+    return () => {
+      clearInterval(intervalRef.current);
+      clearTimeout(exitTimerRef.current);
+    };
   }, [dispatch]);
 
-  if (loading)
-    return (
-      <div className="pc-state" id="popular-cities">
-        <div className="pc-loader">
-          <span />
-          <span />
-          <span />
-        </div>
-      </div>
+  /* FIX: Clamp index when cities list shrinks */
+  useEffect(() => {
+    if (cities?.length && activeCityIndex >= cities.length) {
+      setActiveCityIndex(0);
+    }
+  }, [cities, activeCityIndex]);
+
+  /* ── Bulk-preload ALL city images once the list loads ──
+     Runs once per city list update, not once per slide.       */
+  useEffect(() => {
+    if (!cities?.length) return;
+    cities.forEach((city) => {
+      const src = city.images?.[0];
+      if (src) { const img = new window.Image(); img.src = src; }
+    });
+  }, [cities]);
+
+  /* ── Auto-slide every 3 s ── */
+  useEffect(() => {
+    if (!cities?.length || isPaused) return;
+    intervalRef.current = setInterval(() => {
+      clearTimeout(exitTimerRef.current);
+      setDirection("next");
+      setIsExiting(true);
+      exitTimerRef.current = setTimeout(() => {
+        setActiveCityIndex((i) => (i + 1) % cities.length);
+        setIsExiting(false);
+      }, 260);
+    }, 3000);
+    return () => clearInterval(intervalRef.current);
+  }, [cities, isPaused, slideKey]); // slideKey restarts interval after manual nav
+
+  /* ── Cross-fade background ── */
+  useEffect(() => {
+    if (!cities?.length) return;
+    const next = cities[activeCityIndex]?.images?.[0] || "";
+    if (next === bgCurr) return;
+    setBgPrev(bgCurr);
+    setShowPrev(true);
+    setBgCurr(next);
+    setAnimKey((k) => k + 1);
+    const t = setTimeout(() => setShowPrev(false), 900);
+    return () => clearTimeout(t);
+  }, [activeCityIndex, cities]); // bgCurr intentionally omitted
+
+  /* ── Init first background ── */
+  useEffect(() => {
+    if (cities?.length && !bgCurr) setBgCurr(cities[0]?.images?.[0] || "");
+  }, [cities]);
+
+  /* ── Arrow-key navigation — stable listener via refs ──
+     Never removes/re-adds the listener, zero allocation overhead.  */
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "ArrowRight") goNextRef.current?.();
+      if (e.key === "ArrowLeft")  goPrevRef.current?.();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []); // stable — deps are refs, not reactive values
+
+  /* ── Shared transition helper ── */
+  const transitionTo = useCallback((getNextIndex, dir = "next") => {
+    clearTimeout(exitTimerRef.current);
+    // NOTE: do NOT clearInterval here — goNext/goPrev/goToIndex bump slideKey to restart it
+    setDirection(dir);
+    setIsExiting(true);
+    exitTimerRef.current = setTimeout(() => {
+      setActiveCityIndex(getNextIndex);
+      setIsExiting(false);
+    }, 260);
+  }, []);
+
+  const goNext = useCallback(() => {
+    if (!cities?.length) return;
+    setIsPaused(false);
+    setSlideKey((k) => k + 1); // restarts the 3s interval from zero
+    transitionTo((i) => (i + 1) % cities.length, "next");
+  }, [cities, transitionTo]);
+
+  const goPrev = useCallback(() => {
+    if (!cities?.length) return;
+    setIsPaused(false);
+    setSlideKey((k) => k + 1);
+    transitionTo((i) => (i - 1 + cities.length) % cities.length, "prev");
+  }, [cities, transitionTo]);
+
+  const goToIndex = useCallback((idx, current) => {
+    const dir = idx > current ? "next" : "prev";
+    setSlideKey((k) => k + 1);
+    transitionTo(() => idx, dir);
+  }, [transitionTo]);
+
+  /* ── Bookmark toggle — persisted to localStorage ── */
+  const toggleSave = useCallback((cityId, e) => {
+    e.stopPropagation();
+    setSavedCities((prev) => {
+      const next = new Set(prev);
+      next.has(cityId) ? next.delete(cityId) : next.add(cityId);
+      persistSaved(next);
+      return next;
+    });
+  }, []);
+
+  /* ── Touch / swipe handlers ──
+     Distinguish horizontal swipe (navigate) from vertical scroll (ignore) ── */
+  const onTouchStart = useCallback((e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const onTouchEnd = useCallback((e) => {
+    if (touchStartX.current === null) return;
+    const dx = touchStartX.current - e.changedTouches[0].clientX;
+    const dy = touchStartY.current - e.changedTouches[0].clientY;
+    // Only swipe if movement is more horizontal than vertical
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx > 0) goNext();
+      else goPrev();
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  }, [goNext, goPrev]);
+
+  /* ── Pause / resume ──
+     FIX: Use pointerenter/pointerleave (not mouse) so scroll doesn't trigger pause.
+     Also add a scroll listener that force-resumes if pointer isn't inside. ── */
+  const onPointerEnter = useCallback(() => {
+    isPointerOver.current = true;
+    clearTimeout(pauseTimerRef.current);
+    setIsPaused(true);
+  }, []);
+
+  const onPointerLeave = useCallback(() => {
+    isPointerOver.current = false;
+    clearTimeout(pauseTimerRef.current);
+    pauseTimerRef.current = setTimeout(() => {
+      if (!isPointerOver.current) setIsPaused(false);
+    }, 300);
+  }, []);
+
+  /* FIX: Scroll always resumes the slider (user is scrolling, not hovering) */
+  useEffect(() => {
+    const onScroll = () => {
+      if (!isPointerOver.current) {
+        clearTimeout(pauseTimerRef.current);
+        setIsPaused(false);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* Keep refs current so arrow-key listener always calls latest callbacks */
+  goNextRef.current = goNext;
+  goPrevRef.current = goPrev;
+
+  /* ─────────────────────────────────────────────────────────────
+     ALL hooks must come BEFORE any early returns (Rules of Hooks)
+  ───────────────────────────────────────────────────────────── */
+  const total = cities?.length ?? 0;
+
+  /* Memoised card slots — null-safe, returns [] when cities not loaded */
+  const cardSlots = useMemo(() => {
+    if (!total) return [];
+    const rawSlots = [
+      { idx: (activeCityIndex + 1) % total, cls: "sm" },
+      { idx: (activeCityIndex + 2) % total, cls: "md" },
+      { idx: (activeCityIndex + 3) % total, cls: "xs" },
+    ];
+    return rawSlots.filter(
+      ({ idx }, pos, arr) =>
+        idx !== activeCityIndex &&
+        arr.findIndex((s) => s.idx === idx) === pos
     );
+  }, [activeCityIndex, total]);
+
+  /* Memoised hero animation class */
+  const heroEntryClass = useMemo(
+    () => (direction === "prev" ? "anim-slide-down" : "anim-slide-up"),
+    [direction]
+  );
+
+  /* ── Render guards — must come AFTER all hooks ── */
+  if (loading) return <Skeleton />;
 
   if (error)
     return (
-      <div className="pc-state pc-state-error" id="popular-cities">
-        {error}
+      <div className="w-full h-screen bg-[#0a0a10] flex flex-col items-center justify-center gap-[18px] font-['Inter',sans-serif]">
+        <div className="text-[48px] opacity-[0.35]">⚠</div>
+        <p className="font-['Barlow_Condensed',sans-serif] text-[28px] font-extrabold text-[#e07070] opacity-[0.55] uppercase tracking-[0.05em] m-0">
+          Something went wrong
+        </p>
+        <p className="text-[13px] text-white/35 max-w-[280px] text-center leading-[1.7] m-0">{error}</p>
       </div>
     );
 
   if (!cities?.length)
     return (
-      <div className="pc-state" id="popular-cities">
-        No destinations found
+      <div className="w-full h-screen bg-[#0a0a10] flex flex-col items-center justify-center gap-[18px] font-['Inter',sans-serif]">
+        <div className="text-[48px] opacity-[0.35]">✦</div>
+        <p className="font-['Barlow_Condensed',sans-serif] text-[28px] font-extrabold text-white opacity-[0.55] uppercase tracking-[0.05em] m-0">
+          No Destinations Yet
+        </p>
+        <p className="text-[13px] text-white/35 max-w-[280px] text-center leading-[1.7] m-0">
+          We're curating extraordinary places. Check back soon.
+        </p>
       </div>
     );
 
+  /* ── Derived values (safe — only reached after guards pass) ── */
+  const activeCity = cities[activeCityIndex];
+
   return (
-    <section id="popular-cities">
-      {/* Header */}
-      <div className="pc-header">
-        <div className="pc-header-left">
-          <div className="pc-reveal">
-            <div className="pc-eyebrow">
-              <span className="pc-eyebrow-line" />
-              World-Class Destinations
-              <span className="pc-eyebrow-line" />
-            </div>
+    <div
+      className="relative w-full h-screen overflow-hidden font-['Inter',sans-serif] bg-[#0a0a10]"
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* ── Background images (cross-fade) ──
+          Uses <img> tags for GPU-accelerated opacity transitions. ── */}
+      {showPrev && bgPrev && (
+        <img
+          role="presentation"
+          aria-hidden="true"
+          src={bgPrev}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ opacity: 0, transition: "opacity 0.85s cubic-bezier(0.4,0,0.2,1)", willChange: "opacity", zIndex: 0 }}
+        />
+      )}
+      <img
+        role="img"
+        aria-label={`${activeCity.name} background`}
+        src={bgCurr || ph(1600, 900, activeCity.name)}
+        alt={`${activeCity.name} cityscape`}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: 1, transition: "opacity 0.85s cubic-bezier(0.4,0,0.2,1)", willChange: "opacity", zIndex: 0 }}
+      />
+
+      {/* Gradient overlay */}
+      <div
+        className="absolute inset-0 z-[2]"
+        style={{
+          background: `
+            linear-gradient(to right,
+              rgba(0,0,0,0.82) 0%,
+              rgba(0,0,0,0.55) 38%,
+              rgba(0,0,0,0.15) 60%,
+              transparent 100%),
+            linear-gradient(to top,
+              rgba(0,0,0,0.5) 0%,
+              transparent 40%)
+          `,
+        }}
+      />
+
+      {/* ── Top Navigation ── */}
+      <nav className="absolute top-0 left-0 right-0 z-[40] flex items-center justify-between py-[30px] px-12 max-md:py-5 max-md:px-[22px]">
+        <div className="flex items-center gap-[10px] text-white">
+          <div className="w-[34px] h-[34px] bg-[#3d6ef5] rounded-lg flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="white" />
+              <circle cx="12" cy="9" r="2.5" fill="#3d6ef5" />
+            </svg>
           </div>
-          <div className="pc-reveal pc-reveal-d1">
-            <h2 className="pc-title">
-              Popular
-              <br />
-              <em>Cities</em>
-            </h2>
-          </div>
+          <span className="font-['Barlow_Condensed',sans-serif] text-[20px] font-extrabold tracking-[0.04em]">
+            Popular Cities
+          </span>
+          {/* FIX: City count badge */}
+          <span className="ml-1 px-[8px] py-[2px] rounded-full bg-white/10 text-white/60 text-[11px] font-medium tracking-wide">
+            {total} destinations
+          </span>
         </div>
 
-        <div className="pc-header-right pc-reveal pc-reveal-d2">
-          <p className="pc-subtitle">
-            Curated escapes — where world-class hospitality meets authentic
-            local spirit. Every destination hand-picked for the discerning
-            traveller.
+        <div className="flex items-center gap-[14px]">
+          <div className="w-9 h-9 rounded-full bg-white/[0.18] border-2 border-white/[0.18] flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)" aria-hidden="true">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <span className="text-[13px] text-white/70 max-sm:hidden">Explore the World</span>
+        </div>
+      </nav>
+
+      {/* ── Left vertical dot tracker ── */}
+      <div className="absolute left-7 top-1/2 -translate-y-1/2 z-[40] flex flex-col items-center max-md:left-3">
+        {cities.map((_, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <div className="w-px h-[30px] bg-white/[0.18] shrink-0" />}
+            <button
+              className={[
+                "w-[7px] h-[7px] rounded-full border-0 p-0 cursor-pointer",
+                "transition-all duration-300 relative z-[1] shrink-0",
+                i === activeCityIndex ? "bg-white scale-[1.4]" : "bg-white/40",
+              ].join(" ")}
+              onClick={() => { if (i !== activeCityIndex) goToIndex(i, activeCityIndex); }}
+              aria-label={`Go to city ${i + 1}`}
+              aria-current={i === activeCityIndex ? "true" : undefined}
+            />
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* ── Left hero content ── */}
+      <div
+        className="absolute left-[72px] bottom-[130px] z-[30] max-w-[520px] max-md:left-9 max-md:bottom-[110px] max-md:max-w-[calc(100vw-72px)]"
+        style={{
+          opacity: isExiting ? 0 : 1,
+          transform: isExiting
+            ? (direction === "prev" ? "translateY(18px)" : "translateY(-18px)")
+            : "translateY(0)",
+          transition: "opacity 0.25s cubic-bezier(0.4,0,1,1), transform 0.25s cubic-bezier(0.4,0,1,1)",
+          willChange: "opacity, transform",
+        }}
+      >
+        <div key={animKey}>
+          <h2
+            className={`${heroEntryClass} font-['Barlow_Condensed',sans-serif] font-black leading-[0.88] text-white tracking-[-0.01em] uppercase m-0 mb-[6px]`}
+            style={{ fontSize: "clamp(72px, 11vw, 148px)" }}
+          >
+            {activeCity.name}
+          </h2>
+
+          {/* Dashed divider */}
+          <div className="anim-fade-in-1 flex items-center gap-[5px] mb-[18px]">
+            {[...Array(8)].map((_, i) => (
+              <span
+                key={i}
+                className={[
+                  "inline-block h-[2px] rounded-[2px]",
+                  i === 0 ? "w-[28px] bg-white/70" : "w-[14px] bg-white/40",
+                ].join(" ")}
+              />
+            ))}
+          </div>
+
+          <p className="anim-fade-in-2 text-[13px] font-light leading-[1.75] text-white/70 mt-0 mb-8">
+            {activeCity.description ||
+              `Discover the breathtaking landscapes, vibrant culture, and world-class
+               experiences that make ${activeCity.name} one of the most sought-after
+               destinations in the world.`}
           </p>
-          <div className="pc-count-badge">
-            {cities.length} Featured Destinations
-          </div>
+
+          <button
+            className={[
+              "anim-fade-in-3 group",
+              "inline-flex items-center gap-[14px]",
+              "py-[14px] px-[30px]",
+              "bg-[#3d6ef5] border-0 rounded-full",
+              "font-['Inter',sans-serif] text-sm font-medium text-white",
+              "cursor-pointer",
+              "transition-[background,transform,box-shadow] duration-[250ms] ease-in-out",
+              "hover:bg-[#2a55d4] hover:-translate-y-[2px] hover:scale-[1.04]",
+              "hover:shadow-[0_14px_36px_rgba(61,110,245,0.45)]",
+              "active:scale-[0.98]",
+            ].join(" ")}
+            onClick={() => navigate(`/city/${activeCity._id}`)}
+          >
+            Explore
+            <span className="flex items-center justify-center w-7 h-7 bg-white/[0.22] rounded-full transition-transform duration-300 group-hover:translate-x-[3px]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* Separator */}
-      <div className="pc-sep pc-reveal pc-reveal-d3">
-        <div className="pc-sep-line" />
-      </div>
+      {/* ── Preview cards (right side) ── */}
+      <div
+        className={[
+          "absolute right-0 top-1/2 -translate-y-[46%] z-10",
+          "flex items-end gap-4 pr-8",
+          "max-md:top-auto max-md:bottom-0 max-md:translate-y-0",
+          "max-md:right-0 max-md:left-0",
+          "max-md:px-4 max-md:pb-[86px]",
+          "max-md:gap-3 max-md:overflow-x-auto max-md:items-end",
+          "no-scrollbar",
+        ].join(" ")}
+      >
+        {cardSlots.map(({ idx, cls }) => {
+          const city = cities[idx];
+          const img = city.images?.[0] || ph(220, 345, city.name);
+          const rating = city.rating ?? 4;
+          const isSaved = savedCities.has(city._id);
 
-      {/* Grid */}
-      <div className="pc-grid-wrap">
-        <div className="pc-grid">
-          {cities.map((city, i) => (
-            <article
-              key={city._id}
-              className="pc-card pc-card-wrap"
-              style={{ animationDelay: `${0.1 + i * 0.07}s` }}
-              onClick={() => navigate(`/city/${city._id}`)}
+          return (
+            <div
+              key={cls}
+              className={[
+                "group shrink-0 cursor-pointer rounded-[18px] overflow-hidden relative flex flex-col",
+                "transition-[transform,box-shadow,opacity] duration-[450ms] ease-[cubic-bezier(0.34,1.26,0.64,1)]",
+                cardVariantClasses[cls],
+                cardHoverClasses,
+              ].join(" ")}
+              onClick={() => {
+                idx !== activeCityIndex
+                  ? goToIndex(idx, activeCityIndex)
+                  : navigate(`/city/${city._id}`);
+              }}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) =>
-                e.key === "Enter" && navigate(`/city/${city._id}`)
-              }
-              aria-label={`Explore ${city.name}`}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                idx !== activeCityIndex
+                  ? goToIndex(idx, activeCityIndex)
+                  : navigate(`/city/${city._id}`);
+              }}
+              aria-label={`Preview ${city.name}`}
             >
-              <img
-                src={
-                  city.images?.[0] ||
-                  "https://via.placeholder.com/800x600/111114/c9a84c?text=City"
-                }
-                alt={city.name}
-                className="pc-card-img"
-                loading="lazy"
-              />
-
-              <div className="pc-card-overlay" />
-              <div className="pc-card-line" />
-              <div className="pc-card-top-line" />
-
-              <span className="pc-card-index">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-
-              <div className="pc-card-arrow">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M7 17L17 7M7 7h10v10"
-                  />
-                </svg>
-              </div>
-
-              <div className="pc-card-body">
-                <span className="pc-card-tag">Explore destination</span>
-                <h3 className="pc-card-name">{city.name}</h3>
-                <div className="pc-card-meta">
-                  <span className="pc-card-meta-line" />
-                  Discover more
+              {/* Card header — fades in with new city */}
+              <div
+                key={city._id}
+                className="px-[14px] pt-3 pb-[10px] bg-white/95 backdrop-blur-[10px] shrink-0 anim-fade-card"
+              >
+                <div className="text-xs font-medium text-[#111] mb-[5px] whitespace-nowrap overflow-hidden text-ellipsis">
+                  {city.name}
                 </div>
+                <Stars rating={rating} />
               </div>
-            </article>
-          ))}
-        </div>
+
+              {/* City image */}
+              <div className="flex-1 relative overflow-hidden rounded-b-[18px]">
+                <img
+                  key={img}
+                  src={img}
+                  alt={city.name}
+                  className="w-full h-full object-cover block anim-fade-card transition-transform duration-[550ms] group-hover:scale-[1.08]"
+                />
+                {/* Bookmark — persisted to localStorage */}
+                <button
+                  className={[
+                    "absolute top-3 right-3",
+                    "w-[34px] h-[34px] rounded-full",
+                    "border-0 flex items-center justify-center",
+                    "cursor-pointer z-[5]",
+                    "transition-[background,transform] duration-200",
+                    isSaved
+                      ? "bg-[#3d6ef5] hover:bg-[#2a55d4]"
+                      : "bg-white/[0.92] hover:bg-white hover:scale-[1.12]",
+                  ].join(" ")}
+                  onClick={(e) => toggleSave(city._id, e)}
+                  aria-label={isSaved ? `Unsave ${city.name}` : `Save ${city.name}`}
+                >
+                  <svg
+                    width="14" height="14" viewBox="0 0 24 24"
+                    fill={isSaved ? "white" : "none"}
+                    stroke={isSaved ? "white" : "#333"}
+                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
-    </section>
+
+      {/* ── Auto-slide progress bar + pause indicator ── */}
+      <div className="absolute bottom-[88px] left-1/2 -translate-x-1/2 z-[40] flex flex-col items-center gap-[6px]">
+        <div className="w-[120px] h-[2px] rounded-full bg-white/[0.15] overflow-hidden">
+          {isPaused ? (
+            /* Frozen bar while paused */
+            <div className="h-full w-full bg-white/30 rounded-full" />
+          ) : (
+            <div
+              key={`${activeCityIndex}-${animKey}`}
+              className="anim-progress h-full bg-white/60 rounded-full"
+            />
+          )}
+        </div>
+        {/* FIX: Pause indicator text */}
+        {isPaused && (
+          <span className="text-[10px] text-white/40 tracking-widest uppercase">paused</span>
+        )}
+      </div>
+
+      {/* ── Bottom arrow navigation ── */}
+      <div className="absolute bottom-0 left-0 right-0 z-[40] flex items-center justify-center gap-6 py-7 px-12">
+        <button
+          className={[
+            "w-11 h-11 rounded-full",
+            "border border-white/[0.18] bg-white/10 backdrop-blur-[8px]",
+            "flex items-center justify-center cursor-pointer text-white",
+            "transition-[background,border-color,transform] duration-200",
+            "hover:bg-white/[0.22] hover:border-white/40 hover:scale-[1.08]",
+          ].join(" ")}
+          onClick={goPrev}
+          aria-label="Previous city"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            aria-hidden="true">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+        </button>
+
+        <span className="font-['Barlow_Condensed',sans-serif] text-base font-bold tracking-[0.08em] text-white min-w-[52px] text-center">
+          {String(activeCityIndex + 1).padStart(2, "0")}
+          <span className="text-white/40"> / {String(total).padStart(2, "0")}</span>
+        </span>
+
+        <button
+          className={[
+            "w-11 h-11 rounded-full",
+            "border border-white/[0.18] bg-white/10 backdrop-blur-[8px]",
+            "flex items-center justify-center cursor-pointer text-white",
+            "transition-[background,border-color,transform] duration-200",
+            "hover:bg-white/[0.22] hover:border-white/40 hover:scale-[1.08]",
+          ].join(" ")}
+          onClick={goNext}
+          aria-label="Next city"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
   );
 }
 

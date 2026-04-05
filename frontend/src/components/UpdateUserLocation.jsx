@@ -122,217 +122,252 @@ function UpdateUserLocation() {
   };
 
   return (
-    <div className=" bg-[#0b1120] relative overflow-hidden px-4 py-10">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.18),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.12),transparent_35%)] bg-white rounded-2xl" />
-
-      <div className="relative mx-auto max-w-md  gap-8 items-start">
-        {/* Left Content */}
-
-        {/* Form Card */}
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-4xl border border-white/10 bg-white/8 backdrop-blur-3xl shadow-[0_30px_80px_rgba(0,0,0,0.55)] overflow-hidden"
-        >
-          {/* Header */}
-          <div className="relative border-b border-white/10 bg-linear-to-r from-blue-600/90 via-indigo-600/90 to-cyan-600/90 px-8 py-8">
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-
-            <div className="relative flex items-start gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-xl border border-white/20 text-white">
-                <MapPin className="h-7 w-7" />
+    <div className="relative overflow-hidden bg-[#030712] px-4 py-8 sm:px-6 lg:px-8">
+    {/* Animated Background */}
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute -left-20 top-0 h-72 w-72 animate-pulse rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="absolute right-0 top-20 h-80 w-80 animate-pulse rounded-full bg-cyan-500/10 blur-3xl [animation-delay:1.5s]" />
+      <div className="absolute bottom-0 left-1/2 h-96 w-96 -translate-x-1/2 animate-pulse rounded-full bg-indigo-500/10 blur-3xl [animation-delay:3s]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.10),transparent_30%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-size-[48px_48px]" />
+    </div>
+  
+    <div className="relative mx-auto max-w-2xl">
+      <form
+        onSubmit={handleSubmit}
+        className="overflow-hidden rounded-4xl border border-white/10 bg-white/4 shadow-[0_35px_80px_rgba(0,0,0,0.65)] backdrop-blur-3xl"
+      >
+        {/* Interactive Header */}
+        <div className="relative overflow-hidden border-b border-white/10 bg-linear-to-br from-[#0f172a] via-[#172554] to-[#0f172a] px-5 py-7 sm:px-8 sm:py-8">
+          {/* Floating Glow */}
+          <div className="absolute -left-10 top-0 h-40 w-40 animate-pulse rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="absolute right-0 top-0 h-52 w-52 animate-pulse rounded-full bg-cyan-500/15 blur-3xl [animation-delay:1.5s]" />
+  
+          {/* Shine Animation */}
+          <div className="absolute -left-40 top-0 h-full w-32 rotate-12 bg-white/10 blur-2xl transition-all duration-2500 hover:left-[120%]" />
+  
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            {/* Left Content */}
+            <div className="flex items-start gap-4">
+              <div className="group relative flex h-16 w-16 items-center justify-center rounded-3xl border border-white/15 bg-white/10 text-white shadow-[0_15px_35px_rgba(37,99,235,0.35)] backdrop-blur-xl transition-all duration-500 hover:scale-110 hover:rotate-6 hover:bg-blue-500/20">
+                <div className="absolute inset-0 rounded-3xl bg-linear-to-br from-blue-500/30 to-cyan-500/20 opacity-0 transition duration-500 group-hover:opacity-100" />
+                <MapPin className="relative h-7 w-7 transition duration-500 group-hover:scale-110" />
               </div>
-
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  {user?.location ? "Update Location" : "Add Your Location"}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-blue-100/90 max-w-md">
-                  Use your current GPS location or manually fill your address
-                  details below.
+  
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="bg-linear-to-r from-white via-blue-100 to-cyan-300 bg-clip-text text-2xl font-bold tracking-tight text-transparent sm:text-3xl">
+                    {user?.location ? "Update Location" : "Add Your Location"}
+                  </h2>
+  
+                  {/* Optional Badge */}
+                  <span className="inline-flex animate-pulse items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-300">
+                    <span className="h-2 w-2 rounded-full bg-blue-400" />
+                    Secure
+                  </span>
+                </div>
+  
+                <p className="max-w-lg text-sm leading-7 text-slate-300 sm:text-[15px]">
+                  Use your live GPS location or manually enter your city, state
+                  and country details below for a better personalized experience.
                 </p>
               </div>
             </div>
-          </div>
-
-          <div className="space-y-7 p-8">
-            {/* Detect Button */}
-            <button
-              type="button"
-              onClick={handleGetLocation}
-              disabled={detecting}
-              className={`group relative w-full overflow-hidden rounded-3xl border transition-all duration-500 cursor-pointer ${
-                detecting
-                  ? "border-blue-400 bg-blue-500 cursor-not-allowed"
-                  : detected
-                  ? "border-emerald-400 bg-emerald-400 hover:bg-emerald-500"
-                  : "border-white/10 bg-linear-to-r from-[#2563eb] via-[#4f46e5] to-[#7c3aed] hover:scale-[1.015] hover:shadow-[0_20px_50px_rgba(79,70,229,0.45)]"
-              }`}
-            >
-              {/* Glow Effect */}
-              <div
-                className={`absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${
-                  detected
-                    ? "bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.25),transparent_70%)]"
-                    : "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18),transparent_70%)]"
-                }`}
-              />
-
-              {/* Animated Shine */}
-              {!detecting && (
-                <div className="absolute -left-20 top-0 h-full w-16 rotate-12 bg-white/10 blur-xl transition-all duration-1000 group-hover:left-[120%]" />
-              )}
-
-              <div className="relative flex items-center justify-center gap-4 px-6 py-5">
-                {/* Icon Circle */}
-                <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-2xl border backdrop-blur-xl transition-all duration-300 ${
-                    detecting
-                      ? "border-blue-300/20 bg-blue-400 text-blue-100"
-                      : detected
-                      ? "border-emerald-100 bg-emerald-400 text-emerald-100"
-                      : "border-white/20 bg-white/15 text-white group-hover:rotate-6 group-hover:scale-110"
-                  }`}
-                >
-                  {detecting ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : detected ? (
-                    <CheckCircle2 className="h-5 w-5" />
-                  ) : (
-                    <Navigation className="h-5 w-5" />
-                  )}
+  
+            {/* Right Decorative Card */}
+            <div className="hidden rounded-3xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-xl md:block">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400">
+                  <Navigation className="h-5 w-5" />
                 </div>
-
-                {/* Text */}
-                <div className="flex flex-col items-start text-left">
-                  <span className="text-base font-semibold tracking-wide text-white">
-                    {detecting
-                      ? "Detecting Your Location"
-                      : detected
-                      ? "Location Detected"
-                      : "Use My Current Location"}
-                  </span>
-
-                  <span
-                    className={`text-xs md:text-sm ${
-                      detecting
-                        ? "text-blue-100/80"
-                        : detected
-                        ? "text-emerald-100/80"
-                        : "text-white/75"
-                    }`}
-                  >
-                    {detecting
-                      ? "Please wait while we fetch your address..."
-                      : detected
-                      ? "Your address has been detected successfully."
-                      : "Automatically find your current address in one click."}
-                  </span>
+  
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                    Fast Detection
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-white">
+                    Auto-fill your location
+                  </p>
                 </div>
               </div>
-            </button>
-
-            {/* Address */}
-            {/* <div className="space-y-3">
-              <label className="text-sm font-medium text-slate-300">
-                Full Address
-              </label>
-
-              <div className="relative">
-                <textarea
-                  name="fullAddress"
-                  value={locationData.fullAddress}
-                  onChange={handleChange}
-                  rows={5}
-                  placeholder="Street, area, landmark, city..."
-                  className="w-full rounded-3xl border border-white/10 bg-[#131c2f]/90 px-5 py-4 pr-24 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                />
-
-                {locationData.fullAddress && (
-                  <div className="absolute right-4 top-4 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300">
-                    Verified
-                  </div>
+            </div>
+          </div>
+  
+          {/* Bottom Floating Info */}
+          <div className="relative mt-6 flex flex-wrap gap-3">
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs text-slate-300 backdrop-blur-xl transition duration-300 hover:border-blue-500/20 hover:bg-blue-500/10">
+              📍 Detect current city instantly
+            </div>
+  
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs text-slate-300 backdrop-blur-xl transition duration-300 hover:border-cyan-500/20 hover:bg-cyan-500/10">
+              🔒 Your location stays private
+            </div>
+  
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs text-slate-300 backdrop-blur-xl transition duration-300 hover:border-emerald-500/20 hover:bg-emerald-500/10">
+              ⚡ Faster recommendations nearby
+            </div>
+          </div>
+        </div>
+  
+        <div className="space-y-7 p-5 sm:p-7 md:p-8">
+          {/* Detect Button */}
+          <button
+            type="button"
+            onClick={handleGetLocation}
+            disabled={detecting}
+            className={`group relative w-full overflow-hidden rounded-3xl border transition-all duration-500 ${
+              detecting
+                ? "cursor-not-allowed border-blue-400/30 bg-blue-500/20"
+                : detected
+                ? "border-emerald-400/30 bg-emerald-500/15 hover:bg-emerald-500/20"
+                : "border-white/10 bg-linear-to-r from-[#1d4ed8] via-[#4338ca] to-[#0891b2] hover:scale-[1.01] hover:shadow-[0_20px_55px_rgba(37,99,235,0.4)]"
+            }`}
+          >
+            <div
+              className={`absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${
+                detected
+                  ? "bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.25),transparent_70%)]"
+                  : "bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.12),transparent_70%)]"
+              }`}
+            />
+  
+            <div className="absolute -left-16 top-0 h-full w-14 rotate-12 bg-white/10 blur-xl transition-all duration-1000 group-hover:left-[120%]" />
+  
+            <div className="relative flex flex-col items-center justify-center gap-4 px-5 py-5 sm:flex-row sm:justify-start">
+              <div
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border transition-all duration-300 ${
+                  detecting
+                    ? "border-blue-300/20 bg-blue-500/20 text-blue-100"
+                    : detected
+                    ? "border-emerald-300/20 bg-emerald-500/20 text-emerald-100"
+                    : "border-white/20 bg-white/10 text-white group-hover:rotate-6 group-hover:scale-110"
+                }`}
+              >
+                {detecting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : detected ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  <Navigation className="h-5 w-5" />
                 )}
               </div>
-            </div> */}
-
-            {/* Grid Inputs */}
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-              {[
-                { label: "City", name: "city", placeholder: "Enter city" },
-                { label: "State", name: "state", placeholder: "Enter state" },
-                {
-                  label: "Country",
-                  name: "country",
-                  placeholder: "Enter country",
-                },
-              ].map((field) => (
-                <div key={field.name} className="space-y-3">
-                  <label className="text-sm font-medium text-black">
-                    {field.label}
-                  </label>
+  
+              <div className="text-center sm:text-left">
+                <p className="text-base font-semibold text-white">
+                  {detecting
+                    ? "Detecting Your Location..."
+                    : detected
+                    ? "Location Detected Successfully"
+                    : "Use My Current Location"}
+                </p>
+  
+                <p
+                  className={`mt-1 text-sm ${
+                    detecting
+                      ? "text-blue-100/80"
+                      : detected
+                      ? "text-emerald-100/80"
+                      : "text-white/70"
+                  }`}
+                >
+                  {detecting
+                    ? "Please wait while we fetch your address."
+                    : detected
+                    ? "Your address has been automatically filled."
+                    : "Automatically detect and fill your location in one click."}
+                </p>
+              </div>
+            </div>
+          </button>
+  
+          {/* Input Fields */}
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            {[
+              { label: "City", name: "city", placeholder: "Enter city" },
+              { label: "State", name: "state", placeholder: "Enter state" },
+              {
+                label: "Country",
+                name: "country",
+                placeholder: "Enter country",
+              },
+            ].map((field) => (
+              <div key={field.name} className="group space-y-3">
+                <label className="block text-sm font-medium text-slate-300">
+                  {field.label}
+                </label>
+  
+                <div className="relative">
                   <input
                     type="text"
                     name={field.name}
                     value={locationData[field.name]}
                     onChange={handleChange}
                     placeholder={field.placeholder}
-                    className="w-full rounded-2xl border border-black  px-4 py-3 text-sm text-black placeholder:text-slate-500 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                    className="w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition-all duration-300 focus:border-blue-500 focus:bg-white/6 focus:ring-4 focus:ring-blue-500/20"
                   />
-                </div>
-              ))}
-            </div>
-
-            {/* Preview */}
-            {locationData.fullAddress && (
-              <div className="rounded-3xl border border-blue-500/20 bg-blue-500 p-5 backdrop-blur-xl">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/30">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="font-semibold text-white">
-                        Selected Address
-                      </h3>
-
-                      <span className="rounded-full border border-emerald-500 bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300">
-                        Active
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-sm leading-7 text-slate-300">
-                      {locationData.fullAddress}
-                    </p>
-                  </div>
+  
+                  <div className="pointer-events-none absolute inset-0 rounded-2xl border border-transparent transition duration-300 group-hover:border-blue-500/10" />
                 </div>
               </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                {error}
-              </div>
-            )}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full rounded-2xl py-4 text-base font-semibold transition-all duration-300 ${
-                loading
-                  ? "cursor-not-allowed bg-slate-600 text-slate-300"
-                  : "bg-linear-to-r from-emerald-500 via-green-500 to-teal-500 text-white hover:scale-[1.02] hover:shadow-[0_18px_45px_rgba(16,185,129,0.45)]"
-              }`}
-            >
-              {loading ? "Saving Location..." : "Save & Continue"}
-            </button>
+            ))}
           </div>
-        </form>
-      </div>
+  
+          {/* Address Preview */}
+          {locationData.fullAddress && (
+            <div className="animate-[fadeIn_.5s_ease] rounded-3xl border border-blue-500/20 bg-blue-500/10 p-5 backdrop-blur-xl">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/30">
+                  <MapPin className="h-5 w-5" />
+                </div>
+  
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h3 className="text-base font-semibold text-white">
+                      Selected Address
+                    </h3>
+  
+                    <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300">
+                      Active
+                    </span>
+                  </div>
+  
+                  <p className="mt-3 text-sm leading-7 text-slate-300">
+                    {locationData.fullAddress}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+  
+          {/* Error */}
+          {error && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              {error}
+            </div>
+          )}
+  
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`group relative w-full overflow-hidden rounded-2xl py-4 text-base font-semibold transition-all duration-300 ${
+              loading
+                ? "cursor-not-allowed bg-slate-700 text-slate-400"
+                : "bg-linear-to-r from-emerald-500 via-green-500 to-teal-500 text-white hover:scale-[1.015] hover:shadow-[0_18px_45px_rgba(16,185,129,0.45)]"
+            }`}
+          >
+            {!loading && (
+              <div className="absolute -left-16 top-0 h-full w-14 rotate-12 bg-white/10 blur-xl transition-all duration-1000 group-hover:left-[120%]" />
+            )}
+  
+            <span className="relative z-10">
+              {loading ? "Saving Location..." : "Save & Continue"}
+            </span>
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
   );
 }
 
