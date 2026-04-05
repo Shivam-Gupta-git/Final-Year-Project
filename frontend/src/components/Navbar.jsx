@@ -5,6 +5,8 @@ import { userLogout } from "../features/auth/authSlice";
 import { getUserData } from "../features/user/userSlice";
 import { FaRegUserCircle } from "react-icons/fa";
 import { GrLocationPin } from "react-icons/gr";
+import UpdateUserLocation from "./UpdateUserLocation";
+import { FiSearch } from "react-icons/fi";
 import { RxDashboard } from "react-icons/rx";
 import { superAdminLogout } from "../features/auth/superAdminAuthSlice";
 import { getSuperAdminData } from "../features/user/superAdminSlice";
@@ -12,6 +14,7 @@ import { getAdminData } from "../features/user/adminSlice";
 import { adminLogout } from "../features/auth/adminAuthSlice";
 import { FaUserShield } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import { ShoppingBagIcon } from "@heroicons/react/24/outline";
 import { selectCartItemCount } from "../features/user/cartSlice";
 import { BiTrip } from "react-icons/bi";
 import { FaHeart } from "react-icons/fa6";
@@ -26,10 +29,12 @@ function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showLocationSection, setShowLocationSection] = useState(false);
+  //Search
+  const searchRef = useRef(null);
   const { token } = useSelector((state) => state.auth);
   const { user, loading } = useSelector((state) => state.user);
   const { superAdminToken, loginSuccess } = useSelector(
-    (state) => state.superAdminAuth,
+    (state) => state.superAdminAuth
   );
   const { superAdmin } = useSelector((state) => state.superAdmin);
   const { adminToken } = useSelector((state) => state.adminAuth);
@@ -48,7 +53,17 @@ function Navbar() {
 
   const currentUser = user || superAdmin || admin;
 
-
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   const getInitials = (name = "User") => {
     if (typeof name !== "string") return "U";
@@ -305,7 +320,7 @@ function Navbar() {
                                   />
                                 ) : (
                                   getInitials(
-                                    currentUser?.userName || user?.userName,
+                                    currentUser?.userName || user?.userName
                                   )
                                 )}
                               </div>
@@ -513,7 +528,7 @@ function Navbar() {
                               {/* Cart */}
                               <Link
                                 to="/cart"
-                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-orange-500/40 hover:bg-orange-500/10"
+                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-orange-500/40 hover:bg-orange-500/10 relative"
                                 aria-label="Cart"
                               >
                                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-400">
@@ -526,13 +541,12 @@ function Navbar() {
                                   <p className="text-sm text-zinc-400">
                                     Saved favourites
                                   </p>
-                                </div>
-
-                                {cartCount > 0 && (
+                                  {cartCount > 0 && (
                                   <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white shadow-lg">
                                     {cartCount > 99 ? "99+" : cartCount}
                                   </span>
                                 )}
+                                </div>
                               </Link>
                             </>
                           )}
@@ -654,10 +668,10 @@ function Navbar() {
                               token
                                 ? handelUserLogout
                                 : superAdminToken
-                                  ? handeSuperAdminLogout
-                                  : adminToken
-                                    ? handelAdminLogout
-                                    : null
+                                ? handeSuperAdminLogout
+                                : adminToken
+                                ? handelAdminLogout
+                                : null
                             }
                             className="flex w-full items-center justify-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-4 font-medium text-red-400 transition hover:bg-red-500 hover:text-white"
                           >
