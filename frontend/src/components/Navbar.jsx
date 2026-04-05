@@ -34,7 +34,7 @@ function Navbar() {
   const { token } = useSelector((state) => state.auth);
   const { user, loading } = useSelector((state) => state.user);
   const { superAdminToken, loginSuccess } = useSelector(
-    (state) => state.superAdminAuth
+    (state) => state.superAdminAuth,
   );
   const { superAdmin } = useSelector((state) => state.superAdmin);
   const { adminToken } = useSelector((state) => state.adminAuth);
@@ -407,6 +407,10 @@ function Navbar() {
                               onClick={() => setProfileOpen(false)}
                               className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-yellow-500/40 hover:bg-yellow-500/10"
                             >
+                              <span>
+                                <BiTrip />
+                              </span>
+                              <span className="text-sm">My Trips</span>
                               <div className="rounded-xl bg-yellow-500/10 p-3 text-yellow-400">
                                 <FaRegUserCircle className="text-xl" />
                               </div>
@@ -429,6 +433,10 @@ function Navbar() {
                               onClick={() => setProfileOpen(false)}
                               className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-indigo-500/40 hover:bg-indigo-500/10"
                             >
+                              <span>
+                                <FaHeart />
+                              </span>
+                              <span className="text-sm">Wishlist</span>
                               <div className="rounded-xl bg-indigo-500/10 p-3 text-indigo-400">
                                 <FaRegUserCircle className="text-xl" />
                               </div>
@@ -659,6 +667,41 @@ function Navbar() {
                               <p className="font-medium text-white">Settings</p>
                             </div>
                           </Link>
+                        )}
+
+                        {/* Settings */}
+                        <Link
+                          to="/settings"
+                          className="flex items-center gap-3 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 rounded-lg"
+                        >
+                          <span>
+                            <IoMdSettings />
+                          </span>
+                          <span className="text-sm">Settings</span>
+                        </Link>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="border-t border-gray-100 dark:border-gray-700"></div>
+
+                      {/* Logout */}
+                      <button
+                        type="button"
+                        onClick={
+                          token
+                            ? handelUserLogout
+                            : superAdminToken
+                              ? handeSuperAdminLogout
+                              : adminToken
+                                ? handelAdminLogout
+                                : null
+                        }
+                        className="flex items-center gap-3 w-full text-left px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-800 transition-colors duration-200 rounded-lg"
+                      >
+                        <span>🚪</span>
+                        <span className="text-sm font-medium">Logout</span>
+                      </button>
+                    </div>
                         </div>
 
                         {/* Logout */}
@@ -746,6 +789,31 @@ function Navbar() {
           </div>
         )}
       </nav>
+
+      {/* Location Popup Modal */}
+      {showLocationSection && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowLocationSection(false);
+            }
+          }}
+        >
+          <div className="bg-transparent rounded-xl shadow-xl relative mt-7 text-gray-900 dark:text-white">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowLocationSection(false)}
+              className="absolute right-2 top-2 text-2xl rounded-full bg-black backdrop-blur-xl border border-black text-white hover:text-white hover:bg-black cursor-pointer duration-300 z-50"
+            >
+              <MdOutlineCancel />
+            </button>
+
+            {/* Location Component */}
+            <UpdateUserLocation />
+          </div>
+        </div>
+      )}
     </>
   );
 }

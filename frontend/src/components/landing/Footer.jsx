@@ -75,7 +75,7 @@ export default function Footer() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex flex-col justify-end font-sans">
+    <div className=" bg-neutral-950 flex flex-col justify-end font-sans">
       <footer className="bg-neutral-950 text-white pt-16 pb-6 border-t border-white/10">
         {/* Top Banner */}
         <div className="max-w-7xl mx-auto px-6 mb-14">
