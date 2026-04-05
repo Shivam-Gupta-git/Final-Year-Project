@@ -1,112 +1,134 @@
 import "./App.css";
 // import Header from './components/Header'
-import Register from "./pages/auth/Register";
+import { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
-import About from "./pages/localPages/About";
-import VerifyEmail from "./pages/localPages/VerifyEmail";
-import Verify from "./pages/localPages/Verify";
-import Login from "./pages/auth/Login";
+const Register = lazy(() => import("./pages/auth/Register"))
+const About = lazy(() => import("./pages/localPages/About"))
+const VerifyEmail = lazy(() => import("./pages/localPages/VerifyEmail"))
+const Verify = lazy(() => import("./pages/localPages/Verify"))
+const Login = lazy(() => import("./pages/auth/Login"))
 import LandingPage from "./pages/auth/landingPage";
 import Navbar from "./components/Navbar";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import VerifyOTP from "./pages/auth/VerifyOTP";
-import ChangePassword from "./pages/auth/ChangePassword";
-import UserProfile from "./pages/localPages/UserProfile";
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"))
+const VerifyOTP = lazy(()=> import("./pages/auth/VerifyOTP"))
+const ChangePassword = lazy(()=> import("./pages/auth/ChangePassword"))
+const UserProfile = lazy(() => import("./pages/localPages/UserProfile"))
 import UserProtectedRouter from "./components/protectedRouter/UserProtectedRouter";
-import SuperAdminRegister from "./pages/superAdmin/SuperAdminRegister";
-import SuperAdminLogin from "./pages/superAdmin/SuperAdminLogin";
-import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard";
+const SuperAdminRegister = lazy(() => import("./pages/superAdmin/SuperAdminRegister"))
+const SuperAdminLogin = lazy(() => import("./pages/superAdmin/SuperAdminLogin"))
+const SuperAdminDashboard = lazy(() => import("./pages/superAdmin/SuperAdminDashboard"))
 import SuperAdminProtectedRouter from "./components/protectedRouter/SuperAdminProtectedRouter";
-import SuperAdminProfile from "./pages/superAdmin/SuperAdminProfile";
-import AdminApprovalPage from "./pages/admin/AdminApprovalPage";
-import AdminLogin from "./pages/admin/AdminLogin";
-import LoginPage from "./pages/localPages/LoginPage";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminProfile from "./pages/admin/AdminProfile";
+const SuperAdminProfile = lazy(() => import("./pages/superAdmin/SuperAdminProfile"))
+const AdminApprovalPage = lazy(() => import("./pages/admin/AdminApprovalPage"))
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"))
+const LoginPage = lazy(() => import("./pages/localPages/LoginPage"))
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"))
+const AdminProfile = lazy(() => import("./pages/admin/AdminProfile"))
 import AdminProtectedRouter from "./components/protectedRouter/AdminProtectedRouter";
-import AddCityDetails from "./pages/superAdmin/city/AddCityDetails";
-import CityDashboard from "./pages/superAdmin/city/CityDashboard";
-import UpdateCityDetails from "./pages/superAdmin/city/UpdateCityDetails";
+const AddCityDetails = lazy(() => import("./pages/superAdmin/city/AddCityDetails"))
+const CityDashboard = lazy(() => import("./pages/superAdmin/city/CityDashboard"))
+const UpdateCityDetails = lazy(() => import("./pages/superAdmin/city/UpdateCityDetails"))
 // import SuperAdminCityList from './pages/superAdmin/city/SuperAdminApprovealCityList'
-import GetCityById from "./pages/superAdmin/city/GetCityById";
-import GetAllCities from "./pages/superAdmin/city/GetAllCities";
-import CityDetails from "./pages/auth/CityPage";
-import GetAllInactiveCities from "./pages/superAdmin/city/GetAllInactiveCities";
-import AddHotelDetails from "./pages/admin/hotel/AddHotelDetails";
-import SuperAdminApprovealHoteList from "./pages/superAdmin/Hotel/SuperAdminApprovealHoteList";
-import HotelDashboard from "./pages/superAdmin/Hotel/HotelDashboard";
-import GetAllHotels from "./pages/superAdmin/Hotel/GetAllHotels";
-import GetAllActiveHotels from "./pages/superAdmin/Hotel/GetAllActiveHotels";
-import GetAllRejectedHotels from "./pages/superAdmin/Hotel/GetAllRejectedHotels";
-import UpdateHotelDetails from "./pages/admin/hotel/UpdateHotelDetails";
-import GetAllInactiveHotels from "./pages/superAdmin/Hotel/GetAllInactiveHotels";
-import HotelPage from "./pages/auth/HotelPage";
-import HotelDetailPage from "./pages/auth/HotelDetailPage ";
-import SuperAdminApprovealCityList from "./pages/superAdmin/city/SuperAdminApprovealCityList";
-import GetAllActiveCities from "./pages/superAdmin/city/GetAllActiveCities";
-import AdminHotelDashBoard from "./pages/admin/hotel/AdminHotelDashBoard";
-import ShowHotelStatus from "./pages/admin/hotel/ShowHotelStatus";
-import CreateRoom from "./pages/admin/rooms/CreateRoom";
-import GetAllRooms from "./pages/admin/rooms/GetAllRooms";
-import UpdateRoom from "./pages/admin/rooms/UpdateRoom";
-import AdminsDetails from "./pages/superAdmin/AdminsDetails";
-import AdminItemsDetailsByAdminId from "./pages/superAdmin/AdminItemsDetailsByAdminId";
-import HotelBookingDashboard from "./pages/admin/HotelBooking/HotelBookingDashboard";
-import BookedHotels from "./pages/admin/HotelBooking/BookedHotels";
-import Booking from "./pages/auth/Booking";
-import PlaceDashboard from "./pages/superAdmin/place/PlaceDashboard";
-import AddPlaceDetails from "./pages/superAdmin/place/AddPlaceDetails";
-import SuperAdminApprovealPlaceList from "./pages/superAdmin/place/SuperAdminApprovealPlaceList";
-import GetPlaceCityWise from "./pages/superAdmin/place/GetPlaceCityWise";
-import GetAllActivePlaceCityWise from "./pages/superAdmin/place/GetAllActivePlaceCityWise";
-import GetInactivePlaceCityWise from "./pages/superAdmin/place/GetInactivePlaceCityWise";
-import UpdatePlaceDetails from "./pages/superAdmin/place/UpdatePlaceDetails";
-import AiPlanner from "./pages/AIPlanner/AiPlanner";
-import AiPlannerDetails from "./pages/AIPlanner/AiPlannerDetails";
-import RestaurantDashboard from "./pages/admin/restaurant/restaurantDashboard";
-import AddRestaurantDetails from "./pages/admin/restaurant/AddRestaurantDetails";
-import AdminActiveRestaurant from "./pages/admin/restaurant/AdminActiveRestaurant";
-import ShowRestaurantStatus from "./pages/admin/restaurant/ShowRestaurantStatus";
-import UpdateRestaurantDetails from "./pages/admin/restaurant/UpdateRestaurantDetails";
-import SuperAdminRestaurantDashboard from "./pages/superAdmin/restaurant/SuperAdminRestaurantDashboard";
-import SuperAdminApprovealRestaurant from "./pages/superAdmin/restaurant/SuperAdminApprovealRestaurant";
-import GetAllRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllRestaurantCityWise";
-import GetAllActiveRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllActiveRestaurantCityWise";
-import GetAllInactiveRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllInactiveRestaurantCityWise";
-import GetAllRejectedRestaurantCityWise from "./pages/superAdmin/restaurant/GetAllRejectedRestaurantCityWise";
-import CreateFood from "./pages/admin/food/CreateFood";
-import GetAllFood from "./pages/admin/food/GetAllFood";
-import UpdateFood from "./pages/admin/food/UpdateFood";
-import RestaurantLandingPage from "./components/Restaurant/RestaurantLandingPage";
-import RestaurantDetailPage from "./components/Restaurant/RestaurantDetailPage";
-import RestaurantMenuPage from "./components/Restaurant/RestaurantMenuPage";
-import FoodDetailPage from "./components/Restaurant/FoodDetailPage";
-import CartPage from "./components/Restaurant/CartPage";
-import CheckoutPage from "./components/Restaurant/CheckoutPage";
-import MyOrdersPage from "./components/Restaurant/MyOrdersPage";
-import OrderDetailsPage from "./components/Restaurant/OrderDetailsPage";
-import OrdersDashboard from "./pages/admin/restaurant/OrdersDashboard";
-import ManageOrder from "./pages/admin/restaurant/ManageOrder";
-import AdminOrderDetails from "./pages/admin/restaurant/AdminOrderDetails";
-import ViewUsers from "./pages/admin/restaurant/ViewUsers";
-import WorldMapPage from "./pages/explore/WorldMapPage";
-import CountryPage from "./pages/explore/CountryPage";
-import ExploreCityPage from "./pages/explore/CityPage";
+const GetCityById = lazy(() => import("./pages/superAdmin/city/GetCityById"))
+const GetAllCities = lazy(() => import("./pages/superAdmin/city/GetAllCities"))
+const CityDetails = lazy(() => import("./pages/auth/CityPage"))
+const GetAllInactiveCities = lazy(() => import("./pages/superAdmin/city/GetAllInactiveCities"))
+const AddHotelDetails = lazy(() => import("./pages/admin/hotel/AddHotelDetails"))
+const SuperAdminApprovealHoteList = lazy(() => import("./pages/superAdmin/Hotel/SuperAdminApprovealHoteList"))
+const HotelDashboard = lazy(() => import("./pages/superAdmin/Hotel/HotelDashboard"))
+const GetAllHotels = lazy(() => import("./pages/superAdmin/Hotel/GetAllHotels"))
+const GetAllActiveHotels = lazy(() => import("./pages/superAdmin/Hotel/GetAllActiveHotels"))
+const GetAllRejectedHotels = lazy(() => import("./pages/superAdmin/Hotel/GetAllRejectedHotels"))
+const UpdateHotelDetails = lazy(() => import("./pages/admin/hotel/UpdateHotelDetails"))
+const GetAllInactiveHotels = lazy(() => import("./pages/superAdmin/Hotel/GetAllInactiveHotels"))
+const HotelPage = lazy(() => import("./pages/auth/HotelPage"))
+const HotelDetailPage = lazy(() => import("./pages/auth/HotelDetailPage "))
+const SuperAdminApprovealCityList = lazy(() => import("./pages/superAdmin/city/SuperAdminApprovealCityList"))
+const GetAllActiveCities = lazy(() => import("./pages/superAdmin/city/GetAllActiveCities"))
+const AdminHotelDashBoard = lazy(() => import("./pages/admin/hotel/AdminHotelDashBoard"))
+const ShowHotelStatus = lazy(() => import("./pages/admin/hotel/ShowHotelStatus"))
+const CreateRoom = lazy(() => import("./pages/admin/rooms/CreateRoom"))
+const GetAllRooms = lazy(() => import("./pages/admin/rooms/GetAllRooms"))
+const UpdateRoom = lazy(() => import("./pages/admin/rooms/UpdateRoom"))
+const AdminsDetails = lazy(() => import("./pages/superAdmin/AdminsDetails"))
+const AdminItemsDetailsByAdminId = lazy(() => import("./pages/superAdmin/AdminItemsDetailsByAdminId"))
+const HotelBookingDashboard = lazy(() => import("./pages/admin/HotelBooking/HotelBookingDashboard"))
+const BookedHotels = lazy(() => import("./pages/admin/HotelBooking/BookedHotels"))
+const Booking = lazy(() => import("./pages/auth/Booking"))
+const PlaceDashboard = lazy(() => import("./pages/superAdmin/place/PlaceDashboard"))
+const AddPlaceDetails = lazy(() => import("./pages/superAdmin/place/AddPlaceDetails"))
+const SuperAdminApprovealPlaceList = lazy(() => import("./pages/superAdmin/place/SuperAdminApprovealPlaceList"))
+const GetPlaceCityWise = lazy(() => import("./pages/superAdmin/place/GetPlaceCityWise"))
+const GetAllActivePlaceCityWise = lazy(() => import("./pages/superAdmin/place/GetAllActivePlaceCityWise"))
+const GetInactivePlaceCityWise = lazy(() => import("./pages/superAdmin/place/GetInactivePlaceCityWise"))
+
+const UpdatePlaceDetails = lazy(() => import("./pages/superAdmin/place/UpdatePlaceDetails"))
+const AiPlanner = lazy(() => import("./pages/AIPlanner/AiPlanner"))
+const AiPlannerDetails = lazy(() => import("./pages/AIPlanner/AiPlannerDetails"))
+const RestaurantDashboard = lazy(() => import("./pages/admin/restaurant/restaurantDashboard"))
+const AddRestaurantDetails = lazy(() => import("./pages/admin/restaurant/AddRestaurantDetails"))
+const AdminActiveRestaurant = lazy(() => import("./pages/admin/restaurant/AdminActiveRestaurant"))
+const ShowRestaurantStatus = lazy(() => import("./pages/admin/restaurant/ShowRestaurantStatus"))
+const UpdateRestaurantDetails = lazy(() => import("./pages/admin/restaurant/UpdateRestaurantDetails"))
+const SuperAdminRestaurantDashboard = lazy(() => import("./pages/superAdmin/restaurant/SuperAdminRestaurantDashboard"))
+const SuperAdminApprovealRestaurant = lazy(() => import("./pages/superAdmin/restaurant/SuperAdminApprovealRestaurant"))
+const GetAllRestaurantCityWise = lazy(() => import("./pages/superAdmin/restaurant/GetAllRestaurantCityWise"))
+const GetAllActiveRestaurantCityWise = lazy(() => import("./pages/superAdmin/restaurant/GetAllActiveRestaurantCityWise"))
+const GetAllInactiveRestaurantCityWise = lazy(() => import("./pages/superAdmin/restaurant/GetAllInactiveRestaurantCityWise"))
+const GetAllRejectedRestaurantCityWise = lazy(() => import("./pages/superAdmin/restaurant/GetAllRejectedRestaurantCityWise"))
+const CreateFood = lazy(() => import("./pages/admin/food/CreateFood"))
+const GetAllFood = lazy(() => import("./pages/admin/food/GetAllFood"))
+const UpdateFood = lazy(()=> import("./pages/admin/food/UpdateFood"))
+const RestaurantLandingPage = lazy(() => import("./components/Restaurant/RestaurantLandingPage"))
+const RestaurantDetailPage = lazy(() => import("./components/Restaurant/RestaurantDetailPage"))
+const RestaurantMenuPage = lazy(() => import("./components/Restaurant/RestaurantMenuPage"))
+const FoodDetailPage = lazy(() => import("./components/Restaurant/FoodDetailPage"))
+const CartPage = lazy(() => import("./components/Restaurant/CartPage"))
+const CheckoutPage = lazy(() => import("./components/Restaurant/CheckoutPage"))
+const MyOrdersPage = lazy(() => import("./components/Restaurant/MyOrdersPage"))
+const OrderDetailsPage = lazy(() => import("./components/Restaurant/OrderDetailsPage"))
+const OrdersDashboard = lazy(() => import("./pages/admin/restaurant/OrdersDashboard"))
+const ManageOrder = lazy(() => import("./pages/admin/restaurant/ManageOrder"))
+const AdminOrderDetails = lazy(() => import("./pages/admin/restaurant/AdminOrderDetails"))
+const ViewUsers = lazy(() => import("./pages/admin/restaurant/ViewUsers"))
+const WorldMapPage = lazy(() => import("./pages/explore/WorldMapPage"))
+const CountryPage = lazy(() => import("./pages/explore/CountryPage"))
+const ExploreCityPage = lazy(() => import("./pages/explore/CityPage"))
 import FloatingAIButton from "./pages/auth/AiPlanner";
 import PlacePage from "./pages/auth/PlacePage";
-import AdminRegisterForm from "./pages/admin/AdminRegisterForm";
-import DeliveryBoyDeshboard from "./pages/admin/deliverBoy/DeliveryBoyDeshboard";
-import LiveLocationUpdate from "./pages/admin/deliverBoy/LiveLocationUpdate";
-import PendingOrders from "./pages/admin/deliverBoy/PendingOrders";
-import AdminAssignDeliveryBoy from "./pages/admin/deliverBoy/AdminAssignDeliveryBoy";
-import AssistantChat from "./pages/assistantChat/AssistantChat";
-import AssistantRecommendations from "./pages/assistantChat/AssistantRecommendations";
-import UpdateUserLocation from "./components/UpdateUserLocation";
-import GlobalMap from "./components/globalMap/GlobalMap";
+const AdminRegisterForm = lazy(() => import("./pages/admin/AdminRegisterForm"))
+const DeliveryBoyDeshboard = lazy(() => import("./pages/admin/deliverBoy/DeliveryBoyDeshboard"))
+const LiveLocationUpdate = lazy(() => import("./pages/admin/deliverBoy/LiveLocationUpdate"))
+const PendingOrders = lazy(() => import("./pages/admin/deliverBoy/PendingOrders"))
+const AdminAssignDeliveryBoy = lazy(() => import("./pages/admin/deliverBoy/AdminAssignDeliveryBoy"))
+const AssistantChat = lazy(() => import("./pages/assistantChat/AssistantChat"))
+const AssistantRecommendations = lazy(() => import("./pages/assistantChat/AssistantRecommendations"))
+const UpdateUserLocation = lazy(() => import("./components/UpdateUserLocation"))
+const GlobalMap = lazy(() => import("./components/globalMap/GlobalMap"))
+
+
+const Loader = () => (
+  <div className="fixed inset-0 z-9999 flex items-center justify-center bg-[#020617]">
+    <div className="flex flex-col items-center gap-5">
+      <div className="relative">
+        <div className="h-16 w-16 rounded-full border-4 border-slate-700"></div>
+        <div className="absolute inset-0 h-16 w-16 animate-spin rounded-full border-4 border-transparent border-t-blue-500 border-r-cyan-400"></div>
+      </div>
+
+      <div className="text-center">
+        <h2 className="text-lg font-semibold text-white">Loading...</h2>
+        <p className="mt-1 text-sm text-slate-400">
+          Please wait while we prepare your page
+        </p>
+      </div>
+    </div>
+  </div>
+);
 
 function App() {
   return (
     <>
+    <Suspense fallback={<Loader/>}>
       <Navbar />
       <FloatingAIButton />
       <Routes>
@@ -115,7 +137,7 @@ function App() {
         <Route path="/country/:name" element={<CountryPage />} />
         <Route path="/city/:id/places" element={<ExploreCityPage />} />
         <Route path="/hotels" element={<HotelPage />} />
-        <Route path="/hotels/:id" element={<HotelDetailPage />} />
+        <Route path="/hotels/:id" element={<HotelDetailPage />}/>
         <Route path="/my-booking" element={<Booking />} />
         <Route path="/city/:id" element={<CityDetails />} />
         <Route path="/signUp" element={<Register />} />
@@ -674,6 +696,8 @@ function App() {
         <Route path="/updateUserLocation" element={<UpdateUserLocation/>}/>
         <Route path="/globalMap" element={<GlobalMap/>}/>
       </Routes>
+
+    </Suspense>
     </>
   );
 }

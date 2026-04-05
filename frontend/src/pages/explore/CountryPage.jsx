@@ -46,7 +46,7 @@ export default function CountryPage() {
   }, [countryName]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/30">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between gap-4 flex-wrap mb-8">
           <div>
@@ -106,7 +106,7 @@ export default function CountryPage() {
                     className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                   <div className="absolute bottom-3 left-4 right-4">
                     <p className="text-white font-extrabold text-lg leading-tight line-clamp-1">
                       {city.name}
