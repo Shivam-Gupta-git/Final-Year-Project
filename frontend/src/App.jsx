@@ -7,8 +7,8 @@ const About = lazy(() => import("./pages/localPages/About"))
 const VerifyEmail = lazy(() => import("./pages/localPages/VerifyEmail"))
 const Verify = lazy(() => import("./pages/localPages/Verify"))
 const Login = lazy(() => import("./pages/auth/Login"))
-import LandingPage from "./pages/auth/landingPage";
-import Navbar from "./components/Navbar";
+const LandingPage = lazy(() => import("./pages/auth/landingPage"))
+const Navbar = lazy(() => import("./components/Navbar"))
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"))
 const VerifyOTP = lazy(()=> import("./pages/auth/VerifyOTP"))
 const ChangePassword = lazy(()=> import("./pages/auth/ChangePassword"))
@@ -61,7 +61,6 @@ const SuperAdminApprovealPlaceList = lazy(() => import("./pages/superAdmin/place
 const GetPlaceCityWise = lazy(() => import("./pages/superAdmin/place/GetPlaceCityWise"))
 const GetAllActivePlaceCityWise = lazy(() => import("./pages/superAdmin/place/GetAllActivePlaceCityWise"))
 const GetInactivePlaceCityWise = lazy(() => import("./pages/superAdmin/place/GetInactivePlaceCityWise"))
-
 const UpdatePlaceDetails = lazy(() => import("./pages/superAdmin/place/UpdatePlaceDetails"))
 const AiPlanner = lazy(() => import("./pages/AIPlanner/AiPlanner"))
 const AiPlannerDetails = lazy(() => import("./pages/AIPlanner/AiPlannerDetails"))
@@ -94,8 +93,10 @@ const ViewUsers = lazy(() => import("./pages/admin/restaurant/ViewUsers"))
 const WorldMapPage = lazy(() => import("./pages/explore/WorldMapPage"))
 const CountryPage = lazy(() => import("./pages/explore/CountryPage"))
 const ExploreCityPage = lazy(() => import("./pages/explore/CityPage"))
-import FloatingAIButton from "./pages/auth/AiPlanner";
+const FloatingAIButton = lazy(() => import("./pages/auth/AiPlanner"))
 import PlacePage from "./pages/auth/PlacePage";
+import Page404 from "./components/Page404";
+import DelayedFallback from "./components/DelayedFallback";
 const AdminRegisterForm = lazy(() => import("./pages/admin/AdminRegisterForm"))
 const DeliveryBoyDeshboard = lazy(() => import("./pages/admin/deliverBoy/DeliveryBoyDeshboard"))
 const LiveLocationUpdate = lazy(() => import("./pages/admin/deliverBoy/LiveLocationUpdate"))
@@ -128,8 +129,8 @@ const Loader = () => (
 function App() {
   return (
     <>
-    <Suspense fallback={<Loader/>}>
-      <Navbar />
+    <Suspense fallback={<DelayedFallback/>}>
+    <Navbar />
       <FloatingAIButton />
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -695,6 +696,7 @@ function App() {
         />
         <Route path="/updateUserLocation" element={<UpdateUserLocation/>}/>
         <Route path="/globalMap" element={<GlobalMap/>}/>
+        <Route path="*" element={<Page404 type="404"/>}/>
       </Routes>
 
     </Suspense>

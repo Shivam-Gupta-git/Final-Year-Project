@@ -528,7 +528,7 @@ function Navbar() {
                               {/* Cart */}
                               <Link
                                 to="/cart"
-                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-orange-500/40 hover:bg-orange-500/10"
+                                className="flex items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 p-4 transition hover:border-orange-500/40 hover:bg-orange-500/10 relative"
                                 aria-label="Cart"
                               >
                                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-400">
@@ -541,13 +541,12 @@ function Navbar() {
                                   <p className="text-sm text-zinc-400">
                                     Saved favourites
                                   </p>
-                                </div>
-
-                                {cartCount > 0 && (
+                                  {cartCount > 0 && (
                                   <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white shadow-lg">
                                     {cartCount > 99 ? "99+" : cartCount}
                                   </span>
                                 )}
+                                </div>
                               </Link>
                             </>
                           )}
