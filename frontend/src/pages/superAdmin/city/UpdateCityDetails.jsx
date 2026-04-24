@@ -73,28 +73,29 @@ function UpdateCityDetails() {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const data = new FormData();
+  const data = new FormData();
+  data.append("name", formData.name);
+  data.append("state", formData.state);
+  data.append("country", formData.country);
+  data.append("description", formData.description);
+  data.append("bestTimeToVisit", formData.bestTimeToVisit);
+  data.append("avgDailyBudget", formData.avgDailyBudget);
+  data.append("famousFor", JSON.stringify(formData.famousFor));
 
-    for (const key in formData) {
-      if (key === "images") {
-        for (let i = 0; i < formData.images.length; i++) {
-          if (formData.images[i]) {
-            data.append("images", formData.images[i]);
-          }
-        }
-      } else if (key === "famousFor") {
-        data.append(key, JSON.stringify(formData[key]));
-      } else {
-        data.append(key, formData[key]);
-      }
-    }
+  // ✅ Separate existing URLs from new File objects
+  formData.images
+    .filter((img) => img && typeof img === "string")
+    .forEach((url) => data.append("existingImages", url));
 
-    dispatch(updateCity({ id: cityId, data }));
-    alert("City details updated successfully");
-    navigate("/superAdmin/get-all-active-cities");
-  };
+  formData.images
+    .filter((img) => img && typeof img !== "string")
+    .forEach((file) => data.append("images", file));
+
+  dispatch(updateCity({ id: cityId, data }));
+  navigate("/superAdmin/get-all-active-cities");
+};
 
   const famousOptions = [
     "tourism",

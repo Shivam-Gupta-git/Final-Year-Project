@@ -33,9 +33,7 @@ function AddCityDetails() {
     "Darjeeling Tea",
     "Toy Train",
     "Tea gardens",
-    "Tiger Hill sunrise"
-  ];
-
+    "Tiger Hill sunrise",
     "temples",
     "Vaishno Devi",
     "culture",
@@ -47,7 +45,7 @@ function AddCityDetails() {
     "colonial architecture",
     "mall road",
     "river rafting",
-    "ghats"
+    "ghats",
   ];
 
   const [formData, setFormData] = useState({
