@@ -34,6 +34,7 @@ const citySchema = new mongoose.Schema(
 
     avgDailyBudget: {
       type: Number,
+      type: String,
       required: true,
     },
 

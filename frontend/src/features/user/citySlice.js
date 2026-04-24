@@ -18,6 +18,7 @@ export const createCity = createAsyncThunk(
       const response = await apiClient.post("/api/city/create-city", data, {
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
+          "Content-Type": "multipart/form-data",
         },
       });
       return response.data;
