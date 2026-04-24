@@ -6,9 +6,9 @@ export const apiClient = axios.create({
    // backend URL
   // http://localhost:3000" ||
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json"
-  }
+  // headers: {
+  //   "Content-Type": "application/json"
+  // }
 });
 
 // attach token automatically...................
