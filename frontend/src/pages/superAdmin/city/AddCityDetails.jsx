@@ -36,6 +36,19 @@ function AddCityDetails() {
     "Tiger Hill sunrise"
   ];
 
+    "temples",
+    "Vaishno Devi",
+    "culture",
+    "lakes",
+    "hill station",
+    "nature",
+    "boating",
+    "Charminar",
+    "colonial architecture",
+    "mall road",
+    "river rafting",
+    "ghats"
+  ];
 
   const [formData, setFormData] = useState({
     name: "",
