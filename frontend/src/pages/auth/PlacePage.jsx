@@ -9,23 +9,32 @@ import PlaceMap from "../../components/Place/PlaceMap";
 import EmptyState from "../../components/Place/EmptyState";
 import LoadingSkeleton from "../../components/Place/LoadingSkeleton";
 
+import { useSearchParams } from "react-router-dom";
+
 const DEFAULT_DISTANCE = 25000;
 
 const PlacePage = ({ cityId }) => {
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const cityParam = searchParams.get("city");
+
   const {
     nearbyPlaces = [],
     loading,
     error,
   } = useSelector((state) => state.place);
 
+  const searchPlaces = useSelector((state) => state.search?.places || []);
+
   const [coords, setCoords] = useState(null);
   const [distance, setDistance] = useState(DEFAULT_DISTANCE);
   const [category, setCategory] = useState("");
   const [selectedPlaceId, setSelectedPlaceId] = useState(null);
   const [hoveredPlaceId, setHoveredPlaceId] = useState(null);
-  const [cityName, setCityName] = useState("Discover Nearby");
+  const [cityName, setCityName] = useState(cityParam || "Discover Nearby");
   const [searchQuery, setSearchQuery] = useState("");
+
+  const displayedPlaces = cityParam && searchPlaces.length > 0 ? searchPlaces : nearbyPlaces;
 
   // NEW: track geolocation state separately from API loading
   const [locationStatus, setLocationStatus] = useState("idle"); // "idle" | "loading" | "error" | "denied"
@@ -109,9 +118,9 @@ const PlacePage = ({ cityId }) => {
 
   const filteredPlaces = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
-    if (!normalizedQuery) return nearbyPlaces;
+    if (!normalizedQuery) return displayedPlaces;
 
-    return nearbyPlaces.filter((place) => {
+    return displayedPlaces.filter((place) => {
       const name = place?.name?.toLowerCase() || "";
       const placeCategory = (
         typeof place?.category === "string"
@@ -123,7 +132,7 @@ const PlacePage = ({ cityId }) => {
         placeCategory.includes(normalizedQuery)
       );
     });
-  }, [nearbyPlaces, searchQuery]);
+  }, [displayedPlaces, searchQuery]);
 
   // Derive empty state context for EmptyState component
   const emptyStateReason = useMemo(() => {

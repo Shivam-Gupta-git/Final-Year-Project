@@ -395,8 +395,8 @@ const placeSlice = createSlice({
         state.errorNearby = null;
       })
       .addCase(fetchNearbyPlaces.fulfilled, (state, action) => {
-        state.loadingPlaces = false;
-        state.places = action.payload?.data || action.payload || [];
+        state.loadingNearby = false;
+        state.nearbyPlaces = action.payload?.data || action.payload || [];
       })
       .addCase(fetchNearbyPlaces.rejected, (state, action) => {
         console.log("PAYLOAD:", action.payload);

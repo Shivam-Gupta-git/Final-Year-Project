@@ -1,28 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { userLogout } from "../features/auth/authSlice";
-import { getUserData } from "../features/user/userSlice";
-import { FaRegUserCircle } from "react-icons/fa";
-import { GrLocationPin } from "react-icons/gr";
-import UpdateUserLocation from "./UpdateUserLocation";
-import { FiSearch } from "react-icons/fi";
-import { RxDashboard } from "react-icons/rx";
-import { superAdminLogout } from "../features/auth/superAdminAuthSlice";
-import { getSuperAdminData } from "../features/user/superAdminSlice";
-import { getAdminData } from "../features/user/adminSlice";
-import { adminLogout } from "../features/auth/adminAuthSlice";
-import { FaUserShield } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
-import { ShoppingBagIcon } from "@heroicons/react/24/outline";
-import { selectCartItemCount } from "../features/user/cartSlice";
+import { useEffect, useRef, useState } from "react";
 import { BiTrip } from "react-icons/bi";
+import { FaRegUserCircle, FaUserShield } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
-import { IoMdSettings } from "react-icons/io";
-import { MdOutlineCancel } from "react-icons/md";
-import { HiOutlineMenuAlt3 } from "react-icons/hi";
-import { LuMapPinned } from "react-icons/lu";
 import { GiCancel } from "react-icons/gi";
+import { GrLocationPin } from "react-icons/gr";
+import { HiOutlineMenuAlt3 } from "react-icons/hi";
+import { IoMdSettings } from "react-icons/io";
+import { LuMapPinned } from "react-icons/lu";
+import { MdOutlineCancel } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { adminLogout } from "../features/auth/adminAuthSlice";
+import { userLogout } from "../features/auth/authSlice";
+import { superAdminLogout } from "../features/auth/superAdminAuthSlice";
+import { getAdminData } from "../features/user/adminSlice";
+import { selectCartItemCount } from "../features/user/cartSlice";
+import { getSuperAdminData } from "../features/user/superAdminSlice";
+import { getUserData } from "../features/user/userSlice";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -154,10 +148,28 @@ function Navbar() {
   const profilePath = token
     ? "/user-profile"
     : adminToken
-    ? "/admin/adminProfile"
-    : superAdminToken
-    ? "/superAdmin/superAdminProfile"
-    : null;
+      ? "/admin/adminProfile"
+      : superAdminToken
+        ? "/superAdmin/superAdminProfile"
+        : null;
+
+  const mobileMenuItems =
+    superAdmin?.role === "super_admin"
+      ? [
+        { to: "/superAdmin/superAdminDashboard", label: "Dashboard", icon: "📊" },
+        { to: "/superAdmin/cityDashboard", label: "City", icon: "🌆" },
+        { to: "/superAdmin/hotelDashboard", label: "Hotel", icon: "🏨" },
+        { to: "/superAdmin/place-dashboard", label: "Place", icon: "📍" },
+        { to: "/superAdmin/restaurant-dashboard", label: "Restaurant", icon: "🍽️" },
+        { to: "/superadmin/adminApprovel", label: "Admin Approval", icon: "🛡️" },
+      ]
+      : [
+        { to: "/", label: "Home", icon: "🏠" },
+        { to: "/explore", label: "Cities", icon: "🌆" },
+        { to: "/hotels", label: "Hotels", icon: "🏨" },
+        { to: "/RestaurantLandingPage", label: "Restaurants", icon: "🍽️" },
+        { to: "/travel", label: "Travel", icon: "✈️" },
+      ];
 
   return (
     <>
@@ -178,7 +190,7 @@ function Navbar() {
                   className="bg-linear-to-r from-amber-500 to-orange-400 bg-clip-text text-transparent 
                              text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight"
                 >
-                  NotDefine
+                  Travel Planner
                 </span>
               </Link>
 
@@ -200,9 +212,9 @@ function Navbar() {
 
               {/* global map section */}
               {(token || adminToken || superAdminToken) && (
-               <Link to={"/globalMap"} className="block">
-               <div
-                 className="
+                <Link to={"/globalMap"} className="block">
+                  <div
+                    className="
                    group flex items-center justify-center
                    rounded-full 
                    bg-white
@@ -211,9 +223,9 @@ function Navbar() {
                    transition-all duration-300 
                    hover:shadow-2xl active:scale-95
                  "
-               >
-                 <div
-                   className="
+                  >
+                    <div
+                      className="
                      flex items-center justify-center 
                      rounded-full 
                      bg-white 
@@ -223,11 +235,11 @@ function Navbar() {
                      transition-transform duration-300 
                      group-hover:scale-110
                    "
-                 >
-                   <LuMapPinned className="h-3 w-3 sm:h-5 sm:w-5 md:h-3 md:w-3" />
-                 </div>
-               </div>
-             </Link>
+                    >
+                      <LuMapPinned className="h-3 w-3 sm:h-5 sm:w-5 md:h-3 md:w-3" />
+                    </div>
+                  </div>
+                </Link>
               )}
             </div>
 
@@ -260,10 +272,9 @@ function Navbar() {
                     key={item.to}
                     to={item.to}
                     className={({ isActive }) =>
-                      `rounded-2xl px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                        isActive
-                          ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                          : "text-amber-800 hover:bg-amber-100 hover:text-amber-950"
+                      `rounded-2xl px-4 py-2 text-sm font-semibold transition-all duration-300 ${isActive
+                        ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                        : "text-amber-800 hover:bg-amber-100 hover:text-amber-950"
                       }`
                     }
                   >
@@ -276,10 +287,9 @@ function Navbar() {
                 <NavLink
                   to="/superadmin/adminApprovel"
                   className={({ isActive }) =>
-                    `flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                      isActive
-                        ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                        : "bg-orange-100 text-orange-700 hover:bg-orange-500 hover:text-white"
+                    `flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition-all duration-300 ${isActive
+                      ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                      : "bg-orange-100 text-orange-700 hover:bg-orange-500 hover:text-white"
                     }`
                   }
                 >
@@ -596,10 +606,10 @@ function Navbar() {
                                 token
                                   ? handelUserLogout
                                   : superAdminToken
-                                  ? handeSuperAdminLogout
-                                  : adminToken
-                                  ? handelAdminLogout
-                                  : null
+                                    ? handeSuperAdminLogout
+                                    : adminToken
+                                      ? handelAdminLogout
+                                      : null
                               }
                               className="flex w-full items-center justify-center gap-3 rounded-2xl bg-red-500 px-4 py-4 text-sm font-semibold text-white transition hover:bg-red-600"
                             >
@@ -615,7 +625,7 @@ function Navbar() {
               )}
 
               {/* Mobile Menu Button */}
-              
+
               <button
                 onClick={toggleMenu}
                 className="flex h-9 w-11 items-center justify-center rounded-2xl border border-amber-200 bg-white text-amber-800 transition hover:bg-amber-50 md:hidden"
@@ -645,9 +655,8 @@ function Navbar() {
           {/* OVERLAY */}
           <div
             onClick={() => setIsOpen(false)}
-            className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
-              isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-            }`}
+            className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+              }`}
           />
 
           {/* DRAWER */}
@@ -655,9 +664,8 @@ function Navbar() {
             className={`fixed top-0 left-0 z-50 h-screen w-[75%] max-w-xs 
      bg-linear-to-br from-[#d99434] to-[#fff3e0] 
      shadow-2xl border-r border-amber-100 
-     transform transition-transform duration-300 ease-in-out border-5 ${
-       isOpen ? "translate-x-0" : "-translate-x-full"
-     }`}
+     transform transition-transform duration-300 ease-in-out border-5 ${isOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
           >
             {/* HEADER */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-amber-100 bg-white/60 backdrop-blur-md">
@@ -675,26 +683,15 @@ function Navbar() {
 
             {/* MENU */}
             <div className="p-4 space-y-2">
-              {[
-                { to: "/", label: "Home", icon: "🏠" },
-                { to: "/explore", label: "Cities", icon: "🌆" },
-                { to: "/hotels", label: "Hotels", icon: "🏨" },
-                {
-                  to: "/RestaurantLandingPage",
-                  label: "Restaurants",
-                  icon: "🍽️",
-                },
-                { to: "/travel", label: "Travel", icon: "✈️" },
-              ].map((item) => (
+              {mobileMenuItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   onClick={() => setIsOpen(false)}
                   className={({ isActive }) =>
-                    `group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
-                      isActive
-                        ? "bg-[#d0861e] text-white shadow-lg"
-                        : "text-amber-900 hover:bg-white hover:shadow-md active:scale-[0.97]"
+                    `group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${isActive
+                      ? "bg-[#d0861e] text-white shadow-lg"
+                      : "text-amber-900 hover:bg-white hover:shadow-md active:scale-[0.97]"
                     }`
                   }
                 >

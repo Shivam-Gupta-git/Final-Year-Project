@@ -3,10 +3,13 @@ import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
 import apiClient from "../../pages/services/apiClient";
 import axios from "axios";
 
+const storedToken = localStorage.getItem("userToken");
+const initialToken = storedToken && storedToken !== "null" && storedToken !== "undefined" ? storedToken : null;
+
 /* -------------- Initial State ---------------- */
 const initialState = {
-    token: localStorage.getItem("userToken") || null,
-    isAuthenticated: false,
+    token: initialToken,
+    isAuthenticated: !!initialToken,
     role: null,
     user: null,
     loading: false,
@@ -75,6 +78,7 @@ export const userLogout = createAsyncThunk("auth/userLogout", async (_, thunkAPI
     return true
   } catch (error) {
     console.log("LOGOUT ERROR:", error.response);
+    localStorage.removeItem("userToken");
     return thunkAPI.rejectWithValue(error.response?.data?.message || "Logout failed")
   }
 })
@@ -185,6 +189,10 @@ const authSlice = createSlice({
     /* ---------------- userLogout ------------------- */
     builder
     .addCase(userLogout.fulfilled, (state) => {
+      state.token = null;
+      state.isAuthenticated = false;
+    })
+    .addCase(userLogout.rejected, (state) => {
       state.token = null;
       state.isAuthenticated = false;
     })

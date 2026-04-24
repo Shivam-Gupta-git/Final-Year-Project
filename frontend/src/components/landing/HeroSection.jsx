@@ -69,23 +69,33 @@ export default function HeroSection() {
   const handleSearch = () => {
     if (!formData.city?.trim()) return alert("Please enter city");
 
+    if (!formData.checkIn || !formData.checkOut) {
+    alert("Please select both dates");
+    return;
+  }
+
+  if (new Date(formData.checkOut) <= new Date(formData.checkIn)) {
+    alert("Check-out date must be after check-in date");
+    return;
+  }
+
     let query = "",
       route = "";
     if (activeTab === "hotels") {
       query = `${formData.city.trim()} hotels`;
-      route = "/hotels";
+      route = `/hotels?city=${encodeURIComponent(formData.city.trim())}`;
     } else if (activeTab === "places") {
       query = `${formData.city.trim()} places`;
-      route = "/places";
+      route = `/places?city=${encodeURIComponent(formData.city.trim())}`;
     } else if (activeTab === "cities") {
       query = formData.city.trim();
-      route = "/cities";
+      route = `/explore`; // Assume cities go to explore or city listing, there is no /cities route
     } else if (activeTab === "restaurants") {
       query = `${formData.city.trim()} restaurants`;
-      route = "/restaurants";
+      route = `/RestaurantLandingPage?city=${encodeURIComponent(formData.city.trim())}`;
     } else {
       query = formData.city.trim();
-      route = "/travel";
+      route = `/explore`; // Fallback since travel route is not defined
     }
 
     dispatch(smartSearch(query))
@@ -96,15 +106,6 @@ export default function HeroSection() {
 
   const handleTabClick = (key) => {
     setActiveTab(key);
-    const sectionMap = {
-      cities: "popular-cities",
-      hotels: "why-choose-us",
-      places: "why-choose-us",
-      restaurants: "why-choose-us",
-      travel: "why-choose-us",
-    };
-    const el = document.getElementById(sectionMap[key]);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
   const { title, sub } = HEADLINE_MAP[activeTab];

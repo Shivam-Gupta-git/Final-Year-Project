@@ -11,7 +11,7 @@ export const smartSearch = createAsyncThunk(
     });
     console.log("BACKEND RAW RESPONSE:", res.data);
     
-    return res;
+    return res.data;
   },
 );
 
@@ -22,6 +22,8 @@ const searchSlice = createSlice({
     city: null,
     hotels: [],
     places: [],
+    restaurants: [],
+    travels: [],
     loading: false,
   },
 
@@ -40,6 +42,8 @@ const searchSlice = createSlice({
         state.city = action.payload.city;
         state.hotels = action.payload.hotels;
         state.places = action.payload.places;
+        state.restaurants = action.payload.restaurants;
+        state.travels = action.payload.travels;
       })
 
       .addCase(smartSearch.rejected, (state) => {

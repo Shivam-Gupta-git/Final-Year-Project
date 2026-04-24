@@ -9,6 +9,8 @@ import { City } from "../model/city.model.js";
 import { Hotel } from "../model/hotel.model.js";
 import { Place } from "../model/place.model.js";
 import { DeliveryBoy } from "../model/deliveryBoy.model.js";
+import { Restaurant } from "../model/restaurant.model.js";
+import { TravelOption } from "../model/travelOption.model.js";
 
 export const userRegistration = async (req, res) => {
   try {
@@ -1087,10 +1089,12 @@ export const smartSearch = async (req, res) => {
 
     const isHotelSearch = words.includes("hotel") || words.includes("hotels");
     const isPlaceSearch = words.includes("place") || words.includes("places");
+    const isRestaurantSearch = words.includes("restaurant") || words.includes("restaurants");
+    const isTravelSearch = words.includes("travel") || words.includes("travels");
 
     // remove search keywords
     const filteredWords = words.filter(
-      (w) => !["hotel", "hotels", "place", "places"].includes(w)
+      (w) => !["hotel", "hotels", "place", "places", "restaurant", "restaurants", "travel", "travels"].includes(w)
     );
 
     const cityKeyword = filteredWords[0];
@@ -1101,6 +1105,8 @@ export const smartSearch = async (req, res) => {
         city: null,
         hotels: [],
         places: [],
+        restaurants: [],
+        travels: [],
       });
     }
 
@@ -1115,24 +1121,44 @@ export const smartSearch = async (req, res) => {
         city: null,
         hotels: [],
         places: [],
+        restaurants: [],
+        travels: [],
       });
     }
 
     let hotels = [];
     let places = [];
+    let restaurants = [];
+    let travels = [];
 
-    if (isHotelSearch) {
+    const isGeneralSearch = !isHotelSearch && !isPlaceSearch && !isRestaurantSearch && !isTravelSearch;
+
+    if (isHotelSearch || isGeneralSearch) {
       hotels = await Hotel.find({
         city: city._id,
         status: "active",
       }).populate("city", "name");
     }
 
-    if (isPlaceSearch) {
+    if (isPlaceSearch || isGeneralSearch) {
       places = await Place.find({
         city: city._id,
         status: "active",
       }).populate("city", "name");
+    }
+
+    if (isRestaurantSearch || isGeneralSearch) {
+      restaurants = await Restaurant.find({
+        city: city._id,
+        status: "active",
+      }).populate("city", "name");
+    }
+
+    if (isTravelSearch || isGeneralSearch) {
+      travels = await TravelOption.find({
+        $or: [{ fromCity: city._id }, { toCity: city._id }],
+        status: "active",
+      }).populate("fromCity toCity", "name");
     }
 
     return res.json({
@@ -1140,6 +1166,8 @@ export const smartSearch = async (req, res) => {
       city,
       hotels,
       places,
+      restaurants,
+      travels,
     });
   } catch (error) {
     return res.status(500).json({

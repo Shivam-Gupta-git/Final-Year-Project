@@ -126,8 +126,13 @@ const userSlice = createSlice({
       .addCase(updateUserLocation.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Location update failed";
+      })
+      .addCase("auth/userLogout/fulfilled", (state) => {
+        state.user = null;
+      })
+      .addCase("auth/userLogout/rejected", (state) => {
+        state.user = null;
       });
- 
   }
 });
 

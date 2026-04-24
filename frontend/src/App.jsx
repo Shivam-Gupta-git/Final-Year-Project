@@ -126,6 +126,7 @@ function App() {
         <Route path="/city/:id/places" element={<ExploreCityPage />} />
         <Route path="/hotels" element={<HotelPage />} />
         <Route path="/hotels/:id" element={<HotelDetailPage />}/>
+        <Route path="/places" element={<PlacePage />} />
         <Route path="/my-booking" element={<Booking />} />
         <Route path="/city/:id" element={<CityDetails />} />
         <Route path="/signUp" element={<Register />} />
