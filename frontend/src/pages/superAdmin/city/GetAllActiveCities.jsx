@@ -174,7 +174,7 @@ function GetAllActiveCities() {
                 </td>
                 <td className="px-6 py-5 text-sm text-gray-700">{city.state}</td>
                 <td className="px-6 py-5 text-sm text-gray-700">{city.country}</td>
-                <td className="px-6 py-5 text-sm font-semibold text-blue-500">₹{city.avgDailyBudget}/day</td>
+                <td className="px-6 py-5 text-sm font-semibold text-blue-500">{city.avgDailyBudget}/day</td>
                 <td className="px-6 py-5 text-sm text-gray-700">{city.bestTimeToVisit}</td>
                 <td className="px-6 py-5 text-right">
                   <button className="rounded-xl border border-blue-300 bg-blue-100 px-4 py-2 text-xs font-medium text-blue-500 transition hover:bg-blue-200 hover:shadow-md">
@@ -233,7 +233,7 @@ function GetAllActiveCities() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
               <p className="text-xs uppercase tracking-wider text-gray-500">Daily Budget</p>
-              <p className="mt-3 text-2xl font-bold text-blue-500">₹{selectedCity.avgDailyBudget}</p>
+              <p className="mt-3 text-2xl font-bold text-blue-500">{selectedCity.avgDailyBudget}</p>
             </div>
 
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5">

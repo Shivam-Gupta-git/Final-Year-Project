@@ -209,7 +209,7 @@ function GetAllInactiveCities() {
                   <td className="px-6 py-5 text-gray-700">{city.state}</td>
                   <td className="px-6 py-5 text-gray-700">{city.country}</td>
                   <td className="px-6 py-5 text-gray-700">
-                    ₹{city.avgDailyBudget || 0}/day
+                    {city.avgDailyBudget || 0}/day
                   </td>
                   <td className="px-6 py-5">
                     <span className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-100 px-3 py-1 text-xs font-medium text-red-600">
