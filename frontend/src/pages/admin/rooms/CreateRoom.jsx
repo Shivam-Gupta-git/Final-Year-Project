@@ -22,7 +22,8 @@ function CreateRoom() {
   const [formData, setFormData] = useState({
     hotelId: "",
     roomType: "",
-    pricePerNight: "",
+    minPrice: "",
+    maxPrice: "",
     capacity: "",
     totalRooms: "",
     amenities: [],
@@ -61,6 +62,11 @@ function CreateRoom() {
         formData.images.forEach((img) => data.append("images", img));
       } else if (key === "amenities") {
         data.append("amenities", formData.amenities.join(","));
+      } else if (key === "minPrice") {
+        // send minPrice as pricePerNight (backend-compatible)
+        data.append("pricePerNight", formData.minPrice);
+      } else if (key === "maxPrice") {
+        // maxPrice is UI only – skip or send separately if backend supports it
       } else {
         data.append(key, formData[key]);
       }
@@ -75,7 +81,8 @@ function CreateRoom() {
       setFormData({
         hotelId: "",
         roomType: "",
-        pricePerNight: "",
+        minPrice: "",
+        maxPrice: "",
         capacity: "",
         totalRooms: "",
         amenities: [],
@@ -86,8 +93,6 @@ function CreateRoom() {
     } catch (error) {
       console.error(error)
     }
-
-    
   };
 
   return (
@@ -210,37 +215,74 @@ function CreateRoom() {
                   Pricing & Capacity
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Set room price, guest capacity and total available rooms
+                  Set room price range, guest capacity and total available rooms
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              {/* Price Range Preview Badge */}
+              {(formData.minPrice || formData.maxPrice) && (
+                <div className="mb-5 inline-flex items-center gap-2 rounded-2xl border border-orange-200 bg-white px-5 py-3 shadow-sm">
+                  <span className="text-xs font-bold uppercase tracking-widest text-orange-400">Price Range</span>
+                  <span className="text-lg font-black text-slate-900">
+                    {formData.minPrice ? `₹${Number(formData.minPrice).toLocaleString("en-IN")}` : "₹—"}
+                    <span className="mx-2 font-normal text-slate-400">–</span>
+                    {formData.maxPrice ? `₹${Number(formData.maxPrice).toLocaleString("en-IN")}` : "₹—"}
+                  </span>
+                  <span className="text-xs text-slate-400">/ night</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+                {/* Min Price */}
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-slate-700">
-                    Price Per Night
+                    Min Price / Night
                   </label>
-
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                      ₹
-                    </span>
-
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-orange-400">₹</span>
                     <input
                       type="number"
-                      name="pricePerNight"
-                      value={formData.pricePerNight}
+                      name="minPrice"
+                      value={formData.minPrice}
                       onChange={handleChange}
-                      placeholder="0"
-                      className="h-14 w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 text-slate-800 outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                      placeholder="25,000"
+                      min="0"
+                      className="h-14 w-full rounded-2xl border border-slate-200 bg-white pl-9 pr-4 text-slate-800 outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
                     />
                   </div>
                 </div>
 
+                {/* Separator */}
+                <div className="flex items-end pb-4">
+                  <div className="flex w-full items-center justify-center gap-2">
+                     <span className="text-lg font-bold text-slate-400">–</span>
+                  </div>
+                </div>
+
+                {/* Max Price */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
+                    Max Price / Night
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-orange-400">₹</span>
+                    <input
+                      type="number"
+                      name="maxPrice"
+                      value={formData.maxPrice}
+                      onChange={handleChange}
+                      placeholder="55,000"
+                      min="0"
+                      className="h-14 w-full rounded-2xl border border-slate-200 bg-white pl-9 pr-4 text-slate-800 outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                    />
+                  </div>
+                </div>
+
+                {/* Guest Capacity */}
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-slate-700">
                     Guest Capacity
                   </label>
-
                   <input
                     type="number"
                     name="capacity"
@@ -250,21 +292,21 @@ function CreateRoom() {
                     className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-slate-800 outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">
-                    Total Rooms
-                  </label>
-
-                  <input
-                    type="number"
-                    name="totalRooms"
-                    value={formData.totalRooms}
-                    onChange={handleChange}
-                    placeholder="10"
-                    className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-slate-800 outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                  />
-                </div>
+              {/* Total Rooms on its own row */}
+              <div className="mt-5 md:w-1/4">
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Total Rooms
+                </label>
+                <input
+                  type="number"
+                  name="totalRooms"
+                  value={formData.totalRooms}
+                  onChange={handleChange}
+                  placeholder="10"
+                  className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-slate-800 outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                />
               </div>
             </div>
 
