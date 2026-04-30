@@ -13,13 +13,17 @@ function AddHotelDetails() {
   const { cities } = useSelector((state) => state.city);
 
   const facilitiesList = [
-    "wifi",
-    "pool",
+    "free wifi",
+    "swimming pool",
     "gym",
-    "parking",
-    "restaurant",
+    "9+ restaurants & bars",
     "spa",
     "bar",
+    "24/7 business center",
+    "Currency exchange",
+    "Parking & EV charging",
+    "Laundry & dry cleaning"
+
   ];
 
   const [formData, setFormData] = useState({
@@ -316,8 +320,8 @@ function AddHotelDetails() {
               name="latitude"
               value={formData.latitude}
               placeholder="Latitude"
-              readOnly
-              className="h-14 rounded-2xl border border-slate-200 bg-white px-5 text-slate-700 outline-none"
+              onChange={handleChange}
+              className="h-14 rounded-2xl border border-slate-200 bg-white px-5 text-slate-700 outline-none transition-all duration-300 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
             />
 
             <input
@@ -325,8 +329,8 @@ function AddHotelDetails() {
               name="longitude"
               value={formData.longitude}
               placeholder="Longitude"
-              readOnly
-              className="h-14 rounded-2xl border border-slate-200 bg-white px-5 text-slate-700 outline-none"
+              onChange={handleChange}
+              className="h-14 rounded-2xl border border-slate-200 bg-white px-5 text-slate-700 outline-none transition-all duration-300 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
             />
 
             <motion.button
