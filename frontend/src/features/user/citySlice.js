@@ -18,6 +18,7 @@ export const createCity = createAsyncThunk(
       const response = await apiClient.post("/api/city/create-city", data, {
         headers: {
           Authorization: `Bearer ${superAdminToken}`,
+          "Content-Type": "multipart/form-data",
         },
       });
       return response.data;
@@ -187,9 +188,7 @@ export const updateCity = createAsyncThunk(
   "city/updateCity",
   async ({ id, data }, thunkAPI) => {
     try {
-      const response = await apiClient.put(`/api/city/updatecity/${id}`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await apiClient.put(`/api/city/updatecity/${id}`, data);
       return response.data; // updated city
     } catch (error) {
       return thunkAPI.rejectWithValue(

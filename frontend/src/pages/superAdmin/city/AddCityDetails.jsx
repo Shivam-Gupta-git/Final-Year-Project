@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { createCity } from "../../../features/user/citySlice";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
   FaCity,
   FaGlobeAsia,
-  FaMapMarkerAlt,
   FaImage,
   FaLocationArrow,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { createCity } from "../../../features/user/citySlice";
 
 function AddCityDetails() {
   const dispatch = useDispatch();
@@ -24,6 +24,16 @@ function AddCityDetails() {
     "history",
     "nightlife",
     "shopping",
+    "IT Hub",
+    "Snowfall",
+    "Trekking & hiking",
+    "biking",
+    "Ganga Aarti",
+    "Kumbh Mela",
+    "Darjeeling Tea",
+    "Toy Train",
+    "Tea gardens",
+    "Tiger Hill sunrise",
     "temples",
     "Vaishno Devi",
     "culture",

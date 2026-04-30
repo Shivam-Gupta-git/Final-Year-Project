@@ -1,7 +1,7 @@
+import fs from "fs";
 import mongoose from "mongoose";
 import { uploadCloudinary } from "../config/cloudinary.config.js";
 import { City } from "../model/city.model.js";
-import fs from "fs";
 
 //with the help of this we can create city
 export const createCity = async (req, res) => {
