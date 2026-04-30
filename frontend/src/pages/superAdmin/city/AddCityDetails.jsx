@@ -46,6 +46,9 @@ function AddCityDetails() {
     "mall road",
     "river rafting",
     "ghats",
+    "dal lake",
+    "houseboats",
+    "snowfall"
   ];
 
   const [formData, setFormData] = useState({

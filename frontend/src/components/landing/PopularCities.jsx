@@ -980,6 +980,8 @@ export default function PopularCities() {
         style={{
           ...(isMd
             ? {
+              display: "flex",
+              flexDirection: "column",
                 width: sz.w,
                 height: sz.h,
                 opacity: sz.op,
@@ -1059,6 +1061,7 @@ export default function PopularCities() {
               width: "100%",
               height: "100%",
               objectFit: "cover",
+              objectPosition:"center"
             }}
           />
 
