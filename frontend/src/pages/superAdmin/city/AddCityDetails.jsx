@@ -35,7 +35,10 @@ function AddCityDetails() {
     "colonial architecture",
     "mall road",
     "river rafting",
-    "ghats"
+    "ghats",
+    "dal lake",
+    "houseboats",
+    "snowfall"
   ];
 
   const [formData, setFormData] = useState({

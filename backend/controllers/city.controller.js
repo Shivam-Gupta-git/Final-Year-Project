@@ -285,6 +285,7 @@ export const updateCity = async (req, res) => {
     let updatedata = { ...req.body };
     delete updatedata.status;
     delete updatedata.approvedBy;
+    delete updatedata.existingImages;//new
 
     if (req.body.location) {
       try {
@@ -295,6 +296,33 @@ export const updateCity = async (req, res) => {
           message: "Invalid location format",
         });
       }
+    }
+
+    //new
+    let existingImages = [];
+    if (req.body.existingImages) {
+      existingImages = Array.isArray(req.body.existingImages)
+        ? req.body.existingImages
+        : [req.body.existingImages]; // express gives a string if only 1 value
+    }
+
+    //new
+    let newImageUrls = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const uploadResult = await uploadCloudinary(file.path, "cities");
+        newImageUrls.push(uploadResult.secure_url);
+
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      }
+    }
+
+    //new
+    const finalImages = [...existingImages, ...newImageUrls];
+    if (finalImages.length > 0) {
+      updatedata.images = finalImages;
     }
 
     const updatedCity = await City.findByIdAndUpdate(id, updatedata, {
