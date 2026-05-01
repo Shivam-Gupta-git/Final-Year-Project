@@ -22,7 +22,17 @@ function AddHotelDetails() {
     "24/7 business center",
     "Currency exchange",
     "Parking & EV charging",
-    "Laundry & dry cleaning"
+    "Laundry & dry cleaning",
+    "Outdoor temperature-controlled swimming pool",
+    "Full-service spa",
+    "Fitness centre with modern equipment",
+    "Multiple restaurants & bars (fine dining, lounge, cocktails)",
+    "24-hour concierge & butler service",
+    "Business centre & meeting/banquet facilities",
+    "Free Wi-Fi in rooms",
+    "Laundry & travel desk services",
+    "Female butler service (for solo women travelers)",
+    "IoT-based air purification system in rooms"
 
   ];
 
@@ -297,6 +307,36 @@ function AddHotelDetails() {
                 {f}
               </motion.div>
             ))}
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="rounded-4xl border border-slate-200 bg-linear-to-br from-violet-50 via-white to-purple-50 p-6">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="h-10 w-1 rounded-full bg-violet-500" />
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">
+                Hotel Description
+              </h3>
+              <p className="text-sm text-slate-500">
+                Write a compelling description to attract guests
+              </p>
+            </div>
+          </div>
+
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            rows={5}
+            placeholder="Describe your hotel — highlight unique features, ambiance, nearby attractions, and what makes it special for guests..."
+            className="w-full rounded-3xl border border-slate-200 bg-white px-5 py-4 text-slate-800 outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100 resize-none"
+          />
+
+          <div className="mt-2 flex justify-end">
+            <span className="text-xs text-slate-400">
+              {formData.description.length} characters
+            </span>
           </div>
         </div>
 
