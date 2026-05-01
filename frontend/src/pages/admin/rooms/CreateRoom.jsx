@@ -17,6 +17,13 @@ function CreateRoom() {
     "Balcony",
     "Room Service",
     "Bathtub",
+    "Bay windows",
+    "24-hour dining",
+    "City / Arabian Sea view",
+    "Free WiFi",
+    "Daily housekeeping",
+    "Designer toiletries",
+    "Fresh flowers"
   ];
 
   const [formData, setFormData] = useState({
@@ -201,6 +208,7 @@ function CreateRoom() {
                 >
                   <option value="">Select Room Type</option>
                   <option value="standard">Standard</option>
+                  <option value="premium">Premium</option>
                   <option value="deluxe">Deluxe</option>
                   <option value="suite">Suite</option>
                   <option value="family">Family</option>

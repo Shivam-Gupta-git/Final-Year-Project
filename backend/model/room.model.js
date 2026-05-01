@@ -12,7 +12,7 @@ const roomSchema = new Schema(
     roomType: {
       type: String,
       required: true,
-      enum: ["standard", "deluxe", "suite", "family"],
+      enum: ["standard", "premium", "deluxe", "suite", "family"],
     },
 
     pricePerNight: {
