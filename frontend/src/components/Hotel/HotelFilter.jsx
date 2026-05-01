@@ -1,26 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch, FaMapMarkerAlt, FaRupeeSign, FaTimes, FaStar } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
+import { FaSearch, FaMapMarkerAlt, FaTimes, FaStar } from "react-icons/fa";
+import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import { getFilterCounts } from "../../features/user/hotelSlice";
 
 const SUGGESTED_FILTERS = [
-  { label: "Rush Deal", count: 305, icon: "🔥" },
-  { label: "Last Minute Deals", count: 21, icon: "⏰" },
-  { label: "5 Star", count: 219, icon: "⭐⭐⭐⭐⭐" },
-  { label: "4 Star", count: 442, icon: "⭐⭐⭐⭐" },
-  { label: "Breakfast Included", count: 1096, icon: "🍳" },
-  { label: "3 Star", count: 796, icon: "⭐⭐⭐" },
-  { label: "Free Cancellation", count: 543, icon: "🛡️" },
-  { label: "Couple Friendly", count: 320, icon: "💑" },
-];
-
-const PRICE_FILTERS = [
-  { label: "Under ₹2,500", value: "0-2500", count: 851 },
-  { label: "₹2,500 – ₹5,000", value: "2500-5000", count: 1047 },
-  { label: "₹5,000 – ₹7,000", value: "5000-7000", count: 305 },
-  { label: "₹7,000 – ₹10,000", value: "7000-10000", count: 198 },
-  { label: "Above ₹10,000", value: "10000+", count: 120 },
+  { label: "Rush Deal", icon: "🔥" },
+  { label: "Last Minute Deals", icon: "⏰" },
+  { label: "5 Star", icon: "⭐⭐⭐⭐⭐" },
+  { label: "4 Star", icon: "⭐⭐⭐⭐" },
+  { label: "Breakfast Included", icon: "🍳" },
+  { label: "3 Star", icon: "⭐⭐⭐" },
+  { label: "Free Cancellation", icon: "🛡️" },
+  { label: "Couple Friendly", icon: "💑" },
 ];
 
 const AMENITY_FILTERS = [
@@ -39,17 +30,20 @@ const SectionLabel = ({ dot, children }) => (
   </h3>
 );
 
+// Dual-thumb slider logic 
+const MAX_PRICE = 20000;
+
 const HotelFilter = ({ onFilterChange, onMapOpen }) => {
-  const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const cityParam = searchParams.get("city") || "";
 
-  const { filterCounts, filterCountsLoading } = useSelector((s) => s.hotel);
+  // Pull hotels to compute dynamic counts
+  const { hotels = [] } = useSelector((s) => s.hotel);
 
   const [filters, setFilters] = useState({
     locality: "",
     suggested: [],
-    price: [],
+    price: [0, MAX_PRICE],
     amenities: [],
     stars: [],
   });
@@ -69,11 +63,24 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
     onFilterChange?.(n);
   };
 
+  const handlePriceChange = (e, isMin) => {
+    const val = Number(e.target.value);
+    let newPrice = [...filters.price];
+    if (isMin) {
+      newPrice[0] = Math.min(val, newPrice[1] - 500);
+    } else {
+      newPrice[1] = Math.max(val, newPrice[0] + 500);
+    }
+    const n = { ...filters, price: newPrice };
+    setFilters(n);
+    onFilterChange?.(n);
+  };
+
   const clearAll = () => {
     const fresh = {
       locality: "",
       suggested: [],
-      price: [],
+      price: [0, MAX_PRICE],
       amenities: [],
       stars: [],
     };
@@ -84,18 +91,42 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
   const isActive = (type, value) => filters[type].includes(value);
   const activeCount =
     filters.suggested.length +
-    filters.price.length +
+    (filters.price[0] > 0 || filters.price[1] < MAX_PRICE ? 1 : 0) +
     filters.amenities.length +
     filters.stars.length +
     (filters.locality ? 1 : 0);
 
-  useEffect(() => {
-    dispatch(getFilterCounts(cityParam));
-  }, [cityParam, dispatch]);
-
-  const getCount = (type, key) => {
-    if (filterCountsLoading) return null;
-    return filterCounts?.[type]?.[key] ?? 0;
+  const getDynamicCount = (type, value) => {
+    return hotels.filter((h) => {
+      switch (type) {
+        case "suggested":
+          switch (value) {
+            case "Rush Deal":
+            case "Last Minute Deals":
+              return h.originalPrice && h.pricePerNight < h.originalPrice;
+            case "5 Star":
+              return h.starCategory === 5;
+            case "4 Star":
+              return h.starCategory === 4;
+            case "3 Star":
+              return h.starCategory === 3;
+            case "Breakfast Included":
+              return h.facilities?.some((f) => f.toLowerCase().includes("breakfast"));
+            case "Free Cancellation":
+              return h.freeCancellation === true;
+            case "Couple Friendly":
+              return h.tags?.some((t) => t.toLowerCase().includes("couple"));
+            default:
+              return false;
+          }
+        case "stars":
+          return h.starCategory === value;
+        case "amenities":
+          return h.facilities?.some((f) => f.toLowerCase().includes(value));
+        default:
+          return false;
+      }
+    }).length;
   };
 
   return (
@@ -192,11 +223,7 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
                   <span
                     className={`text-[10px] font-semibold tabular-nums ${active ? "text-blue-600" : "text-slate-400"}`}
                   >
-                    {filterCountsLoading ? (
-                      <span className="inline-block w-5 h-2.5 bg-slate-100 rounded animate-pulse" />
-                    ) : (
-                      `(${getCount("price", item.value)})`
-                    )}
+                    ({getDynamicCount("suggested", item.label)})
                   </span>
                 </button>
               );
@@ -247,11 +274,7 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
                   <span
                     className={`text-[10px] font-semibold ${active ? "text-amber-600" : "text-slate-400"}`}
                   >
-                    {filterCountsLoading ? (
-                      <span className="inline-block w-5 h-2.5 bg-slate-100 rounded animate-pulse" />
-                    ) : (
-                      `(${getCount("stars", star)})`
-                    )}
+                    ({getDynamicCount("stars", star)})
                   </span>
                 </button>
               );
@@ -261,40 +284,60 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
 
         <div className="h-px bg-slate-100" />
 
-        {/* Price */}
+        {/* Price Slider */}
         <div>
           <SectionLabel dot="bg-emerald-400">Price per night</SectionLabel>
-          <div className="space-y-0.5">
-            {PRICE_FILTERS.map((item) => {
-              const active = isActive("price", item.value);
-              return (
-                <button
-                  key={item.value}
-                  onClick={() => toggle("price", item.value)}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg border text-left transition-all duration-150
-                    ${active ? "border-emerald-200 bg-emerald-50" : "border-transparent hover:bg-slate-50"}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all border
-                      ${active ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" : "bg-slate-50 border-slate-200 text-slate-300"}`}
-                    >
-                      <FaRupeeSign className="text-[8px]" />
-                    </div>
-                    <span
-                      className={`text-xs font-medium ${active ? "text-emerald-600" : "text-slate-600"}`}
-                    >
-                      {item.label}
-                    </span>
-                  </div>
-                  <span
-                    className={`text-[10px] font-semibold tabular-nums ${active ? "text-emerald-600" : "text-slate-400"}`}
-                  >
-                    {item.count}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="px-2 pt-4 pb-2">
+            <div className="flex justify-between items-center mb-4">
+              <div className="border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-xs font-bold text-slate-700">
+                ₹{filters.price[0].toLocaleString()}
+              </div>
+              <span className="text-slate-400 text-xs">—</span>
+              <div className="border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50 text-xs font-bold text-slate-700">
+                {filters.price[1] === MAX_PRICE ? `₹${MAX_PRICE.toLocaleString()}+` : `₹${filters.price[1].toLocaleString()}`}
+              </div>
+            </div>
+            
+            {/* Dual thumb slider implementation */}
+            <div className="relative h-1 bg-slate-200 rounded-full mt-2">
+              <div 
+                className="absolute h-full bg-emerald-500 rounded-full"
+                style={{
+                  left: `${(filters.price[0] / MAX_PRICE) * 100}%`,
+                  right: `${100 - (filters.price[1] / MAX_PRICE) * 100}%`
+                }}
+              />
+              <input
+                type="range"
+                min="0"
+                max={MAX_PRICE}
+                step="500"
+                value={filters.price[0]}
+                onChange={(e) => handlePriceChange(e, true)}
+                className="absolute w-full -top-1.5 h-4 opacity-0 cursor-pointer pointer-events-auto"
+                style={{ zIndex: filters.price[0] > MAX_PRICE - 500 ? 5 : 3 }}
+              />
+              <input
+                type="range"
+                min="0"
+                max={MAX_PRICE}
+                step="500"
+                value={filters.price[1]}
+                onChange={(e) => handlePriceChange(e, false)}
+                className="absolute w-full -top-1.5 h-4 opacity-0 cursor-pointer pointer-events-auto"
+                style={{ zIndex: 4 }}
+              />
+              
+              {/* Thumbs for visual representation */}
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-emerald-500 rounded-full shadow-sm pointer-events-none"
+                style={{ left: `calc(${(filters.price[0] / MAX_PRICE) * 100}% - 8px)` }}
+              />
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-emerald-500 rounded-full shadow-sm pointer-events-none"
+                style={{ left: `calc(${(filters.price[1] / MAX_PRICE) * 100}% - 8px)` }}
+              />
+            </div>
           </div>
         </div>
 
@@ -310,32 +353,21 @@ const HotelFilter = ({ onFilterChange, onMapOpen }) => {
                 <button
                   key={item.value}
                   onClick={() => toggle("amenities", item.value)}
-                  className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-[11px] font-medium text-left transition-all duration-150
+                  className={`flex items-center justify-between px-2.5 py-2 rounded-lg border text-[11px] font-medium text-left transition-all duration-150
                     ${active ? "border-purple-200 bg-purple-50 text-purple-600 font-semibold shadow-sm" : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-slate-100"}`}
                 >
-                  <span className="text-sm leading-none">{item.icon}</span>
-                  {item.label}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm leading-none">{item.icon}</span>
+                    {item.label}
+                  </div>
+                  <span className={`text-[9px] ${active ? "text-purple-400" : "text-slate-400"}`}>
+                    ({getDynamicCount("amenities", item.value)})
+                  </span>
                 </button>
               );
             })}
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-slate-200 flex gap-2 shrink-0 bg-white/10">
-        <button
-          onClick={clearAll}
-          className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2 rounded-xl text-xs transition-colors shadow-sm"
-        >
-          Clear
-        </button>
-        <button
-          onClick={() => onFilterChange?.(filters)}
-          className="flex-1 bg-linear-to-r from-[#c67c4e] to-[#b86c3d] hover:from-[#b06d42] hover:to-[#9e5b33]  text-white font-bold py-2 rounded-xl text-xs shadow-sm transition-all"
-        >
-          Apply Filters
-        </button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { motion, useScroll, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 import { ReactLenis } from "lenis/react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -95,13 +95,36 @@ const applyFilters = (
         h.address?.toLowerCase().includes(q),
     );
   }
-  if (filters.price?.length > 0) {
+  if (filters.price?.length === 2) {
     result = result.filter((h) => {
       const price = h.pricePerNight ?? 0;
-      return filters.price.some((range) => {
-        if (range === "10000+") return price >= 10000;
-        const [min, max] = range.split("-").map(Number);
-        return price >= min && price <= max;
+      const maxBound = filters.price[1] >= 20000 ? Infinity : filters.price[1];
+      return price >= filters.price[0] && price <= maxBound;
+    });
+  }
+
+  if (filters.suggested?.length > 0) {
+    result = result.filter((h) => {
+      return filters.suggested.every((s) => {
+        switch (s) {
+          case "Rush Deal":
+          case "Last Minute Deals":
+            return h.originalPrice && h.pricePerNight < h.originalPrice;
+          case "5 Star":
+            return h.starCategory === 5;
+          case "4 Star":
+            return h.starCategory === 4;
+          case "3 Star":
+            return h.starCategory === 3;
+          case "Breakfast Included":
+            return h.facilities?.some((f) => f.toLowerCase().includes("breakfast"));
+          case "Free Cancellation":
+            return h.freeCancellation === true;
+          case "Couple Friendly":
+            return h.tags?.some((t) => t.toLowerCase().includes("couple"));
+          default:
+            return true;
+        }
       });
     });
   }
@@ -189,8 +212,8 @@ const HotelCard = ({
   const images = hotel.images?.length
     ? hotel.images
     : [
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80",
-      ];
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80",
+    ];
   const price = hotel.pricePerNight ?? hotel.price ?? 0;
   const totalPrice = price * nights;
   const rating = hotel.averageRating ?? hotel.rating ?? null;
@@ -205,19 +228,11 @@ const HotelCard = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24, scale: 0.98 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -16, scale: 0.98 }}
       viewport={{ once: false, margin: "-10% 0px -10% 0px" }}
-      transition={{
-        duration: 0.5,
-        delay: (index % 10) * 0.07,
-        ease: [0.25, 0.1, 0.25, 1],
-      }}
       className="group bg-white rounded-2xl overflow-hidden border border-slate-200/70 hover:border-blue-200 transition-all duration-300 flex flex-col sm:flex-row cursor-pointer shadow-[0_2px_12px_rgba(100,130,180,0.08)] hover:shadow-[0_8px_32px_rgba(99,130,200,0.18)] will-change-transform"
       onClick={() => navigate(`/hotels/${hotel._id}`)}
     >
-      {/* Image */} 
+      {/* Image */}
       <div className="relative w-full sm:w-52 h-48 sm:h-48 shrink-0 overflow-hidden bg-slate-100">
         <img
           src={images[0]}
@@ -335,11 +350,10 @@ const HotelCard = ({
             availableRooms <= 7 && (
               <span
                 className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border mt-1.5
-                ${
-                  availableRooms <= 3
+                ${availableRooms <= 3
                     ? "text-rose-600 bg-rose-50 border-rose-200"
                     : "text-amber-600 bg-amber-50 border-amber-200"
-                }`}
+                  }`}
               >
                 {availableRooms <= 3 ? "🔥 " : ""}Only {availableRooms} rooms
                 left!
@@ -408,11 +422,10 @@ const HotelCard = ({
               if (!isSoldOut) navigate(`/hotels/${hotel._id}`);
             }}
             className={`text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 whitespace-nowrap min-w-27.5
-            ${
-              isSoldOut
+            ${isSoldOut
                 ? "bg-slate-200 text-slate-400 cursor-not-allowed"
                 : "bg-linear-to-r from-[#c67c4e] to-[#b86c3d] hover:from-[#b06d42] hover:to-[#9e5b33] active:scale-95 shadow-[0_8px_24px_rgba(198,124,78,0.35)] hover:shadow-[0_8px_24px_rgba(198,124,78,0.5)]"
-            }`}
+              }`}
           >
             {isSoldOut ? "Sold Out" : "Book Now"}
           </button>
@@ -447,18 +460,16 @@ const EmptyState = ({ cityParam }) => (
 function HotelPage() {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const {
     hotels = [],
     loading,
     bulkAvailability = {},
   } = useSelector((s) => s.hotel);
-
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
 
   const cityParam = searchParams.get("city") || "";
   const checkInParam = searchParams.get("checkIn") || "";
@@ -604,14 +615,7 @@ function HotelPage() {
         </div>
 
         {/* Scroll progress bar – blue gradient */}
-        <motion.div
-          className="fixed top-0 left-0 right-0 h-0.75 origin-left z-100"
-          style={{
-            scaleX,
-            background: "linear-gradient(90deg, #3b82f6, #6366f1)",
-            boxShadow: "0 0 10px rgba(99,102,241,0.5)",
-          }}
-        />
+
 
         {/* ── Sticky Search Bar ── */}
         <motion.div
@@ -738,9 +742,8 @@ function HotelPage() {
                     <span className="hidden sm:inline">{sortLabel}</span>
                     <span className="sm:hidden">Sort</span>
                     <FaChevronDown
-                      className={`text-[10px] text-slate-400 transition-transform duration-200 ${
-                        showSortMenu ? "rotate-180" : ""
-                      }`}
+                      className={`text-[10px] text-slate-400 transition-transform duration-200 ${showSortMenu ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
                   {showSortMenu && (
@@ -763,10 +766,9 @@ function HotelPage() {
                             setPage(1);
                           }}
                           className={`w-full text-left px-4 py-2.5 text-xs transition-colors
-                            ${
-                              sortBy === opt.value
-                                ? "bg-blue-50 text-blue-600 font-bold"
-                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+                            ${sortBy === opt.value
+                              ? "bg-blue-50 text-blue-600 font-bold"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
                             }`}
                         >
                           {sortBy === opt.value && (
@@ -834,7 +836,7 @@ function HotelPage() {
                 className="flex justify-center items-center gap-1.5 mt-8 flex-wrap pb-10"
               >
                 <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  onClick={() => setPage((p) => Math.max(1, p - 1), window.scrollTo(0, 0))}
                   disabled={page === 1}
                   className="px-3 sm:px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-sm"
                 >
@@ -845,18 +847,19 @@ function HotelPage() {
                     <button
                       key={i}
                       onClick={() => setPage(i + 1)}
-                      className={`w-8 h-8 rounded-xl text-xs font-bold transition-all duration-200 shrink-0 ${
-                        page === i + 1
+
+                      className={`w-8 h-8 rounded-xl text-xs font-bold transition-all duration-200 shrink-0 ${page === i + 1
                           ? "bg-linear-to-br from-blue-500 to-indigo-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.35)] border border-blue-400"
                           : "border border-slate-200 bg-white text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 shadow-sm"
-                      }`}
+                        }`}
                     >
                       {i + 1}
                     </button>
                   ))}
                 </div>
                 <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1), window.scrollTo(0, 0))
+                  }
                   disabled={page === totalPages}
                   className="px-3 sm:px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-sm"
                 >
