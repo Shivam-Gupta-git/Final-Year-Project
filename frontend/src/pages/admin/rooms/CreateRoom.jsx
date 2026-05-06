@@ -17,6 +17,17 @@ function CreateRoom() {
     "Balcony",
     "Room Service",
     "Bathtub",
+    "King-size or twin bed",
+    "Work desk + seating area",
+    "Marble bathroom with bathtub & shower",
+    "Luxury bath amenities",
+    "Air conditioning & wardrobe",
+    "Premium toiletries & bathrobes",
+    "Larger rooms (44–49 sqm)",
+    "Separate living room + bedroom",
+    "Dining area + workspace",
+    "Walk-in wardrobe",
+    "Horizon Club Lounge access"
   ];
 
   const [formData, setFormData] = useState({
