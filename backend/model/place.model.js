@@ -37,9 +37,9 @@ const placeSchema = new mongoose.Schema(
     },
 
     entryfees: {
-      type: Number,
+      type: String,
       required: true,
-      default: 0,
+      default: "free",
     },
 
     isPopular: {

@@ -1051,7 +1051,10 @@ export default function PopularCities() {
         </div>
 
         {/* Image */}
-        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+        <div
+          onClick={() => navigate(`/city/${c._id}`)}
+          style={{ flex: 1, position: "relative", overflow: "hidden" }}
+        >
           <img
             key={img}
             src={img}
