@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import L from "leaflet";
 import { getActiveCities } from "../../features/user/citySlice";
-import { loadAiPlan, loadPlanHistory } from "../../features/user/placeSlice";
+import {
+  loadAiPlan,
+  loadPlanHistory,
+  normalizeAiPlan,
+} from "../../features/user/placeSlice";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 
 import {
@@ -15,7 +18,7 @@ import {
   Polyline,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -41,8 +44,6 @@ const markerIcons = {
 
 /* ── Only pseudo-elements, keyframes, font import & Leaflet overrides stay here ── */
 const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
-
   .apd-wrap * { font-family: 'Outfit', sans-serif; }
   .font-cormorant { font-family: 'Cormorant Garamond', serif !important; }
 
@@ -93,38 +94,83 @@ const STYLES = `
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }
   .apd-map-section .leaflet-popup-tip { background: #141c27; }
-  .apd-map-section .leaflet-container { border-radius: 0 0 18px 18px; }
+  .apd-map-section .leaflet-container { border-radius: 0 0 18px 18px;  }
 `;
+
+function latLngFromDoc(doc) {
+  const c = doc?.location?.coordinates;
+  if (!Array.isArray(c) || c.length < 2) return null;
+  const lng = Number(c[0]);
+  const lat = Number(c[1]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return [lat, lng];
+}
 
 function AiPlannerDetails({ embedded = false } = {}) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [modalData, setModalData] = useState(null);
 
   const { aiPlan } = useSelector((state) => state.place);
-  const safeAiPlan = aiPlan || [];
-
-  console.log(aiPlan);
+  const safeAiPlan = useMemo(() => normalizeAiPlan(aiPlan), [aiPlan]);
 
   useEffect(() => {
-    dispatch(getActiveCities());
-    dispatch(loadPlanHistory());
-    const lastPlan = JSON.parse(localStorage.getItem("lastAiPlan"));
-    if (lastPlan) dispatch(loadAiPlan(lastPlan));
-  }, [dispatch]);
+    if (!embedded) {
+      dispatch(getActiveCities());
+      dispatch(loadPlanHistory());
+    }
+    try {
+      const raw = localStorage.getItem("lastAiPlan");
+      if (!raw) return;
+      const lastPlan = normalizeAiPlan(JSON.parse(raw));
+      if (lastPlan.length) dispatch(loadAiPlan(lastPlan));
+    } catch {
+      /* ignore */
+    }
+  }, [dispatch, embedded]);
 
-  // ── Coordinates (unchanged logic) ──
-  const coordinates = safeAiPlan.flatMap((day) => [
-    ...(day.places?.map((p) => [
-      p.location.coordinates[1],
-      p.location.coordinates[0],
-    ]) || []),
-    ...(day.hotels?.map((h) => [
-      h.location.coordinates[1],
-      h.location.coordinates[0],
-    ]) || []),
-  ]);
-  const bounds = coordinates.length ? L.latLngBounds(coordinates) : null;
+  const navPlanFromState = location.state?.plan;
+  useEffect(() => {
+    if (navPlanFromState == null) return;
+    const normalized = normalizeAiPlan(navPlanFromState);
+    if (normalized.length) dispatch(loadAiPlan(normalized));
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [dispatch, location.pathname, navigate, navPlanFromState]);
+
+  const coordinates = useMemo(() => {
+    const pts = [];
+    for (const day of safeAiPlan) {
+      for (const p of day.places || []) {
+        const ll = latLngFromDoc(p);
+        if (ll) pts.push(ll);
+      }
+      for (const h of day.hotels || []) {
+        const ll = latLngFromDoc(h);
+        if (ll) pts.push(ll);
+      }
+    }
+    return pts;
+  }, [safeAiPlan]);
+
+  const mapKey = useMemo(
+    () =>
+      safeAiPlan.length
+        ? safeAiPlan.map((d) => d.day).join("-") + `-${coordinates.length}`
+        : "empty",
+    [coordinates.length, safeAiPlan],
+  );
+
+  const bounds = useMemo(() => {
+    if (coordinates.length === 0) return null;
+    const b = L.latLngBounds(coordinates);
+    if (coordinates.length === 1) {
+      const [lat, lng] = coordinates[0];
+      b.extend([lat + 0.02, lng + 0.02]);
+      b.extend([lat - 0.02, lng - 0.02]);
+    }
+    return b;
+  }, [coordinates]);
 
   const content = (
     <div className="max-w-275 mx-auto">
@@ -246,7 +292,7 @@ function AiPlannerDetails({ embedded = false } = {}) {
       {/* ── MAP ── */}
       {coordinates.length > 0 && (
         <div className="map-section animate-fade-up-2 mt-7 bg-white border border-gray-200 rounded-[18px] overflow-hidden">
-          <div className="px-6 pt-5 pb-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2.5">
+          <div className="px-6 pt-5 pb-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2.5 -z-20">
             <div>
               <div className="font-cormorant text-[22px] font-semibold text-gray-800">
                 Route Map
@@ -268,6 +314,7 @@ function AiPlannerDetails({ embedded = false } = {}) {
           </div>
 
           <MapContainer
+            key={mapKey}
             bounds={bounds}
             scrollWheelZoom={true}
             style={{ height: embedded ? "300px" : "440px", width: "100%" }}
@@ -277,30 +324,33 @@ function AiPlannerDetails({ embedded = false } = {}) {
               [
                 ...(day.places || []).map((p) => ({ ...p, type: "Place" })),
                 ...(day.hotels || []).map((h) => ({ ...h, type: "Hotel" })),
-              ].map((loc, idx) => (
-                <Marker
-                  key={`${day.day}-${idx}`}
-                  position={[
-                    loc.location.coordinates[1],
-                    loc.location.coordinates[0],
-                  ]}
-                  icon={markerIcons[loc.type]}
-                >
-                  <Popup>
-                    <strong>{loc.name}</strong>
-                    <br />
-                    {loc.type}
-                  </Popup>
-                </Marker>
-              )),
+              ].map((loc, idx) => {
+                const pos = latLngFromDoc(loc);
+                if (!pos) return null;
+                return (
+                  <Marker
+                    key={`${day.day}-${idx}-${loc._id ?? loc.name ?? idx}`}
+                    position={pos}
+                    icon={markerIcons[loc.type]}
+                  >
+                    <Popup>
+                      <strong>{loc.name}</strong>
+                      <br />
+                      {loc.type}
+                    </Popup>
+                  </Marker>
+                );
+              }),
             )}
-            <Polyline
-              positions={coordinates}
-              color="#c9922a"
-              weight={2}
-              opacity={0.7}
-              dashArray="6,8"
-            />
+            {coordinates.length > 1 ? (
+              <Polyline
+                positions={coordinates}
+                color="#c9922a"
+                weight={2}
+                opacity={0.7}
+                dashArray="6,8"
+              />
+            ) : null}
           </MapContainer>
         </div>
       )}
@@ -309,11 +359,11 @@ function AiPlannerDetails({ embedded = false } = {}) {
       {modalData &&
         createPortal(
           <div
-            className="animate-fade-in fixed inset-0 bg-black/30 backdrop-blur-[6px] flex items-center justify-center z-50 p-5"
+            className="animate-fade-in fixed inset-0 bg-black/30 backdrop-blur-[6px] flex items-center justify-center z-2000 p-5"
             onClick={() => setModalData(null)}
           >
             <div
-              className="animate-slide-up bg-white border border-gray-200 rounded-[22px] w-full max-w-215 max-h-[88vh] overflow-y-auto relative shadow-lg [scrollbar-width:thin] [scrollbar-color:#cfd8dc_transparent]"
+              className="animate-slide-up bg-white border border-gray-200 rounded-[22px] w-full max-w-215 max-h-[88vh] overflow-y-auto relative shadow-lg [scrollbar-width:thin] [scrollbar-color:#cfd8dc_transparent] "
               onClick={(e) => e.stopPropagation()}
             >
               {/* Hero image strip */}
@@ -379,7 +429,8 @@ function AiPlannerDetails({ embedded = false } = {}) {
                         {modalData.day.hotels.map((h, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center gap-3.5 px-4 py-3.5 mb-2.5 last:mb-0 rounded-[14px] border border-gray-200 bg-gray-50"
+                            onClick={() => navigate(`/hotels/${h._id}`)}
+                            className="flex items-center gap-3.5 px-4 py-3.5 mb-2.5 last:mb-0 rounded-[14px] border border-gray-200 bg-gray-50 cursor-pointer hover:shadow-xl duration-300"
                           >
                             {h.images?.[0] && (
                               <img

@@ -154,7 +154,7 @@ function GlobalMap() {
   }, [cities, hotels, restaurants, poiPlaces]);
 
   return (
-    <div className="p-6 bg-black">
+    <div className="p-6">
       <Travel3DMap
         locations={locations}
         loadingPlaces={placesLoading}
