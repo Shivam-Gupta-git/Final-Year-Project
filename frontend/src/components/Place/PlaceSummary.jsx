@@ -5,6 +5,7 @@ import {
   selectUsingNearby,
   selectActiveCategory,
   selectSearchQuery,
+  selectNearbyExpandedBeyondCity,
 } from "../../features/user/placeSlice";
 
 export default function PlaceSummary() {
@@ -13,12 +14,18 @@ export default function PlaceSummary() {
   const usingNearby = useSelector(selectUsingNearby);
   const category = useSelector(selectActiveCategory);
   const search = useSelector(selectSearchQuery);
+  const nearbyExpandedBeyondCity = useSelector(selectNearbyExpandedBeyondCity);
 
   const list = usingNearby ? nearby : places;
   const count = list.length;
 
   const avgRating = count
-    ? (list.reduce((s, p) => s + (p.rating || 0), 0) / count).toFixed(1)
+    ? (
+        list.reduce(
+          (s, p) => s + (p.rating ?? p.averageRating ?? 0),
+          0,
+        ) / count
+      ).toFixed(1)
     : "–";
 
   const freeCount = list.filter(
@@ -42,6 +49,12 @@ export default function PlaceSummary() {
                 <path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 14-8 14S4 15.25 4 10a8 8 0 0 1 8-8z"/>
               </svg>
               Nearby
+            </span>
+          )}
+
+          {usingNearby && nearbyExpandedBeyondCity && (
+            <span className="text-[10px] font-bold normal-case text-amber-700 bg-amber-50/80 px-2.5 py-1 rounded-lg border border-amber-100 tracking-wide">
+              Wider area (outside city filter)
             </span>
           )}
 

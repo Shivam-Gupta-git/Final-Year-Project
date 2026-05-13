@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   setActiveCategory,
   setSearchQuery,
@@ -11,6 +11,7 @@ import {
   clearNearby,
   fetchNearbyPlaces,
   fetchPlacesByCity,
+  fetchPlaceCategoriesByCity,
   selectActiveCategory,
   selectSearchQuery,
   selectSortBy,
@@ -18,22 +19,47 @@ import {
   selectUsingNearby,
   selectDistanceRadius,
   selectSelectedCity,
+  selectPlaceFilterCategories,
+  selectLoadingPlaceCategories,
 } from "../../features/user/placeSlice";
 
-const CATEGORIES = [
-  { label: "All", value: "", icon: "🗺️" },
-  { label: "Hotel", value: "hotel", route: "hotels", icon: "🏨" },
-  { label: "Restaurant", value: "restaurant", icon: "🍽️" },
-  { label: "Cafe", value: "cafe", icon: "☕" },
-  { label: "Museum", value: "museum", icon: "🏛️" },
-  { label: "Park", value: "park", icon: "🌿" },
-  { label: "Shopping", value: "shopping", icon: "🛍️" },
-  { label: "Adventure", value: "adventure", icon: "🧗" },
-  { label: "Beach", value: "beach", icon: "🏖️" },
-  { label: "Historical", value: "historical", icon: "🏯" },
-  { label: "Entertainment", value: "entertainment", icon: "🎭" },
-  { label: "Temple", value: "temple" , icon : "🛕"},
-];
+/** Emoji hint from common words in the DB `category` string */
+function iconForCategoryName(name) {
+  const n = String(name || "").toLowerCase();
+  if (n.includes("hotel")) return "🏨";
+  if (n.includes("restaurant") || n.includes("dining") || n.includes("food"))
+    return "🍽️";
+  if (n.includes("cafe") || n.includes("coffee")) return "☕";
+  if (n.includes("museum")) return "🏛️";
+  if (n.includes("park") || n.includes("garden")) return "🌿";
+  if (n.includes("shop") || n.includes("mall")) return "🛍️";
+  if (n.includes("adventure") || n.includes("trek")) return "🧗";
+  if (n.includes("beach") || n.includes("lake")) return "🏖️";
+  if (
+    n.includes("histor") ||
+    n.includes("heritage") ||
+    n.includes("fort") ||
+    n.includes("monument")
+  )
+    return "🏯";
+  if (
+    n.includes("entertain") ||
+    n.includes("cinema") ||
+    n.includes("theatre") ||
+    n.includes("theater")
+  )
+    return "🎭";
+  if (
+    n.includes("temple") ||
+    n.includes("mosque") ||
+    n.includes("church") ||
+    n.includes("shrine")
+  )
+    return "🛕";
+  if (n.includes("nature") || n.includes("wildlife") || n.includes("zoo"))
+    return "🦁";
+  return "📍";
+}
 
 const SORT_OPTIONS = [
   { label: "Most Popular", value: "popularity" },
@@ -51,6 +77,7 @@ const DISTANCE_OPTIONS = [
 export default function PlaceFilters() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { id: routeCityId } = useParams();
   const category = useSelector(selectActiveCategory);
   const search = useSelector(selectSearchQuery);
   const sort = useSelector(selectSortBy);
@@ -58,6 +85,25 @@ export default function PlaceFilters() {
   const usingNearby = useSelector(selectUsingNearby);
   const radius = useSelector(selectDistanceRadius);
   const selectedCity = useSelector(selectSelectedCity);
+  const placeFilterCategories = useSelector(selectPlaceFilterCategories);
+  const loadingPlaceCategories = useSelector(selectLoadingPlaceCategories);
+  const cityIdForApi =
+    selectedCity?._id ?? selectedCity?.id ?? routeCityId ?? null;
+
+  const categoryChips = useMemo(() => {
+    const all = { label: "All", value: "", icon: "🗺️" };
+    const fromDb = placeFilterCategories.map((name) => ({
+      label: name,
+      value: name,
+      icon: iconForCategoryName(name),
+    }));
+    return [all, ...fromDb];
+  }, [placeFilterCategories]);
+
+  useEffect(() => {
+    if (!cityIdForApi) return;
+    dispatch(fetchPlaceCategoriesByCity(cityIdForApi));
+  }, [cityIdForApi, dispatch]);
 
   const [locLoading, setLocLoading] = useState(false);
   const [locError, setLocError] = useState("");
@@ -65,19 +111,26 @@ export default function PlaceFilters() {
   const debounceRef = useRef(null);
 
   const triggerFetch = (overrides = {}) => {
+    const cid = overrides.cityId ?? cityIdForApi;
+    if (!cid) return;
     if (usingNearby && userLoc) {
       dispatch(
         fetchNearbyPlaces({
           lat: userLoc.lat,
           lng: userLoc.lng,
-          cityId: overrides.cityId ?? selectedCity?._id,
+          cityId: cid,
           distance: overrides.radius ?? radius,
+          category: overrides.category ?? category,
+          q: overrides.q,
         }),
       );
     } else {
       dispatch(
         fetchPlacesByCity({
-          cityId: selectedCity?._id,
+          cityId: cid,
+          category: overrides.category,
+          q: overrides.q,
+          sort: overrides.sort,
         }),
       );
     }
@@ -85,11 +138,26 @@ export default function PlaceFilters() {
 
   const handleCategory = (categoryObj) => {
     dispatch(setActiveCategory(categoryObj.value));
-    if (!selectedCity?._id) return;
-    if (categoryObj.route) {
-      navigate(`/city/${selectedCity._id}/${categoryObj.route}`);
+    const cid = cityIdForApi;
+    if (!cid) return;
+    navigate(`/city/${cid}/places`);
+    if (usingNearby && userLoc) {
+      dispatch(
+        fetchNearbyPlaces({
+          lat: userLoc.lat,
+          lng: userLoc.lng,
+          cityId: cid,
+          distance: radius,
+          category: categoryObj.value,
+        }),
+      );
     } else {
-      navigate(`/city/${selectedCity._id}/places`);
+      dispatch(
+        fetchPlacesByCity({
+          cityId: cid,
+          category: categoryObj.value,
+        }),
+      );
     }
   };
 
@@ -97,13 +165,15 @@ export default function PlaceFilters() {
     dispatch(setSearchQuery(val));
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      triggerFetch({ search: val });
+      triggerFetch({ q: val });
     }, 400);
   };
 
   const handleSort = (val) => {
     dispatch(setSortBy(val));
-    triggerFetch({ sort: val });
+    if (!usingNearby) {
+      triggerFetch({ sort: val });
+    }
   };
 
   const handleGetLocation = () => {
@@ -111,28 +181,74 @@ export default function PlaceFilters() {
       setLocError("Geolocation is not supported by your browser.");
       return;
     }
+    if (!cityIdForApi) {
+      setLocError("Wait for the city to finish loading, then try again.");
+      return;
+    }
     setLocLoading(true);
     setLocError("");
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      async (pos) => {
+        const loc = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
         dispatch(setUserLocation(loc));
         dispatch(setUsingNearby(true));
-        dispatch(
-          fetchNearbyPlaces({
-            ...loc,
-            cityId: selectedCity?._id,
-            distance: radius,
-            category,
-          }),
-        );
-        setLocLoading(false);
+        try {
+          const first = await dispatch(
+            fetchNearbyPlaces({
+              lat: loc.lat,
+              lng: loc.lng,
+              cityId: cityIdForApi,
+              distance: radius,
+              category,
+              q: search.trim(),
+              relaxCity: false,
+            }),
+          ).unwrap();
+          let places = first?.places ?? [];
+          if (places.length === 0) {
+            const second = await dispatch(
+              fetchNearbyPlaces({
+                lat: loc.lat,
+                lng: loc.lng,
+                cityId: cityIdForApi,
+                distance: radius,
+                category,
+                q: search.trim(),
+                relaxCity: true,
+              }),
+            ).unwrap();
+            places = second?.places ?? [];
+          }
+        } catch (e) {
+          const msg =
+            typeof e === "string"
+              ? e
+              : e?.message || "Could not load nearby places.";
+          setLocError(msg);
+        } finally {
+          setLocLoading(false);
+        }
       },
-      () => {
-        setLocError("Location access denied. Please enable it.");
+      (err) => {
         setLocLoading(false);
+        if (err?.code === err.PERMISSION_DENIED) {
+          setLocError("Location permission denied. Enable location for this site.");
+        } else if (err?.code === err.POSITION_UNAVAILABLE) {
+          setLocError("Your position could not be determined. Try again outdoors.");
+        } else if (err?.code === err.TIMEOUT) {
+          setLocError("Location request timed out. Try again.");
+        } else {
+          setLocError("Could not read your location.");
+        }
       },
-      { timeout: 10000 },
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0,
+      },
     );
   };
 
@@ -143,7 +259,7 @@ export default function PlaceFilters() {
       dispatch(
         fetchNearbyPlaces({
           ...userLoc,
-          cityId: selectedCity?._id,
+          cityId: cityIdForApi ?? undefined,
           distance: num,
           category,
         }),
@@ -153,8 +269,8 @@ export default function PlaceFilters() {
 
   const handleClearNearby = () => {
     dispatch(clearNearby());
-    if (selectedCity?._id) {
-      dispatch(fetchPlacesByCity({ cityId: selectedCity._id }));
+    if (cityIdForApi) {
+      dispatch(fetchPlacesByCity({ cityId: cityIdForApi }));
     }
   };
 
@@ -198,20 +314,19 @@ export default function PlaceFilters() {
 
             <div className="hidden sm:block w-px h-8 bg-slate-200/50" />
 
-            {!userLoc ? (
-              <button
-                onClick={handleGetLocation}
-                disabled={locLoading}
-                className="flex items-center gap-2 bg-linear-to-r from-[#c67c4e] to-[#b86c3d] hover:from-[#b06d42] hover:to-[#9e5b33]  disabled:opacity-60 text-white text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 whitespace-nowrap"
-              >
-                {locLoading ? <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg> : <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><circle cx="12" cy="10" r="3" /><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 14-8 14S4 15.25 4 10a8 8 0 0 1 8-8z" /></svg>}
-                USE MY LOCATION
-              </button>
-            ) : (
+            {locLoading ? (
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 py-2">
+                <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+                Locating…
+              </div>
+            ) : userLoc && usingNearby ? (
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50/50 border border-emerald-100 px-4 py-2 rounded-full">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Active
+                  Live nearby
                 </span>
                 <select
                   value={radius}
@@ -222,6 +337,15 @@ export default function PlaceFilters() {
                 </select>
                 <button onClick={handleClearNearby} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 border border-slate-100 rounded-full px-4 py-1.5 hover:bg-white transition-all shadow-sm">✕ Clear</button>
               </div>
+            ) : (
+              <button
+                onClick={handleGetLocation}
+                disabled={locLoading}
+                className="flex items-center gap-2 bg-linear-to-r from-[#c67c4e] to-[#b86c3d] hover:from-[#b06d42] hover:to-[#9e5b33]  disabled:opacity-60 text-white text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 whitespace-nowrap"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><circle cx="12" cy="10" r="3" /><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 14-8 14S4 15.25 4 10a8 8 0 0 1 8-8z" /></svg>
+                USE MY LOCATION
+              </button>
             )}
           </div>
         </div>
@@ -234,14 +358,29 @@ export default function PlaceFilters() {
         )}
 
         <div className="flex items-center gap-3 pb-4 overflow-x-auto no-scrollbar">
-          {CATEGORIES.map((c) => (
+          {loadingPlaceCategories && categoryChips.length <= 1 && (
+            <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap shrink-0 animate-pulse">
+              Loading types…
+            </span>
+          )}
+          {categoryChips.map((c) => (
             <button
-              key={c.value}
+              key={c.value === "" ? "cat-all" : `cat-${c.value}`}
+              type="button"
+              title={c.label}
               onClick={() => handleCategory(c)}
-              className={`flex items-center gap-2 whitespace-nowrap text-[10px] font-black uppercase tracking-widest px-5 py-2 rounded-xl border transition-all duration-300 shrink-0 ${category === c.value ? "bg-slate-800 text-white border-slate-800 shadow-md shadow-slate-300" : "bg-white/50 text-slate-500 border-slate-100 hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50/50"}`}
+              className={`flex items-center gap-2 whitespace-nowrap text-[10px] font-bold border transition-all duration-300 shrink-0 rounded-xl px-5 py-2 ${
+                c.value === ""
+                  ? "uppercase tracking-widest font-black"
+                  : "normal-case tracking-wide max-w-[200px]"
+              } ${
+                category === c.value
+                  ? "bg-slate-800 text-white border-slate-800 shadow-md shadow-slate-300"
+                  : "bg-white/50 text-slate-500 border-slate-100 hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50/50"
+              }`}
             >
-              <span className="text-sm opacity-80">{c.icon}</span>
-              {c.label}
+              <span className="text-sm opacity-80 shrink-0">{c.icon}</span>
+              <span className={c.value === "" ? "" : "truncate"}>{c.label}</span>
             </button>
           ))}
         </div>

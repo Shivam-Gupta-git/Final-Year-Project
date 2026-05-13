@@ -12,14 +12,19 @@ import PlaceSummary from "../../components/Place/PlaceSummary";
 
 import {
   fetchPlacesByCity,
+  clearNearby,
   selectDistanceRadius,
+  selectNearbyError,
   selectNearbyLoading,
   selectNearbyPlaces,
   selectPlaces,
   selectPlacesError,
   selectPlacesLoading,
   selectUsingNearby,
+  setActiveCategory,
+  setSearchQuery,
   setSelectedCity,
+  setSortBy,
 } from "../../features/user/placeSlice";
 import apiClient from "../services/apiClient";
 import PlaceDetailDrawer from "./PlaceDetailDrawer";
@@ -78,8 +83,11 @@ export default function CityPage() {
   const usingNearby = useSelector(selectUsingNearby);
   const loadingPlaces = useSelector(selectPlacesLoading);
   const loadingNearby = useSelector(selectNearbyLoading);
-  const error = useSelector(selectPlacesError);
+  const errorPlaces = useSelector(selectPlacesError);
+  const errorNearby = useSelector(selectNearbyError);
   const radius = useSelector(selectDistanceRadius);
+
+  const error = usingNearby ? errorNearby : errorPlaces;
 
 
   const currentList = usingNearby ? nearbyPlaces : places;
@@ -88,6 +96,10 @@ export default function CityPage() {
   /* ── Fetch city meta + initial places (untouched) ── */
   useEffect(() => {
     if (!cityId) return;
+    dispatch(clearNearby());
+    dispatch(setActiveCategory(""));
+    dispatch(setSearchQuery(""));
+    dispatch(setSortBy("popularity"));
     (async () => {
       try {
         setLoadingCity(true);
