@@ -7,6 +7,10 @@ import { Hotel } from "../model/hotel.model.js";
 import { Room } from "../model/room.model.js";
 import { Restaurant } from "../model/restaurant.model.js"
 
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // SuperAdmin - Create Place
 export const createPlace = async (req, res) => {
   try {
@@ -739,7 +743,11 @@ export const getNearbyPlaces = async (req, res) => {
 
     let query = { status: "active" };
 
-    if (cityId && mongoose.Types.ObjectId.isValid(cityId)) {
+    const relaxCity =
+      req.query.relaxCity === "true" ||
+      req.query.relaxCity === "1";
+
+    if (!relaxCity && cityId && mongoose.Types.ObjectId.isValid(cityId)) {
       query.city = new mongoose.Types.ObjectId(cityId);
     }
 
@@ -747,11 +755,9 @@ export const getNearbyPlaces = async (req, res) => {
       query.isPopular = true;
     }
 
-    if (req.query.category) {
-      query.category = String(req.query.category).trim().toLowerCase();
-    }
+    const categorySlug = String(req.query.category || "").trim();
 
-    const places = await Place.aggregate([
+    const pipeline = [
       {
         $geoNear: {
           near: { type: "Point", coordinates: [lng, lat] },
@@ -768,10 +774,34 @@ export const getNearbyPlaces = async (req, res) => {
           },
         },
       },
-      {
-        $sort: { distance: 1, priorityScore: -1 },
-      },
-    ]);
+    ];
+
+    if (categorySlug) {
+      pipeline.push({
+        $match: {
+          category: {
+            $regex: `^${escapeRegExp(categorySlug)}$`,
+            $options: "i",
+          },
+        },
+      });
+    }
+
+    const textQ = String(req.query.q || "").trim();
+    if (textQ) {
+      const rx = new RegExp(escapeRegExp(textQ), "i");
+      pipeline.push({
+        $match: {
+          $or: [{ name: rx }, { description: rx }, { category: rx }],
+        },
+      });
+    }
+
+    pipeline.push({
+      $sort: { distance: 1, priorityScore: -1 },
+    });
+
+    const places = await Place.aggregate(pipeline);
 
     return res.status(200).json({
       success: true,
@@ -785,7 +815,44 @@ export const getNearbyPlaces = async (req, res) => {
   }
 };
 
+// Public - Distinct place categories for a city (for filter chips; matches stored `category` strings)
+// GET /api/places/categories?cityId=ID
+export const getPlaceCategoriesByCityId = async (req, res) => {
+  try {
+    const { cityId } = req.query;
+
+    if (!cityId || !mongoose.Types.ObjectId.isValid(cityId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid cityId is required",
+      });
+    }
+
+    const raw = await Place.distinct("category", {
+      city: new mongoose.Types.ObjectId(cityId),
+      status: "active",
+      category: { $nin: [null, ""] },
+    });
+
+    const categories = [...new Set(raw.map((c) => String(c).trim()).filter(Boolean))].sort(
+      (a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }),
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: categories,
+      count: categories.length,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // Public - Get active places by city
+// Query: cityId (required), category (optional), q (optional text search), sort (popularity|rating|newest)
 export const getPlacesByCityId = async (req, res) => {
   try {
     const { cityId } = req.query;
@@ -797,10 +864,39 @@ export const getPlacesByCityId = async (req, res) => {
       });
     }
 
-    const places = await Place.find({
-      city: cityId,
+    const filter = {
+      city: new mongoose.Types.ObjectId(cityId),
       status: "active",
-    }).sort({ isPopular: -1, priorityScore: -1, createdAt: -1 });
+    };
+
+    const category = String(req.query.category || "").trim();
+    if (category) {
+      // Exact match (case-insensitive) — filter value is the DB string from /places/categories
+      filter.category = {
+        $regex: `^${escapeRegExp(category)}$`,
+        $options: "i",
+      };
+    }
+
+    const q = String(req.query.q || "").trim();
+    if (q) {
+      const rx = new RegExp(escapeRegExp(q), "i");
+      filter.$or = [
+        { name: rx },
+        { description: rx },
+        { category: rx },
+      ];
+    }
+
+    const sortKey = String(req.query.sort || "popularity").toLowerCase();
+    let sortSpec = { isPopular: -1, priorityScore: -1, createdAt: -1 };
+    if (sortKey === "rating") {
+      sortSpec = { averageRating: -1, totalReviews: -1, createdAt: -1 };
+    } else if (sortKey === "newest") {
+      sortSpec = { createdAt: -1 };
+    }
+
+    const places = await Place.find(filter).sort(sortSpec);
 
     return res.status(200).json({
       success: true,

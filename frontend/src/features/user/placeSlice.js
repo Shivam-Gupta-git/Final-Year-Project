@@ -14,12 +14,18 @@ const initialState = {
   places: [],
   nearbyPlaces: [],
   usingNearby: false,
+  /** Nearby search ignored city filter (fallback when in-city radius returned nothing). */
+  nearbyExpandedBeyondCity: false,
   distanceRadius: 20, // KM (5/20/50/100)
   selectedCity: null,
   userLocation: null, // { lat, lng }
   activeCategory: "",
   searchQuery: "",
   sortBy: "popularity",
+
+  placeFilterCategories: [],
+  loadingPlaceCategories: false,
+  errorPlaceCategories: null,
 
   loadingPlaces: false,
   loadingNearby: false,
@@ -44,12 +50,35 @@ const initialState = {
 /* -------- Explore: get places by cityId -------- */
 export const fetchPlacesByCity = createAsyncThunk(
   "place/fetchPlacesByCity",
-  async ({ cityId }, thunkAPI) => {
-    console.log("THUNK RUNNING:", cityId);
+  async (arg = {}, thunkAPI) => {
+    const explore = thunkAPI.getState().place;
+    const cityId = arg.cityId;
+    if (!cityId) {
+      return thunkAPI.rejectWithValue("cityId is required");
+    }
+    const category =
+      arg.category !== undefined ? arg.category : explore.activeCategory;
+    const q = arg.q !== undefined ? arg.q : explore.searchQuery;
+    const sort = arg.sort !== undefined ? arg.sort : explore.sortBy;
+
     try {
-      const res = await apiClient.get(`/api/places?cityId=${cityId}`);
-      console.log("API RESPONSE:", res);
-      return res?.data ?? res;
+      const params = new URLSearchParams();
+      params.set("cityId", String(cityId));
+      const cat = String(category || "").trim();
+      if (cat) params.set("category", cat);
+      const search = String(q || "").trim();
+      if (search) params.set("q", search);
+      const sortVal = String(sort || "popularity").trim();
+      if (sortVal) params.set("sort", sortVal);
+
+      const res = await apiClient.get(`/api/places?${params.toString()}`);
+      const body = res?.data ?? res;
+      const list = Array.isArray(body)
+        ? body
+        : Array.isArray(body?.data)
+          ? body.data
+          : [];
+      return list;
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Failed to fetch places",
@@ -61,21 +90,71 @@ export const fetchPlacesByCity = createAsyncThunk(
 /* -------- Explore: get nearby places (distance KM) -------- */
 export const fetchNearbyPlaces = createAsyncThunk(
   "place/fetchNearbyPlaces",
-  async ({ lat, lng, distance, cityId, category, popular }, thunkAPI) => {
+  async (arg, thunkAPI) => {
+    const explore = thunkAPI.getState().place;
+    const { lat, lng, distance, cityId, popular } = arg;
+    const category =
+      arg.category !== undefined ? arg.category : explore.activeCategory;
+    const q = arg.q !== undefined ? arg.q : explore.searchQuery;
+    const relaxCity =
+      arg.relaxCity !== undefined
+        ? Boolean(arg.relaxCity)
+        : Boolean(explore.nearbyExpandedBeyondCity);
+
     try {
       const query = new URLSearchParams();
       query.set("lat", String(lat));
       query.set("lng", String(lng));
       query.set("distance", String(distance)); // KM
       if (cityId) query.set("cityId", String(cityId));
-      if (category) query.set("category", String(category));
+      if (relaxCity) query.set("relaxCity", "true");
+      const cat = String(category || "").trim();
+      if (cat) query.set("category", cat);
+      const search = String(q || "").trim();
+      if (search) query.set("q", search);
       if (popular === true) query.set("popular", "true");
 
       const res = await apiClient.get(`/api/places/nearby?${query.toString()}`);
-      return res?.data ?? res;
+      const body = res?.data ?? res;
+      const list = Array.isArray(body)
+        ? body
+        : Array.isArray(body?.data)
+          ? body.data
+          : [];
+      return { places: list, relaxCity };
     } catch (error) {
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Failed to fetch nearby places",
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch nearby places",
+      );
+    }
+  },
+);
+
+/* -------- Explore: distinct place categories for a city (DB strings for filter chips) -------- */
+export const fetchPlaceCategoriesByCity = createAsyncThunk(
+  "place/fetchPlaceCategoriesByCity",
+  async (cityId, thunkAPI) => {
+    if (!cityId) {
+      return thunkAPI.rejectWithValue("cityId is required");
+    }
+    try {
+      const res = await apiClient.get(
+        `/api/places/categories?cityId=${encodeURIComponent(String(cityId))}`,
+      );
+      const body = res?.data ?? res;
+      const list = Array.isArray(body)
+        ? body
+        : Array.isArray(body?.data)
+          ? body.data
+          : [];
+      return list;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to load categories",
       );
     }
   },
@@ -363,6 +442,8 @@ const placeSlice = createSlice({
       state.usingNearby = false;
       state.errorNearby = null;
       state.loadingNearby = false;
+      state.userLocation = null;
+      state.nearbyExpandedBeyondCity = false;
     },
 
     // save AI plan and history
@@ -392,6 +473,25 @@ const placeSlice = createSlice({
   },
 
   extraReducers: (builder) => {
+    // --- Explore: category list for filters ---
+    builder
+      .addCase(fetchPlaceCategoriesByCity.pending, (state) => {
+        state.loadingPlaceCategories = true;
+        state.errorPlaceCategories = null;
+        state.placeFilterCategories = [];
+      })
+      .addCase(fetchPlaceCategoriesByCity.fulfilled, (state, action) => {
+        state.loadingPlaceCategories = false;
+        state.placeFilterCategories = Array.isArray(action.payload)
+          ? action.payload
+          : [];
+      })
+      .addCase(fetchPlaceCategoriesByCity.rejected, (state, action) => {
+        state.loadingPlaceCategories = false;
+        state.errorPlaceCategories = action.payload;
+        state.placeFilterCategories = [];
+      });
+
     // --- Explore: fetch places by city ---
     builder
       .addCase(fetchPlacesByCity.pending, (state) => {
@@ -419,12 +519,25 @@ const placeSlice = createSlice({
       })
       .addCase(fetchNearbyPlaces.fulfilled, (state, action) => {
         state.loadingNearby = false;
-        state.nearbyPlaces = action.payload?.data || action.payload || [];
+        const p = action.payload;
+        if (p && typeof p === "object" && "places" in p) {
+          state.nearbyPlaces = Array.isArray(p.places) ? p.places : [];
+          state.nearbyExpandedBeyondCity = Boolean(p.relaxCity);
+        } else {
+          state.nearbyPlaces = Array.isArray(p)
+            ? p
+            : Array.isArray(p?.data)
+              ? p.data
+              : [];
+        }
       })
       .addCase(fetchNearbyPlaces.rejected, (state, action) => {
-        console.log("PAYLOAD:", action.payload);
         state.loadingNearby = false;
         state.errorNearby = action.payload;
+        state.nearbyPlaces = [];
+        state.usingNearby = false;
+        state.nearbyExpandedBeyondCity = false;
+        state.userLocation = null;
       });
 
     // --- Explore: get place by id ---
@@ -676,6 +789,13 @@ export const selectPlacesLoading = (state) => state.place.loadingPlaces;
 export const selectNearbyLoading = (state) => state.place.loadingNearby;
 export const selectPlacesError = (state) => state.place.errorPlaces;
 export const selectNearbyError = (state) => state.place.errorNearby;
+export const selectNearbyExpandedBeyondCity = (state) =>
+  state.place.nearbyExpandedBeyondCity;
 export const selectPagination = (state) => state.place.pagination;
+
+export const selectPlaceFilterCategories = (state) =>
+  state.place.placeFilterCategories;
+export const selectLoadingPlaceCategories = (state) =>
+  state.place.loadingPlaceCategories;
 
 export default placeSlice.reducer;

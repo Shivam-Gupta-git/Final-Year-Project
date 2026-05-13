@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   setActiveCategory,
@@ -10,7 +11,10 @@ import {
 
 export default function EmptyState({ usingNearby, radiusKm }) {
   const dispatch = useDispatch();
+  const { id: routeCityId } = useParams();
   const selectedCity = useSelector(selectSelectedCity);
+  const cityIdForApi =
+    selectedCity?._id ?? selectedCity?.id ?? routeCityId ?? null;
 
   const handleReset = () => {
     dispatch(setActiveCategory(""));
@@ -18,8 +22,8 @@ export default function EmptyState({ usingNearby, radiusKm }) {
     if (usingNearby) {
       dispatch(clearNearby());
     }
-    if (selectedCity?._id) {
-      dispatch(fetchPlacesByCity({ cityId: selectedCity._id }));
+    if (cityIdForApi) {
+      dispatch(fetchPlacesByCity({ cityId: cityIdForApi }));
     }
   };
 

@@ -2,17 +2,22 @@ import {
   MagnifyingGlassIcon,
   MapPinIcon,
   SignalIcon,
+  MinusIcon,
+  PlusIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
 import { getActiveCities } from "../../features/user/citySlice";
 import {
   getAllRestaurantsForUser,
   getNearbyRestaurants,
 } from "../../features/user/restaurantSlice";
 import { updateUserLocation } from "../../features/user/userSlice";
+
 import RestaurantCard from "./RestaurantCard";
 import RestaurantGridSkeleton from "./RestaurantGridSkeleton";
 
@@ -21,7 +26,10 @@ const pageVariants = {
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: {
+      duration: 0.45,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
   },
 };
 
@@ -29,16 +37,21 @@ const listContainer = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.05, delayChildren: 0.05 },
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.05,
+    },
   },
 };
 
 function useDebouncedValue(value, delay = 400) {
   const [debounced, setDebounced] = useState(value);
+
   useEffect(() => {
     const t = setTimeout(() => setDebounced(value), delay);
     return () => clearTimeout(t);
   }, [value, delay]);
+
   return debounced;
 }
 
@@ -51,9 +64,13 @@ function RestaurantLandingPage() {
     loading,
     error,
   } = useSelector((state) => state.restaurant);
+
   const { user } = useSelector((state) => state.user);
+
   const cityState = useSelector((state) => state.city);
+
   const citiesRaw = cityState?.cities;
+
   const cities = useMemo(
     () => (Array.isArray(citiesRaw) ? citiesRaw : citiesRaw?.data ?? []),
     [citiesRaw]
@@ -62,10 +79,17 @@ function RestaurantLandingPage() {
   const [city, setCity] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebouncedValue(searchInput.trim(), 400);
+
   const [isNearbyMode, setIsNearbyMode] = useState(false);
+
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoDenied, setGeoDenied] = useState(false);
+
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const [distanceKm, setDistanceKm] = useState(5);
+
+  // ---------------- FETCH ALL RESTAURANTS ----------------
 
   useEffect(() => {
     dispatch(getActiveCities());
@@ -75,11 +99,14 @@ function RestaurantLandingPage() {
     if (isNearbyMode) return;
 
     const params = {};
+
     if (city) params.city = city;
     if (debouncedSearch) params.search = debouncedSearch;
 
     dispatch(getAllRestaurantsForUser(params));
   }, [city, debouncedSearch, isNearbyMode, dispatch]);
+
+  // ---------------- SCROLL ----------------
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,77 +114,162 @@ function RestaurantLandingPage() {
     };
 
     window.addEventListener("scroll", handleScroll);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ---------------- FILTER LOCAL SEARCH ----------------
+
   const displayRestaurants = useMemo(() => {
     const list = Array.isArray(restaurants) ? restaurants : [];
+
     if (!isNearbyMode || !searchInput.trim()) return list;
+
     const q = searchInput.trim().toLowerCase();
+
     return list.filter((r) => {
       const name = r?.name?.toLowerCase?.() ?? "";
       const cuisine = r?.foodType?.toLowerCase?.() ?? "";
       const cname = r?.city?.name?.toLowerCase?.() ?? "";
-      return name.includes(q) || cuisine.includes(q) || cname.includes(q);
+
+      return (
+        name.includes(q) ||
+        cuisine.includes(q) ||
+        cname.includes(q)
+      );
     });
   }, [restaurants, isNearbyMode, searchInput]);
+
+  // ---------------- CITY SELECT ----------------
 
   const handleCitySelect = useCallback((name) => {
     setIsNearbyMode(false);
     setGeoDenied(false);
+
     if (name === "") {
       setCity("");
       return;
     }
+
     setCity(name);
   }, []);
 
+  // ---------------- GET LOCATION ----------------
+
   const handleDetectLocation = useCallback(() => {
-    // If user is not logged in
     if (!user) {
       alert("Please log in first to use your location.");
-      navigate("/login"); // redirect to login page
+      navigate("/login");
       return;
     }
+
     setGeoDenied(false);
+
     if (!navigator.geolocation) {
       setGeoDenied(true);
       return;
     }
+
     setGeoLoading(true);
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
+
         setIsNearbyMode(true);
         setCity("");
         setSearchInput("");
-        if (user) {
-          try {
-            await dispatch(
-              updateUserLocation({
-                latitude: lat,
-                longitude: lng,
-              })
-            ).unwrap();
-          } catch {
-            /* profile update optional */
-          }
+
+        // optional user profile update
+        try {
+          await dispatch(
+            updateUserLocation({
+              latitude: lat,
+              longitude: lng,
+            })
+          ).unwrap();
+        } catch {
+          // ignore
         }
-        dispatch(getNearbyRestaurants({ lat, lng }));
+
+        dispatch(
+          getNearbyRestaurants({
+            lat,
+            lng,
+            radius: distanceKm,
+          })
+        );
+
         setGeoLoading(false);
       },
+
       () => {
         setGeoDenied(true);
         setGeoLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+
+      {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0,
+      }
     );
-  }, [dispatch, user]);
+  }, [dispatch, user, navigate, distanceKm]);
+
+  // ---------------- DISTANCE CHANGE ----------------
+
+  const handleDistanceChange = useCallback(
+    (type) => {
+      let next = distanceKm;
+
+      if (type === "inc") {
+        next = Math.min(distanceKm + 5, 100);
+      } else {
+        next = Math.max(distanceKm - 5, 5);
+      }
+
+      setDistanceKm(next);
+
+      if (
+        isNearbyMode &&
+        navigator.geolocation
+      ) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            dispatch(
+              getNearbyRestaurants({
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                radius: next,
+              })
+            );
+          },
+          () => {},
+          {
+            enableHighAccuracy: true,
+          }
+        );
+      }
+    },
+    [distanceKm, dispatch, isNearbyMode]
+  );
+
+  // ---------------- CLEAR NEARBY ----------------
+
+  const handleClearNearby = () => {
+    setIsNearbyMode(false);
+    setDistanceKm(5);
+
+    dispatch(getAllRestaurantsForUser({}));
+  };
+
+  // ---------------- NAVIGATION ----------------
 
   const handleOpenRestaurant = useCallback(
     (id) => {
       if (!id) return;
+
       navigate(`/restaurant/${id}`);
     },
     [navigate]
@@ -166,43 +278,58 @@ function RestaurantLandingPage() {
   const handleViewMenu = useCallback(
     (id) => {
       if (!id) return;
+
       navigate(`/restaurant/${id}/menu`);
     },
     [navigate]
   );
 
-  const showEmpty = !loading && !geoLoading && displayRestaurants.length === 0;
+  const showEmpty =
+    !loading &&
+    !geoLoading &&
+    displayRestaurants.length === 0;
 
   return (
     <motion.div
-      className="min-h-screen bg-linear-to-b from-[#fffdfb] via-[#faf5ef] to-[#f5ebe0] relative"
+      className="relative min-h-screen bg-linear-to-b from-[#fffdfb] via-[#faf5ef] to-[#f5ebe0]"
       variants={pageVariants}
       initial="initial"
       animate="animate"
     >
-      {/* Decorative radial blur for depth */}
+      {/* Background Blur */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-[10%] -right-[5%] h-125 w-125 rounded-full bg-[#c67c4e]/5 blur-[120px]" />
+
         <div className="absolute -bottom-[10%] -left-[5%] h-150 w-150 rounded-full bg-[#eadccf]/10 blur-[150px]" />
       </div>
 
+      {/* ================= HEADER ================= */}
+
       <header className="sticky top-17 lg:top-3 z-50 mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
         <div
-          className={`rounded-3xl border border-white/60 bg-white/70 backdrop-blur-2xl 
-    shadow-[0_20px_60px_rgba(186,140,102,0.12)]
-    transition-all duration-300
-    ${isScrolled ? "px-3 py-3 sm:px-6 sm:py-4" : "px-5 py-6 sm:px-10 sm:py-8"}
-    `}
+          className={`
+            rounded-3xl border border-white/60
+            bg-white/70 backdrop-blur-2xl
+            shadow-[0_20px_60px_rgba(186,140,102,0.12)]
+            transition-all duration-300
+            ${
+              isScrolled
+                ? "px-3 py-3 sm:px-6 sm:py-4"
+                : "px-5 py-6 sm:px-10 sm:py-8"
+            }
+          `}
         >
-          {/* 🔥 TOP CONTENT (HIDE ON MOBILE SCROLL) */}
+          {/* TOP SECTION */}
+
           <div
-            className={`transition-all duration-300 overflow-hidden 
-      ${
-        isScrolled
-          ? "max-h-0 opacity-0 sm:max-h-full sm:opacity-100"
-          : "max-h-75 opacity-100"
-      }
-      `}
+            className={`
+              overflow-hidden transition-all duration-300
+              ${
+                isScrolled
+                  ? "max-h-0 opacity-0 sm:max-h-full sm:opacity-100"
+                  : "max-h-75 opacity-100"
+              }
+            `}
           >
             <div className="mb-4 sm:mb-6">
               <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-[#c67c4e]">
@@ -217,15 +344,17 @@ function RestaurantLandingPage() {
               </h1>
 
               <p className="mt-3 sm:mt-4 max-w-lg text-sm sm:text-base font-medium leading-relaxed text-[#6f5a4b]">
-                Discover curated flavours and premium menus. Minimal, fast, and
-                designed for an elegant ordering experience.
+                Discover curated flavours and premium menus.
+                Elegant dining experience with fast discovery.
               </p>
             </div>
           </div>
 
-          {/* 🔍 SEARCH + LOCATION (ALWAYS VISIBLE) */}
-          <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center">
-            {/* Search */}
+          {/* SEARCH + LOCATION */}
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* SEARCH */}
+
             <div className="relative flex-1 group">
               <MagnifyingGlassIcon className="absolute left-4 sm:left-5 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-[#a07d63]" />
 
@@ -233,109 +362,236 @@ function RestaurantLandingPage() {
                 type="search"
                 placeholder="Find your favorite cuisine..."
                 value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="ui-input w-full rounded-[18px]! py-3! sm:py-5! pl-12! sm:pl-14! pr-4! sm:pr-6! 
-          text-sm sm:text-base shadow-sm! transition-all hover:border-[#c67c4e]/30"
+                onChange={(e) =>
+                  setSearchInput(e.target.value)
+                }
+                className="
+                  ui-input w-full
+                  rounded-[18px]!
+                  py-3! sm:py-5!
+                  pl-12! sm:pl-14!
+                  pr-12!
+                  text-sm sm:text-base
+                  shadow-sm!
+                  transition-all
+                  hover:border-[#c67c4e]/30
+                "
               />
+
+              {searchInput && (
+                <button
+                  onClick={() => setSearchInput("")}
+                  className="
+                    absolute right-4 top-1/2
+                    -translate-y-1/2
+                    text-[#9c7d66]
+                    hover:text-[#2d1f16]
+                    transition
+                  "
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
-            {/* Location Button */}
+            {/* LOCATION BUTTON */}
+
             <motion.button
               type="button"
               onClick={handleDetectLocation}
               disabled={geoLoading}
-              className="ui-btn-primary flex items-center justify-center gap-2 
-        rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-sm sm:text-base shadow-md 
-        disabled:opacity-70"
-              whileHover={{ scale: geoLoading ? 1 : 1.02 }}
-              whileTap={{ scale: geoLoading ? 1 : 0.98 }}
+              className="
+                ui-btn-primary
+                flex items-center justify-center gap-2
+                rounded-2xl
+                px-5 py-3.5
+                text-sm sm:text-base
+                shadow-lg
+                disabled:opacity-70
+              "
+              whileHover={{
+                scale: geoLoading ? 1 : 1.02,
+              }}
+              whileTap={{
+                scale: geoLoading ? 1 : 0.98,
+              }}
             >
               {geoLoading ? (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               ) : (
-                <MapPinIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <MapPinIcon className="h-5 w-5" />
               )}
-              <span className="hidden sm:inline">Use my location</span>
+
+              <span className="hidden sm:inline">
+                Use my location
+              </span>
             </motion.button>
           </div>
 
-          {/* ✅ Nearby badge */}
-          {isNearbyMode && (
-            <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-3 flex items-center gap-2 rounded-xl bg-[#e6f4ea] px-3 py-2 
-        text-[11px] sm:text-xs font-semibold text-[#22c55e] border border-[#22c55e]/10"
-            >
-              <SignalIcon className="h-4 w-4" />
-              Showing nearby restaurants (~5 km)
-            </motion.div>
-          )}
+          {/* NEARBY BADGE */}
+
+          <AnimatePresence>
+            {isNearbyMode && (
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  y: -6,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -6,
+                }}
+                className="
+                  mt-4
+                  flex flex-wrap items-center gap-3
+                  rounded-2xl
+                  border border-[#22c55e]/10
+                  bg-[#e6f4ea]
+                  px-4 py-3
+                  text-[#22c55e]
+                  shadow-sm
+                "
+              >
+                <div className="flex items-center gap-2">
+                  <SignalIcon className="h-4 w-4" />
+
+                  <span className="text-[11px] sm:text-xs font-bold">
+                    Showing nearby restaurants
+                  </span>
+                </div>
+
+                {/* DISTANCE CONTROL */}
+
+                <div className="flex items-center gap-2 rounded-xl bg-white/80 px-2 py-1 shadow-sm">
+                  <button
+                    onClick={() =>
+                      handleDistanceChange("dec")
+                    }
+                    className="
+                      flex h-7 w-7 items-center justify-center
+                      rounded-lg
+                      bg-white
+                      text-[#22c55e]
+                      transition
+                      hover:bg-[#22c55e]
+                      hover:text-white
+                    "
+                  >
+                    <MinusIcon className="h-3.5 w-3.5" />
+                  </button>
+
+                  <span className="min-w-16 text-center text-[11px] font-black">
+                    {distanceKm} km
+                  </span>
+
+                  <button
+                    onClick={() =>
+                      handleDistanceChange("inc")
+                    }
+                    className="
+                      flex h-7 w-7 items-center justify-center
+                      rounded-lg
+                      bg-white
+                      text-[#22c55e]
+                      transition
+                      hover:bg-[#22c55e]
+                      hover:text-white
+                    "
+                  >
+                    <PlusIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                {/* CLEAR */}
+
+                <button
+                  onClick={handleClearNearby}
+                  className="
+                    ml-auto
+                    rounded-xl
+                    border border-[#22c55e]/20
+                    bg-white/80
+                    px-3 py-1.5
+                    text-[10px]
+                    font-black uppercase tracking-wider
+                    text-[#22c55e]
+                    transition
+                    hover:bg-[#22c55e]
+                    hover:text-white
+                  "
+                >
+                  Clear
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
+      {/* ================= MAIN ================= */}
+
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <section className="mb-10" aria-labelledby="cities-heading">
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <h2
-                id="cities-heading"
-                className="text-xl font-black text-[#2d2d2d]"
-              >
-                Explore by city
-              </h2>
-              <p className="text-sm font-medium text-[#6b6b6b]">
-                Tap a city to filter — or open all restaurants.
-              </p>
-            </div>
+        {/* CITIES */}
+
+        <section className="mb-10">
+          <div className="mb-4">
+            <h2 className="text-xl font-black text-[#2d2d2d]">
+              Explore by city
+            </h2>
+
+            <p className="text-sm font-medium text-[#6b6b6b]">
+              Tap a city to filter restaurants.
+            </p>
           </div>
 
           <div className="relative">
-            {/* Left fade */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 sm:w-8 lg:w-12 bg-linear-to-r from-[#f6f1eb]/95 to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-linear-to-r from-[#f6f1eb]/95 to-transparent" />
 
-            {/* Right fade */}
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 sm:w-8 lg:w-12 bg-linear-to-l from-[#f1ebe4]/95 to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-linear-to-l from-[#f1ebe4]/95 to-transparent" />
 
             <div
               className="
-      flex gap-2 sm:gap-3 
-      overflow-x-auto 
-      pb-2 pt-1
-      px-1
-      scroll-smooth
-      [-ms-overflow-style:none] 
-      [scrollbar-width:none] 
-      [&::-webkit-scrollbar]:hidden
-    "
+                flex gap-3 overflow-x-auto
+                pb-2 pt-1 px-1
+                scroll-smooth
+                [-ms-overflow-style:none]
+                [scrollbar-width:none]
+                [&::-webkit-scrollbar]:hidden
+              "
             >
-              {/* All Regions */}
+              {/* ALL */}
+
               <motion.button
                 type="button"
                 onClick={() => handleCitySelect("")}
                 className={`
-        shrink-0 rounded-[18px] sm:rounded-[22px]
-        border 
-        px-4 py-2.5 sm:px-7 sm:py-5
-        text-xs sm:text-sm
-        font-black 
-        transition-all
-        ${
-          !city && !isNearbyMode
-            ? "border-[#c67c4e] bg-linear-to-br from-[#c67c4e] to-[#b86c3d] text-white shadow-[0_10px_20px_rgba(198,124,78,0.25)]"
-            : "border-[#eadccf] bg-white/80 text-[#6f5a4b] hover:border-[#c67c4e]/40 hover:bg-white hover:text-[#2d1f16]"
-        }
-      `}
+                  shrink-0 rounded-[20px]
+                  border px-5 py-3
+                  text-sm font-black
+                  transition-all
+                  ${
+                    !city && !isNearbyMode
+                      ? "border-[#c67c4e] bg-linear-to-br from-[#c67c4e] to-[#b86c3d] text-white shadow-[0_10px_20px_rgba(198,124,78,0.25)]"
+                      : "border-[#eadccf] bg-white/80 text-[#6f5a4b]"
+                  }
+                `}
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.95 }}
               >
                 All Regions
               </motion.button>
 
-              {/* Cities */}
+              {/* CITY LIST */}
+
               {cities.map((c) => {
                 const name = c?.name ?? "";
-                const active = !isNearbyMode && city === name;
+
+                const active =
+                  !isNearbyMode && city === name;
 
                 return (
                   <motion.button
@@ -343,37 +599,36 @@ function RestaurantLandingPage() {
                     type="button"
                     onClick={() => handleCitySelect(name)}
                     className={`
-            min-w-30 sm:min-w-40
-            shrink-0 
-            rounded-[18px] sm:rounded-[22px]
-            border 
-            px-4 py-2.5 sm:px-7 sm:py-3
-            text-left 
-            transition-all
-            ${
-              active
-                ? "border-[#c67c4e] bg-linear-to-br from-[#c67c4e] to-[#b86c3d] text-white shadow-[0_10px_20px_rgba(198,124,78,0.25)]"
-                : "border-[#eadccf] bg-white/80 text-[#6f5a4b] hover:border-[#c67c4e]/40 hover:bg-white hover:text-[#2d1f16]"
-            }
-          `}
+                      min-w-35 shrink-0
+                      rounded-[20px]
+                      border px-5 py-3
+                      text-left transition-all
+                      ${
+                        active
+                          ? "border-[#c67c4e] bg-linear-to-br from-[#c67c4e] to-[#b86c3d] text-white shadow-[0_10px_20px_rgba(198,124,78,0.25)]"
+                          : "border-[#eadccf] bg-white/80 text-[#6f5a4b]"
+                      }
+                    `}
                     whileHover={{ y: -3 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <span
                       className={`
-              block 
-              text-[9px] sm:text-[10px]
-              font-black 
-              uppercase 
-              tracking-[0.12em] sm:tracking-[0.15em]
-              ${active ? "text-white/70" : "text-[#a07d63]"}
-            `}
+                        text-[10px] font-black uppercase tracking-[0.15em]
+                        ${
+                          active
+                            ? "text-white/70"
+                            : "text-[#a07d63]"
+                        }
+                      `}
                     >
-                      {active ? "Current" : "Location"}
+                      {active
+                        ? "Current"
+                        : "Location"}
                     </span>
 
-                    <span className="mt-1 block text-sm sm:text-base font-black truncate">
-                      {name || "—"}
+                    <span className="mt-1 block text-base font-black truncate">
+                      {name}
                     </span>
                   </motion.button>
                 );
@@ -382,21 +637,23 @@ function RestaurantLandingPage() {
           </div>
         </section>
 
-        <section aria-labelledby="listing-heading">
+        {/* RESTAURANTS */}
+
+        <section>
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <h2
-              id="listing-heading"
-              className="text-xl font-black text-[#2d2d2d]"
-            >
+            <h2 className="text-xl font-black text-[#2d2d2d]">
               Popular restaurants
             </h2>
+
             {(loading || geoLoading) && (
               <div className="flex items-center gap-2 text-sm font-medium text-[#c67c4e]">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#c67c4e]/30 border-t-[#c67c4e]" />
-                Updating…
+                Updating...
               </div>
             )}
           </div>
+
+          {/* ERROR */}
 
           <AnimatePresence mode="wait">
             {error && (
@@ -405,23 +662,38 @@ function RestaurantLandingPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
+                className="
+                  mb-6 rounded-2xl border border-red-200
+                  bg-red-50 px-4 py-3 text-sm text-red-800
+                "
               >
-                {typeof error === "string" ? error : "Something went wrong."}
+                {typeof error === "string"
+                  ? error
+                  : "Something went wrong."}
               </motion.p>
             )}
           </AnimatePresence>
 
+          {/* GEO ERROR */}
+
           {geoDenied && (
-            <p className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/35 dark:text-amber-100">
-              Location permission is off. Enable it to see nearby restaurants,
-              or pick a city above.
+            <p
+              className="
+                mb-6 rounded-2xl border border-amber-200
+                bg-amber-50 px-4 py-3 text-sm text-amber-900
+              "
+            >
+              Location permission is off. Enable it to
+              see nearby restaurants.
             </p>
           )}
 
+          {/* GRID */}
+
           <div className="relative min-h-50">
             <AnimatePresence mode="wait">
-              {(loading || geoLoading) && !restaurants?.length ? (
+              {(loading || geoLoading) &&
+              !restaurants?.length ? (
                 <motion.div
                   key="sk"
                   initial={{ opacity: 0 }}
@@ -433,18 +705,31 @@ function RestaurantLandingPage() {
               ) : showEmpty ? (
                 <motion.div
                   key="empty"
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{
+                    opacity: 0,
+                    scale: 0.98,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                  }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-black/10 bg-[#faf7f2]/40 px-6 py-20 text-center shadow-inner"
+                  className="
+                    flex flex-col items-center justify-center
+                    rounded-3xl border border-dashed border-black/10
+                    bg-[#faf7f2]/40 px-6 py-20
+                    text-center shadow-inner
+                  "
                 >
                   <p className="text-xl font-black text-[#2d2d2d]">
                     No restaurants found
                   </p>
+
                   <p className="mt-2 max-w-md text-sm font-medium text-[#6b6b6b]">
-                    Try another city, clear your search, or use your location to
-                    discover spots nearby.
+                    Try another city or use your
+                    location to discover nearby places.
                   </p>
+
                   <motion.button
                     type="button"
                     className="ui-btn-primary mt-6 rounded-2xl! px-6! py-2.5!"
@@ -464,16 +749,27 @@ function RestaurantLandingPage() {
                   variants={listContainer}
                   initial="hidden"
                   animate="show"
-                  className={`grid grid-cols-1 gap-5 transition-opacity duration-300 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${
-                    loading ? "opacity-70" : "opacity-100"
-                  }`}
+                  className={`
+                    grid grid-cols-1 gap-5
+                    transition-opacity duration-300
+                    sm:grid-cols-2
+                    lg:grid-cols-3
+                    xl:grid-cols-4
+                    ${
+                      loading
+                        ? "opacity-70"
+                        : "opacity-100"
+                    }
+                  `}
                 >
                   {displayRestaurants.map((r, i) => (
                     <RestaurantCard
                       key={r?._id ?? i}
                       restaurant={r}
                       index={i}
-                      onOpenRestaurant={handleOpenRestaurant}
+                      onOpenRestaurant={
+                        handleOpenRestaurant
+                      }
                       onViewMenu={handleViewMenu}
                     />
                   ))}
@@ -481,11 +777,19 @@ function RestaurantLandingPage() {
               )}
             </AnimatePresence>
 
-            {(loading || geoLoading) && restaurants?.length > 0 && (
-              <div className="pointer-events-none absolute inset-0 flex items-start justify-center rounded-3xl bg-[#faf7f2]/20 pt-24 backdrop-blur-[2px]">
-                <span className="h-10 w-10 animate-spin rounded-full border-2 border-[#c67c4e]/30 border-t-[#c67c4e]" />
-              </div>
-            )}
+            {(loading || geoLoading) &&
+              restaurants?.length > 0 && (
+                <div
+                  className="
+                    pointer-events-none absolute inset-0
+                    flex items-start justify-center
+                    rounded-3xl bg-[#faf7f2]/20
+                    pt-24 backdrop-blur-[2px]
+                  "
+                >
+                  <span className="h-10 w-10 animate-spin rounded-full border-2 border-[#c67c4e]/30 border-t-[#c67c4e]" />
+                </div>
+              )}
           </div>
         </section>
       </main>
