@@ -174,7 +174,7 @@ function Navbar() {
   return (
     <>
       <nav
-        className="sticky top-0 z-50  bg-transparent font-['Poppins'] backdrop-blur-xl"
+        className="sticky top-0 bg-transparent font-['Poppins'] backdrop-blur-xl z-100"
         ref={dropdownRef}
       >
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
