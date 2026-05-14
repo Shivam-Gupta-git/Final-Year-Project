@@ -15,7 +15,7 @@ function MyOrdersPage() {
   }, [dispatch, status]);
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#fffdfb] via-[#faf5ef] to-[#f5ebe0] p-4 text-[#2d1f16]">
+    <div className="min-h-screen bg-linear-to-b from-[#f4f7fb] via-[#e9f0f8] to-[#dfe9f5] p-4 text-[#2d1f16]">
       <div className="ui-container max-w-4xl">
         {/* HEADER */}
         <h1 className="text-3xl font-black mb-8 text-[#2d1f16] tracking-tight">

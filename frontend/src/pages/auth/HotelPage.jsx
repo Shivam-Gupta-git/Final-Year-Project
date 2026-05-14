@@ -29,6 +29,7 @@ import {
   getRoomsAvailabilityBulk,
   searchHotel,
 } from "../../features/user/hotelSlice";
+import { useWishlist } from "../../components/WishlistContext";
 
 /* ─── unchanged constants ─── */
 const AMENITY_ICONS = {
@@ -208,7 +209,8 @@ const HotelCard = ({
   index = 0,
 }) => {
   const isSoldOut = availableRooms === 0;
-  const [wishlist, setWishlist] = useState(false);
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const wishlisted = isInWishlist("hotels", hotel._id);
   const navigate = useNavigate();
 
   const images = hotel.images?.length
@@ -248,11 +250,24 @@ const HotelCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setWishlist(!wishlist);
+            if (wishlisted) {
+              removeFromWishlist("hotels", hotel._id);
+            } else {
+              addToWishlist("hotels", {
+                _id: hotel._id,
+                name: hotel.name,
+                image: images[0],
+                location:
+                  [hotel.address, cityName].filter(Boolean).join(", ") ||
+                  "City Centre",
+                rating: rating ?? 0,
+                price: price,
+              });
+            }
           }}
           className="absolute top-3 right-3 w-7 h-7 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform z-10 hover:bg-white"
         >
-          {wishlist ? (
+          {wishlisted ? (
             <FaHeart className="text-rose-500 text-xs" />
           ) : (
             <FaRegHeart className="text-slate-400 text-xs" />

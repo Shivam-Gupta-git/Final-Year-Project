@@ -72,7 +72,7 @@ function FoodDetailPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-linear-to-b from-[#fffdfb] via-[#faf5ef] to-[#f5ebe0] pb-28 text-[#2d1f16]"
+      className="min-h-screen bg-linear-to-b from-[#f4f7fb] via-[#e9f0f8] to-[#dfe9f5] pb-28 text-[#2d1f16]"
     >
       {/* 🖼 IMAGE */}
       <div className="relative w-full h-55 sm:h-80 md:h-105 overflow-hidden">

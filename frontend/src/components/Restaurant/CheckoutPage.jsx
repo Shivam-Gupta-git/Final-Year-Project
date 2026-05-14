@@ -121,7 +121,7 @@ function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#fffdfb] via-[#faf5ef] to-[#f5ebe0] text-[#2d1f16]">
+    <div className="min-h-screen bg-linear-to-b from-[#f4f7fb] via-[#e9f0f8] to-[#dfe9f5] text-[#2d1f16]">
       
       {/* CONTAINER */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">

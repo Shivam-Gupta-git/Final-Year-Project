@@ -47,7 +47,7 @@ function RestaurantMenuPage() {
     restaurant?.name ?? (restaurantDetailLoading ? "…" : "Restaurant");
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#fffdfb] via-[#faf5ef] to-[#f5ebe0] text-[#2d1f16]">
+    <div className="min-h-screen bg-linear-to-b from-[#f4f7fb] via-[#e9f0f8] to-[#dfe9f5] text-[#2d1f16]">
 
       {/* 🔝 TOP BAR */}
       <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-[#eadccf]">
