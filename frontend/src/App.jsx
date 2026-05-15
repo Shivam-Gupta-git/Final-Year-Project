@@ -107,6 +107,8 @@ const AssistantRecommendations = lazy(() => import("./pages/assistantChat/Assist
 const UpdateUserLocation = lazy(() => import("./components/UpdateUserLocation"))
 const GlobalMap = lazy(() => import("./components/globalMap/GlobalMap"))
 import PayoutDashboard from "./pages/admin/finance/PayoutDashboard";
+import { useWishlist, WishlistProvider } from "./components/WishlistContext";
+import WishlistPage from "./pages/auth/WishlistPage";
 
 
 function App() {
@@ -694,6 +696,8 @@ function App() {
         <Route path="/updateUserLocation" element={<UpdateUserLocation/>}/>
         <Route path="/globalMap" element={<GlobalMap/>}/>
         <Route path="*" element={<Page404 type="404"/>}/>
+        <Route path="/wishlist" element={<WishlistPage/>}/>
+        
       </Routes>
 
     </Suspense>

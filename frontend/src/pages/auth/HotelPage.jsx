@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { ReactLenis } from "lenis/react";
-import { useEffect, useMemo, useState } from "react";
+import { ReactLenis, useLenis } from "lenis/react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FaBolt,
   FaCar,
@@ -29,6 +29,7 @@ import {
   getRoomsAvailabilityBulk,
   searchHotel,
 } from "../../features/user/hotelSlice";
+import { useWishlist } from "../../components/WishlistContext";
 
 /* ─── unchanged constants ─── */
 const AMENITY_ICONS = {
@@ -117,7 +118,9 @@ const applyFilters = (
           case "3 Star":
             return h.starCategory === 3;
           case "Breakfast Included":
-            return h.facilities?.some((f) => f.toLowerCase().includes("breakfast"));
+            return h.facilities?.some((f) =>
+              f.toLowerCase().includes("breakfast"),
+            );
           case "Free Cancellation":
             return h.freeCancellation === true;
           case "Couple Friendly":
@@ -206,14 +209,15 @@ const HotelCard = ({
   index = 0,
 }) => {
   const isSoldOut = availableRooms === 0;
-  const [wishlist, setWishlist] = useState(false);
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const wishlisted = isInWishlist("hotels", hotel._id);
   const navigate = useNavigate();
 
   const images = hotel.images?.length
     ? hotel.images
     : [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80",
-    ];
+        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80",
+      ];
   const price = hotel.pricePerNight ?? hotel.price ?? 0;
   const totalPrice = price * nights;
   const rating = hotel.averageRating ?? hotel.rating ?? null;
@@ -230,7 +234,10 @@ const HotelCard = ({
     <motion.div
       viewport={{ once: false, margin: "-10% 0px -10% 0px" }}
       className="group bg-white rounded-2xl overflow-hidden border border-slate-200/70 hover:border-blue-200 transition-all duration-300 flex flex-col sm:flex-row cursor-pointer shadow-[0_2px_12px_rgba(100,130,180,0.08)] hover:shadow-[0_8px_32px_rgba(99,130,200,0.18)] will-change-transform"
-      onClick={() => navigate(`/hotels/${hotel._id}`)}
+      onClick={() => {
+        sessionStorage.setItem("hotelListScroll", window.scrollY);
+        navigate(`/hotels/${hotel._id}`);
+      }}
     >
       {/* Image */}
       <div className="relative w-full sm:w-52 h-48 sm:h-48 shrink-0 overflow-hidden bg-slate-100">
@@ -243,11 +250,24 @@ const HotelCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setWishlist(!wishlist);
+            if (wishlisted) {
+              removeFromWishlist("hotels", hotel._id);
+            } else {
+              addToWishlist("hotels", {
+                _id: hotel._id,
+                name: hotel.name,
+                image: images[0],
+                location:
+                  [hotel.address, cityName].filter(Boolean).join(", ") ||
+                  "City Centre",
+                rating: rating ?? 0,
+                price: price,
+              });
+            }
           }}
           className="absolute top-3 right-3 w-7 h-7 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform z-10 hover:bg-white"
         >
-          {wishlist ? (
+          {wishlisted ? (
             <FaHeart className="text-rose-500 text-xs" />
           ) : (
             <FaRegHeart className="text-slate-400 text-xs" />
@@ -350,10 +370,11 @@ const HotelCard = ({
             availableRooms <= 7 && (
               <span
                 className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border mt-1.5
-                ${availableRooms <= 3
+                ${
+                  availableRooms <= 3
                     ? "text-rose-600 bg-rose-50 border-rose-200"
                     : "text-amber-600 bg-amber-50 border-amber-200"
-                  }`}
+                }`}
               >
                 {availableRooms <= 3 ? "🔥 " : ""}Only {availableRooms} rooms
                 left!
@@ -419,13 +440,17 @@ const HotelCard = ({
             disabled={isSoldOut}
             onClick={(e) => {
               e.stopPropagation();
-              if (!isSoldOut) navigate(`/hotels/${hotel._id}`);
+              if (!isSoldOut) {
+                sessionStorage.setItem("hotelListScroll", window.scrollY);
+                navigate(`/hotels/${hotel._id}`);
+              }
             }}
             className={`text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 whitespace-nowrap min-w-27.5
-            ${isSoldOut
+            ${
+              isSoldOut
                 ? "bg-slate-200 text-slate-400 cursor-not-allowed"
                 : "bg-linear-to-r from-[#c67c4e] to-[#b86c3d] hover:from-[#b06d42] hover:to-[#9e5b33] active:scale-95 shadow-[0_8px_24px_rgba(198,124,78,0.35)] hover:shadow-[0_8px_24px_rgba(198,124,78,0.5)]"
-              }`}
+            }`}
           >
             {isSoldOut ? "Sold Out" : "Book Now"}
           </button>
@@ -459,11 +484,7 @@ const EmptyState = ({ cityParam }) => (
 /* ─── HotelPage ─── */
 function HotelPage() {
   const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const {
     hotels = [],
@@ -479,6 +500,54 @@ function HotelPage() {
   const childrenParam = searchParams.get("children") || "";
 
   const nights = getNights(checkInParam, checkOutParam);
+
+  // ── SCROLL RESTORATION ──────────────────────────────────────────────────────
+
+  // 1. On mount: scroll to top only if NOT returning from a hotel detail page
+  useEffect(() => {
+    const saved = sessionStorage.getItem("hotelListScroll");
+    if (!saved) {
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
+  // 2. After hotels finish loading: restore saved scroll position.
+  //    Must wait for loading=false so the cards are in the DOM and the page
+  //    is tall enough. Double rAF lets Lenis finish its own render cycle first.
+  const lenis = useLenis();
+  const scrollRestored = useRef(false);
+  const isRestoringScroll = useRef(false);
+  useEffect(() => {
+    if (loading) return;
+    if (scrollRestored.current) return;
+
+    const saved = sessionStorage.getItem("hotelListScroll");
+
+    if (!saved) return;
+
+    scrollRestored.current = true;
+    isRestoringScroll.current = true;
+
+    sessionStorage.removeItem("hotelListScroll");
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (lenis) {
+          lenis.scrollTo(parseInt(saved, 10), {
+            immediate: true,
+          });
+        } else {
+          window.scrollTo(0, parseInt(saved, 10));
+        }
+
+        setTimeout(() => {
+          isRestoringScroll.current = false;
+        }, 200);
+      });
+    });
+  }, [loading, lenis]);
+
+  // ── END SCROLL RESTORATION ──────────────────────────────────────────────────
 
   useEffect(() => {
     if (cityParam) {
@@ -522,10 +591,38 @@ function HotelPage() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
-  const [page, setPage] = useState(1);
   const PER_PAGE = 10;
   const requestedRooms = Number(roomsParam) || 0;
   const requestedAdults = Number(adultsParam) || 0;
+
+  // ── PAGE (URL-based) ────────────────────────────────────────────────────────
+  const pageParam = parseInt(searchParams.get("page") || "1", 10);
+  const page = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+
+  const setPage = (newPage) => {
+    const next = typeof newPage === "function" ? newPage(page) : newPage;
+    setSearchParams(
+      (prev) => {
+        const p = new URLSearchParams(prev);
+        p.set("page", String(next));
+        return p;
+      },
+      { replace: false },
+    );
+  };
+
+  // 3. Page-change scroll: skip on first render (back navigation), then scroll
+  //    to top whenever the user actually changes page.
+  const isFirstPageRender = useRef(true);
+  useEffect(() => {
+    if (isFirstPageRender.current) {
+      isFirstPageRender.current = false;
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
+
+  // ── END PAGE ────────────────────────────────────────────────────────────────
 
   const processedHotels = useMemo(
     () =>
@@ -571,11 +668,6 @@ function HotelPage() {
 
   return (
     <ReactLenis root options={{ lerp: 0.08, smoothWheel: true }}>
-      {/*
-       * ─── ROOT: soft SaaS gradient background ───────────────────────────
-       * Replacing #0a0a10 dark canvas with an airy light gradient.
-       * All layout structure, flex/grid, spacing preserved exactly.
-       */}
       <div
         className="min-h-screen font-sans selection:bg-blue-200/60 relative overflow-hidden"
         style={{
@@ -585,7 +677,6 @@ function HotelPage() {
       >
         {/* Soft floating ambient blobs – very low opacity, no interactivity */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          {/* top-left warm highlight */}
           <div
             className="absolute top-[-8%] left-[-6%] w-[45vw] h-[45vw] rounded-full"
             style={{
@@ -594,7 +685,6 @@ function HotelPage() {
               filter: "blur(60px)",
             }}
           />
-          {/* bottom-right cool blob */}
           <div
             className="absolute bottom-[-5%] right-[-4%] w-[38vw] h-[38vw] rounded-full"
             style={{
@@ -603,7 +693,6 @@ function HotelPage() {
               filter: "blur(70px)",
             }}
           />
-          {/* center soft glow */}
           <div
             className="absolute top-[45%] left-[40%] w-[30vw] h-[30vw] rounded-full"
             style={{
@@ -613,9 +702,6 @@ function HotelPage() {
             }}
           />
         </div>
-
-        {/* Scroll progress bar – blue gradient */}
-
 
         {/* ── Sticky Search Bar ── */}
         <motion.div
@@ -642,10 +728,6 @@ function HotelPage() {
             transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
             className="hidden lg:block shrink-0"
           >
-            {/*
-             * Wrap sidebar in a frosted-card shell.
-             * Inner component (HotelFilter) is untouched.
-             */}
             <div
               className="rounded-2xl overflow-hidden border border-white/70"
               style={{
@@ -676,8 +758,8 @@ function HotelPage() {
                 ) : (
                   <>
                     <h1 className="text-base sm:text-lg font-extrabold text-slate-800">
-                      <span className="text-[#c67c4e]">{totalCount}</span> Hotels
-                      Found
+                      <span className="text-[#c67c4e]">{totalCount}</span>{" "}
+                      Hotels Found
                       {cityParam && (
                         <span className="text-slate-400 font-normal text-sm sm:text-base ml-2">
                           in <span className="text-slate-700">{cityParam}</span>
@@ -742,8 +824,9 @@ function HotelPage() {
                     <span className="hidden sm:inline">{sortLabel}</span>
                     <span className="sm:hidden">Sort</span>
                     <FaChevronDown
-                      className={`text-[10px] text-slate-400 transition-transform duration-200 ${showSortMenu ? "rotate-180" : ""
-                        }`}
+                      className={`text-[10px] text-slate-400 transition-transform duration-200 ${
+                        showSortMenu ? "rotate-180" : ""
+                      }`}
                     />
                   </button>
                   {showSortMenu && (
@@ -766,9 +849,10 @@ function HotelPage() {
                             setPage(1);
                           }}
                           className={`w-full text-left px-4 py-2.5 text-xs transition-colors
-                            ${sortBy === opt.value
-                              ? "bg-blue-50 text-blue-600 font-bold"
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+                            ${
+                              sortBy === opt.value
+                                ? "bg-blue-50 text-blue-600 font-bold"
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
                             }`}
                         >
                           {sortBy === opt.value && (
@@ -836,30 +920,31 @@ function HotelPage() {
                 className="flex justify-center items-center gap-1.5 mt-8 flex-wrap pb-10"
               >
                 <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1), window.scrollTo(0, 0))}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                   className="px-3 sm:px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-sm"
                 >
                   ← Prev
                 </button>
+
                 <div className="flex items-center gap-1.5 overflow-x-auto max-w-[55vw] sm:max-w-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   {[...Array(totalPages)].map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setPage(i + 1)}
-
-                      className={`w-8 h-8 rounded-xl text-xs font-bold transition-all duration-200 shrink-0 ${page === i + 1
+                      className={`w-8 h-8 rounded-xl text-xs font-bold transition-all duration-200 shrink-0 ${
+                        page === i + 1
                           ? "bg-linear-to-br from-blue-500 to-indigo-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.35)] border border-blue-400"
                           : "border border-slate-200 bg-white text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 shadow-sm"
-                        }`}
+                      }`}
                     >
                       {i + 1}
                     </button>
                   ))}
                 </div>
+
                 <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1), window.scrollTo(0, 0))
-                  }
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                   className="px-3 sm:px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-sm"
                 >
@@ -920,7 +1005,7 @@ function HotelPage() {
           </div>
         )}
 
-        {/* Map Modal – unchanged */}
+        {/* Map Modal */}
         <MapModal
           isOpen={mapOpen}
           onClose={() => setMapOpen(false)}

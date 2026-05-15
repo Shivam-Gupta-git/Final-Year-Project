@@ -72,7 +72,7 @@ export default function RestaurantDetailPage() {
   const openStatus = isOpen(r?.openingHours?.open, r?.openingHours?.close);
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#fffdfb] via-[#faf5ef] to-[#f5ebe0]">
+    <div className="min-h-screen bg-linear-to-b from-[#f4f7fb] via-[#e9f0f8] to-[#dfe9f5]">
 
       {/* HERO */}
       <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[60vh] overflow-hidden">

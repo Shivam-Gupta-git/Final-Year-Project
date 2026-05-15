@@ -1075,107 +1075,131 @@ export const findNearbyAdmins = async (req, res) => {
   }
 };
 
+//smart search
+const ENTITY_KEYWORDS = new Set([
+  "hotel", "hotels",
+  "place", "places",
+  "restaurant", "restaurants",
+  "travel", "travels",
+]);
+
+const STOP_WORDS = new Set([
+  "in", "at", "near", "around", "best", "top", "find", "show", "me", "a", "the",
+]);
+
+/**
+ * Parse raw query into entity flags + city keyword string.
+ * e.g. "hotels in new delhi" → { isHotel:true, cityTokens:"new delhi" }
+ *      "new delhi"           → { isGeneral:true, cityTokens:"new delhi" }
+ */
+const parseQuery = (raw) => {
+  const tokens = raw.split(/\s+/).map((t) => t.toLowerCase());
+  const entity = { hotel: false, place: false, restaurant: false, travel: false };
+
+  const cityTokens = tokens
+    .filter((t) => {
+      if (ENTITY_KEYWORDS.has(t)) {
+        if (t.startsWith("hotel")) entity.hotel = true;
+        if (t.startsWith("place")) entity.place = true;
+        if (t.startsWith("restaurant")) entity.restaurant = true;
+        if (t.startsWith("travel")) entity.travel = true;
+        return false;
+      }
+      return !STOP_WORDS.has(t);
+    })
+    .join(" ")
+    .trim();
+
+  const isGeneral =
+    !entity.hotel && !entity.place && !entity.restaurant && !entity.travel;
+
+  return { entity, isGeneral, cityTokens };
+};
+
+/**
+ * Fuzzy city lookup: exact → starts-with → contains.
+ */
+const findCity = async (keyword) => {
+  if (!keyword) return null;
+
+  // 1. Exact match
+  let city = await City.findOne({
+    name: new RegExp(`^${keyword}$`, "i"),
+    status: "active",
+  });
+  if (city) return city;
+
+  // 2. Starts-with (handles "Del" → "Delhi")
+  city = await City.findOne({
+    name: new RegExp(`^${keyword}`, "i"),
+    status: "active",
+  });
+  if (city) return city;
+
+  // 3. Contains (handles partial mid-word matches)
+  city = await City.findOne({
+    name: new RegExp(keyword, "i"),
+    status: "active",
+  });
+  return city ?? null;
+};
+
+// Fields to select on Hotel so the map has coordinates + amenity flags
+const HOTEL_SELECT =
+  "name slug image price stars rating locality address lat lng " +
+  "breakfastIncluded wifi freeParking pool isRushDeal isLastMinute city";
+
+/* ── main export ─────────────────────────────────────── */
+
 export const smartSearch = async (req, res) => {
   try {
-    const q = req.query.q?.toLowerCase().trim();
-    if (!q) {
-      return res.status(400).json({
-        success: false,
-        message: "Query parameter is required",
-      });
+    const rawQuery = req.query.q?.trim() ?? "";
+
+    if (!rawQuery) {
+      return res.status(400).json({ success: false, message: "Query parameter 'q' is required." });
     }
 
-    const words = q.split(" ");
+    const { entity, isGeneral, cityTokens } = parseQuery(rawQuery);
 
-    const isHotelSearch = words.includes("hotel") || words.includes("hotels");
-    const isPlaceSearch = words.includes("place") || words.includes("places");
-    const isRestaurantSearch = words.includes("restaurant") || words.includes("restaurants");
-    const isTravelSearch = words.includes("travel") || words.includes("travels");
-
-    // remove search keywords
-    const filteredWords = words.filter(
-      (w) => !["hotel", "hotels", "place", "places", "restaurant", "restaurants", "travel", "travels"].includes(w)
-    );
-
-    const cityKeyword = filteredWords[0];
-
-    if (!cityKeyword) {
-      return res.json({
-        success: true,
-        city: null,
-        hotels: [],
-        places: [],
-        restaurants: [],
-        travels: [],
-      });
+    if (!cityTokens) {
+      return res.json({ success: true, city: null, hotels: [], places: [], restaurants: [], travels: [] });
     }
 
-    const city = await City.findOne({
-      name: new RegExp(`^${cityKeyword}$`, "i"),
-      status: "active",
-    });
+    const city = await findCity(cityTokens);
 
     if (!city) {
-      return res.json({
-        success: true,
-        city: null,
-        hotels: [],
-        places: [],
-        restaurants: [],
-        travels: [],
-      });
+      return res.json({ success: true, city: null, hotels: [], places: [], restaurants: [], travels: [] });
     }
 
-    let hotels = [];
-    let places = [];
-    let restaurants = [];
-    let travels = [];
+    const [hotels, places, restaurants, travels] = await Promise.all([
+      entity.hotel || isGeneral
+        ? Hotel.find({ city: city._id, status: "active" })
+          .select(HOTEL_SELECT).populate("city", "name").sort({ rating: -1, price: 1 }).lean()
+        : [],
 
-    const isGeneralSearch = !isHotelSearch && !isPlaceSearch && !isRestaurantSearch && !isTravelSearch;
+      entity.place || isGeneral
+        ? Place.find({ city: city._id, status: "active" })
+          .populate("city", "name").sort({ rating: -1 }).lean()
+        : [],
 
-    if (isHotelSearch || isGeneralSearch) {
-      hotels = await Hotel.find({
-        city: city._id,
-        status: "active",
-      }).populate("city", "name");
-    }
+      entity.restaurant || isGeneral
+        ? Restaurant.find({ city: city._id, status: "active" })
+          .populate("city", "name").sort({ rating: -1 }).lean()
+        : [],
 
-    if (isPlaceSearch || isGeneralSearch) {
-      places = await Place.find({
-        city: city._id,
-        status: "active",
-      }).populate("city", "name");
-    }
+      entity.travel || isGeneral
+        ? TravelOption.find({ $or: [{ fromCity: city._id }, { toCity: city._id }], status: "active" })
+          .populate("fromCity toCity", "name").sort({ price: 1 }).lean()
+        : [],
+    ]);
 
-    if (isRestaurantSearch || isGeneralSearch) {
-      restaurants = await Restaurant.find({
-        city: city._id,
-        status: "active",
-      }).populate("city", "name");
-    }
+    return res.json({ success: true, city, hotels, places, restaurants, travels });
 
-    if (isTravelSearch || isGeneralSearch) {
-      travels = await TravelOption.find({
-        $or: [{ fromCity: city._id }, { toCity: city._id }],
-        status: "active",
-      }).populate("fromCity toCity", "name");
-    }
-
-    return res.json({
-      success: true,
-      city,
-      hotels,
-      places,
-      restaurants,
-      travels,
-    });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 export const getAllAdmins = async (req, res) => {
   try {

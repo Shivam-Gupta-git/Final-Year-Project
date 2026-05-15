@@ -72,8 +72,8 @@ function RestaurantLandingPage() {
   const citiesRaw = cityState?.cities;
 
   const cities = useMemo(
-    () => (Array.isArray(citiesRaw) ? citiesRaw : citiesRaw?.data ?? []),
-    [citiesRaw]
+    () => (Array.isArray(citiesRaw) ? citiesRaw : (citiesRaw?.data ?? [])),
+    [citiesRaw],
   );
 
   const [city, setCity] = useState("");
@@ -132,11 +132,7 @@ function RestaurantLandingPage() {
       const cuisine = r?.foodType?.toLowerCase?.() ?? "";
       const cname = r?.city?.name?.toLowerCase?.() ?? "";
 
-      return (
-        name.includes(q) ||
-        cuisine.includes(q) ||
-        cname.includes(q)
-      );
+      return name.includes(q) || cuisine.includes(q) || cname.includes(q);
     });
   }, [restaurants, isNearbyMode, searchInput]);
 
@@ -187,7 +183,7 @@ function RestaurantLandingPage() {
             updateUserLocation({
               latitude: lat,
               longitude: lng,
-            })
+            }),
           ).unwrap();
         } catch {
           // ignore
@@ -198,7 +194,7 @@ function RestaurantLandingPage() {
             lat,
             lng,
             radius: distanceKm,
-          })
+          }),
         );
 
         setGeoLoading(false);
@@ -213,7 +209,7 @@ function RestaurantLandingPage() {
         enableHighAccuracy: true,
         timeout: 12000,
         maximumAge: 0,
-      }
+      },
     );
   }, [dispatch, user, navigate, distanceKm]);
 
@@ -231,10 +227,7 @@ function RestaurantLandingPage() {
 
       setDistanceKm(next);
 
-      if (
-        isNearbyMode &&
-        navigator.geolocation
-      ) {
+      if (isNearbyMode && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             dispatch(
@@ -242,17 +235,17 @@ function RestaurantLandingPage() {
                 lat: pos.coords.latitude,
                 lng: pos.coords.longitude,
                 radius: next,
-              })
+              }),
             );
           },
           () => {},
           {
             enableHighAccuracy: true,
-          }
+          },
         );
       }
     },
-    [distanceKm, dispatch, isNearbyMode]
+    [distanceKm, dispatch, isNearbyMode],
   );
 
   // ---------------- CLEAR NEARBY ----------------
@@ -272,7 +265,7 @@ function RestaurantLandingPage() {
 
       navigate(`/restaurant/${id}`);
     },
-    [navigate]
+    [navigate],
   );
 
   const handleViewMenu = useCallback(
@@ -281,17 +274,14 @@ function RestaurantLandingPage() {
 
       navigate(`/restaurant/${id}/menu`);
     },
-    [navigate]
+    [navigate],
   );
 
-  const showEmpty =
-    !loading &&
-    !geoLoading &&
-    displayRestaurants.length === 0;
+  const showEmpty = !loading && !geoLoading && displayRestaurants.length === 0;
 
   return (
     <motion.div
-      className="relative min-h-screen bg-linear-to-b from-[#fffdfb] via-[#faf5ef] to-[#f5ebe0]"
+      className="relative min-h-screen bg-[linear-gradient(145deg,#eef3fb_0%,#e8f0f9_40%,#dfe9f5_70%,#d8e4f2_100%)]"
       variants={pageVariants}
       initial="initial"
       animate="animate"
@@ -305,230 +295,159 @@ function RestaurantLandingPage() {
 
       {/* ================= HEADER ================= */}
 
-      <header className="sticky top-17 lg:top-3 z-50 mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-        <div
-          className={`
-            rounded-3xl border border-white/60
-            bg-white/70 backdrop-blur-2xl
-            shadow-[0_20px_60px_rgba(186,140,102,0.12)]
-            transition-all duration-300
-            ${
-              isScrolled
-                ? "px-3 py-3 sm:px-6 sm:py-4"
-                : "px-5 py-6 sm:px-10 sm:py-8"
-            }
-          `}
-        >
-          {/* TOP SECTION */}
-
+      <header className="sticky top-0 z-50 w-full">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 pt-2 pb-2">
           <div
             className={`
-              overflow-hidden transition-all duration-300
-              ${
-                isScrolled
-                  ? "max-h-0 opacity-0 sm:max-h-full sm:opacity-100"
-                  : "max-h-75 opacity-100"
-              }
-            `}
+        rounded-2xl border border-white/60
+        bg-white/80 backdrop-blur-2xl
+        shadow-[0_8px_32px_rgba(186,140,102,0.10)]
+        transition-all duration-300 ease-in-out
+        ${isScrolled ? "px-4 py-3" : "px-5 py-4 sm:px-8 sm:py-5"}
+      `}
           >
-            <div className="mb-4 sm:mb-6">
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-[#c67c4e]">
-                Premium Selection
-              </p>
-
-              <h1 className="mt-2 text-2xl sm:text-5xl lg:text-4xl font-black tracking-tight text-[#2d1f16]">
-                <span className="bg-linear-to-r from-[#c67c4e] via-[#b86c3d] to-[#9f5b31] bg-clip-text text-transparent">
-                  Restaurants
-                </span>{" "}
-                near you
-              </h1>
-
-              <p className="mt-3 sm:mt-4 max-w-lg text-sm sm:text-base font-medium leading-relaxed text-[#6f5a4b]">
-                Discover curated flavours and premium menus.
-                Elegant dining experience with fast discovery.
-              </p>
-            </div>
-          </div>
-
-          {/* SEARCH + LOCATION */}
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {/* SEARCH */}
-
-            <div className="relative flex-1 group">
-              <MagnifyingGlassIcon className="absolute left-4 sm:left-5 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-[#a07d63]" />
-
-              <input
-                type="search"
-                placeholder="Find your favorite cuisine..."
-                value={searchInput}
-                onChange={(e) =>
-                  setSearchInput(e.target.value)
-                }
-                className="
-                  ui-input w-full
-                  rounded-[18px]!
-                  py-3! sm:py-5!
-                  pl-12! sm:pl-14!
-                  pr-12!
-                  text-sm sm:text-base
-                  shadow-sm!
-                  transition-all
-                  hover:border-[#c67c4e]/30
-                "
-              />
-
-              {searchInput && (
-                <button
-                  onClick={() => setSearchInput("")}
-                  className="
-                    absolute right-4 top-1/2
-                    -translate-y-1/2
-                    text-[#9c7d66]
-                    hover:text-[#2d1f16]
-                    transition
-                  "
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-
-            {/* LOCATION BUTTON */}
-
-            <motion.button
-              type="button"
-              onClick={handleDetectLocation}
-              disabled={geoLoading}
-              className="
-                ui-btn-primary
-                flex items-center justify-center gap-2
-                rounded-2xl
-                px-5 py-3.5
-                text-sm sm:text-base
-                shadow-lg
-                disabled:opacity-70
-              "
-              whileHover={{
-                scale: geoLoading ? 1 : 1.02,
-              }}
-              whileTap={{
-                scale: geoLoading ? 1 : 0.98,
-              }}
+            {/* COLLAPSED HERO — only shown when NOT scrolled */}
+            <div
+              className={`
+          grid transition-all duration-300 ease-in-out
+          ${
+            isScrolled
+              ? "grid-rows-[0fr] opacity-0 mb-0"
+              : "grid-rows-[1fr] opacity-100 mb-4"
+          }
+        `}
             >
-              {geoLoading ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : (
-                <MapPinIcon className="h-5 w-5" />
-              )}
-
-              <span className="hidden sm:inline">
-                Use my location
-              </span>
-            </motion.button>
-          </div>
-
-          {/* NEARBY BADGE */}
-
-          <AnimatePresence>
-            {isNearbyMode && (
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: -6,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  y: -6,
-                }}
-                className="
-                  mt-4
-                  flex flex-wrap items-center gap-3
-                  rounded-2xl
-                  border border-[#22c55e]/10
-                  bg-[#e6f4ea]
-                  px-4 py-3
-                  text-[#22c55e]
-                  shadow-sm
-                "
-              >
-                <div className="flex items-center gap-2">
-                  <SignalIcon className="h-4 w-4" />
-
-                  <span className="text-[11px] sm:text-xs font-bold">
-                    Showing nearby restaurants
-                  </span>
+              <div className="overflow-hidden">
+                <div className="pb-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#5b6f8f]">
+                    Premium Selection
+                  </p>
+                  <h1 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-[#2d1f16] leading-tight">
+                    <span className="bg-linear-to-r from-[#6b84a7] via-[#5b6f8f] to-[#445a78] bg-clip-text text-transparent">
+                      Restaurants
+                    </span>{" "}
+                    near you
+                  </h1>
+                  <p className="mt-1.5 max-w-lg text-xs sm:text-sm font-medium leading-relaxed text-[#6f5a4b]">
+                    Discover curated flavours and premium menus.
+                  </p>
                 </div>
+              </div>
+            </div>
 
-                {/* DISTANCE CONTROL */}
-
-                <div className="flex items-center gap-2 rounded-xl bg-white/80 px-2 py-1 shadow-sm">
-                  <button
-                    onClick={() =>
-                      handleDistanceChange("dec")
-                    }
-                    className="
-                      flex h-7 w-7 items-center justify-center
-                      rounded-lg
-                      bg-white
-                      text-[#22c55e]
-                      transition
-                      hover:bg-[#22c55e]
-                      hover:text-white
-                    "
-                  >
-                    <MinusIcon className="h-3.5 w-3.5" />
-                  </button>
-
-                  <span className="min-w-16 text-center text-[11px] font-black">
-                    {distanceKm} km
-                  </span>
-
-                  <button
-                    onClick={() =>
-                      handleDistanceChange("inc")
-                    }
-                    className="
-                      flex h-7 w-7 items-center justify-center
-                      rounded-lg
-                      bg-white
-                      text-[#22c55e]
-                      transition
-                      hover:bg-[#22c55e]
-                      hover:text-white
-                    "
-                  >
-                    <PlusIcon className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-
-                {/* CLEAR */}
-
-                <button
-                  onClick={handleClearNearby}
+            {/* SEARCH + LOCATION — always visible */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="relative flex-1 group">
+                <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a07d63] pointer-events-none" />
+                <input
+                  type="search"
+                  placeholder="Find your favorite cuisine..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="
-                    ml-auto
-                    rounded-xl
-                    border border-[#22c55e]/20
-                    bg-white/80
-                    px-3 py-1.5
-                    text-[10px]
-                    font-black uppercase tracking-wider
-                    text-[#22c55e]
-                    transition
-                    hover:bg-[#22c55e]
-                    hover:text-white
-                  "
+              w-full rounded-xl border border-[#e8d8cc]/60
+              bg-[#faf7f4] py-2.5 pl-10 pr-9
+              text-sm text-[#2d1f16] placeholder:text-[#b09a8a]
+              outline-none ring-0
+              transition-all duration-200
+              hover:border-[#c67c4e]/30
+              focus:border-[#c67c4e]/50 focus:bg-white focus:shadow-sm
+            "
+                />
+                {searchInput && (
+                  <button
+                    onClick={() => setSearchInput("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9c7d66] hover:text-[#2d1f16] transition"
+                  >
+                    <XMarkIcon className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <motion.button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={geoLoading}
+                whileHover={{ scale: geoLoading ? 1 : 1.02 }}
+                whileTap={{ scale: geoLoading ? 1 : 0.98 }}
+                className="
+            flex shrink-0 items-center justify-center gap-1.5
+            rounded-xl bg-linear-to-br from-[#6b84a7] to-[#445a78]
+            px-4 py-2.5 text-sm font-semibold text-white
+            shadow-md shadow-[#445a78]/20
+            transition-all duration-200
+            hover:shadow-lg hover:shadow-[#445a78]/30
+            disabled:opacity-70
+          "
+              >
+                {geoLoading ? (
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : (
+                  <MapPinIcon className="h-4 w-4" />
+                )}
+                <span className="hidden sm:inline whitespace-nowrap">
+                  Use my location
+                </span>
+              </motion.button>
+            </div>
+
+            {/* NEARBY BADGE */}
+            <AnimatePresence>
+              {isNearbyMode && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                  animate={{ opacity: 1, height: "auto", marginTop: 10 }}
+                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
                 >
-                  Clear
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <div
+                    className="
+              flex flex-wrap items-center gap-2
+              rounded-xl border border-[#22c55e]/15
+              bg-[#f0faf2] px-3 py-2 text-[#16a34a]
+            "
+                  >
+                    <SignalIcon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="text-[11px] font-bold">
+                      Nearby restaurants
+                    </span>
+
+                    {/* DISTANCE CONTROL */}
+                    <div className="flex items-center gap-1 rounded-lg bg-white/80 px-1.5 py-0.5 shadow-sm ml-1">
+                      <button
+                        onClick={() => handleDistanceChange("dec")}
+                        className="flex h-6 w-6 items-center justify-center rounded-md text-[#16a34a] transition hover:bg-[#22c55e] hover:text-white"
+                      >
+                        <MinusIcon className="h-3 w-3" />
+                      </button>
+                      <span className="min-w-12 text-center text-[11px] font-black tabular-nums">
+                        {distanceKm} km
+                      </span>
+                      <button
+                        onClick={() => handleDistanceChange("inc")}
+                        className="flex h-6 w-6 items-center justify-center rounded-md text-[#16a34a] transition hover:bg-[#22c55e] hover:text-white"
+                      >
+                        <PlusIcon className="h-3 w-3" />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={handleClearNearby}
+                      className="
+                  ml-auto rounded-lg border border-[#22c55e]/20
+                  bg-white/80 px-2.5 py-1 text-[10px]
+                  font-black uppercase tracking-wider text-[#16a34a]
+                  transition hover:bg-[#22c55e] hover:text-white
+                "
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 
@@ -590,8 +509,7 @@ function RestaurantLandingPage() {
               {cities.map((c) => {
                 const name = c?.name ?? "";
 
-                const active =
-                  !isNearbyMode && city === name;
+                const active = !isNearbyMode && city === name;
 
                 return (
                   <motion.button
@@ -615,16 +533,10 @@ function RestaurantLandingPage() {
                     <span
                       className={`
                         text-[10px] font-black uppercase tracking-[0.15em]
-                        ${
-                          active
-                            ? "text-white/70"
-                            : "text-[#a07d63]"
-                        }
+                        ${active ? "text-white/70" : "text-[#a07d63]"}
                       `}
                     >
-                      {active
-                        ? "Current"
-                        : "Location"}
+                      {active ? "Current" : "Location"}
                     </span>
 
                     <span className="mt-1 block text-base font-black truncate">
@@ -667,9 +579,7 @@ function RestaurantLandingPage() {
                   bg-red-50 px-4 py-3 text-sm text-red-800
                 "
               >
-                {typeof error === "string"
-                  ? error
-                  : "Something went wrong."}
+                {typeof error === "string" ? error : "Something went wrong."}
               </motion.p>
             )}
           </AnimatePresence>
@@ -683,8 +593,7 @@ function RestaurantLandingPage() {
                 bg-amber-50 px-4 py-3 text-sm text-amber-900
               "
             >
-              Location permission is off. Enable it to
-              see nearby restaurants.
+              Location permission is off. Enable it to see nearby restaurants.
             </p>
           )}
 
@@ -692,8 +601,7 @@ function RestaurantLandingPage() {
 
           <div className="relative min-h-50">
             <AnimatePresence mode="wait">
-              {(loading || geoLoading) &&
-              !restaurants?.length ? (
+              {(loading || geoLoading) && !restaurants?.length ? (
                 <motion.div
                   key="sk"
                   initial={{ opacity: 0 }}
@@ -726,8 +634,8 @@ function RestaurantLandingPage() {
                   </p>
 
                   <p className="mt-2 max-w-md text-sm font-medium text-[#6b6b6b]">
-                    Try another city or use your
-                    location to discover nearby places.
+                    Try another city or use your location to discover nearby
+                    places.
                   </p>
 
                   <motion.button
@@ -755,11 +663,7 @@ function RestaurantLandingPage() {
                     sm:grid-cols-2
                     lg:grid-cols-3
                     xl:grid-cols-4
-                    ${
-                      loading
-                        ? "opacity-70"
-                        : "opacity-100"
-                    }
+                    ${loading ? "opacity-70" : "opacity-100"}
                   `}
                 >
                   {displayRestaurants.map((r, i) => (
@@ -767,9 +671,7 @@ function RestaurantLandingPage() {
                       key={r?._id ?? i}
                       restaurant={r}
                       index={i}
-                      onOpenRestaurant={
-                        handleOpenRestaurant
-                      }
+                      onOpenRestaurant={handleOpenRestaurant}
                       onViewMenu={handleViewMenu}
                     />
                   ))}
@@ -777,19 +679,18 @@ function RestaurantLandingPage() {
               )}
             </AnimatePresence>
 
-            {(loading || geoLoading) &&
-              restaurants?.length > 0 && (
-                <div
-                  className="
+            {(loading || geoLoading) && restaurants?.length > 0 && (
+              <div
+                className="
                     pointer-events-none absolute inset-0
                     flex items-start justify-center
                     rounded-3xl bg-[#faf7f2]/20
                     pt-24 backdrop-blur-[2px]
                   "
-                >
-                  <span className="h-10 w-10 animate-spin rounded-full border-2 border-[#c67c4e]/30 border-t-[#c67c4e]" />
-                </div>
-              )}
+              >
+                <span className="h-10 w-10 animate-spin rounded-full border-2 border-[#c67c4e]/30 border-t-[#c67c4e]" />
+              </div>
+            )}
           </div>
         </section>
       </main>
