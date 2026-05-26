@@ -331,8 +331,14 @@ function AddRestaurantDetails() {
                 <option className="bg-white" value="10:00">
                   10:00 AM
                 </option>
+                <option className="bg-white" value="06:00">
+                  06:00 PM
+                </option>
                 <option className="bg-white" value="12:00">
                   12:00 PM
+                </option>
+                <option className="bg-white" value="11:00">
+                  11:00 PM
                 </option>
               </select>
             </div>
