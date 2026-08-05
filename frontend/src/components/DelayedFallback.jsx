@@ -1,7 +1,6 @@
 // DelayedFallback.jsx
 import { useEffect, useState } from "react";
-import HeroSectionSkeleton from "./HeroSectionSkeleton";
-
+import PageSkeleton from "./PageSkeleton";
 
 export default function DelayedFallback() {
   const [show, setShow] = useState(false);
@@ -9,10 +8,10 @@ export default function DelayedFallback() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShow(true);
-    }, 240); // wait 240ms before showing loader
+    }, 150);
 
     return () => clearTimeout(timer);
   }, []);
 
-  return show ? <HeroSectionSkeleton/> : null;
+  return show ? <PageSkeleton /> : null;
 }

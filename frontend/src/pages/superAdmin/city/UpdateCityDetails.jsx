@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getCityById, updateCity } from "../../../features/user/citySlice";
 import { useNavigate, useParams } from "react-router-dom";
@@ -33,8 +33,11 @@ function UpdateCityDetails() {
     if (cityId) dispatch(getCityById(cityId));
   }, [cityId, dispatch]);
 
+  const loadedCityIdRef = useRef(null);
+
   useEffect(() => {
-    if (city) {
+    if (city && city._id !== loadedCityIdRef.current) {
+      loadedCityIdRef.current = city._id;
       setFormData({
         name: city.name || "",
         state: city.state || "",

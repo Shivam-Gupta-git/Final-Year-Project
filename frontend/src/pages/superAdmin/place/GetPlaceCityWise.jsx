@@ -21,15 +21,10 @@ function GetPlaceCityWise() {
     dispatch(getPlacesCityWise());
   }, [dispatch]);
 
-  // Set default city
-  useEffect(() => {
-    if (cityWisePlaces.length > 0 && !selectedCityId) {
-      setSelectedCityId(cityWisePlaces[0]._id);
-    }
-  }, [cityWisePlaces, selectedCityId]);
+  const activeCityId = selectedCityId || (cityWisePlaces.length > 0 ? cityWisePlaces[0]._id : null);
 
   const selectedCity = cityWisePlaces.find(
-    (city) => city._id === selectedCityId
+    (city) => city._id === activeCityId
   );
 
   // Filtered places based on search

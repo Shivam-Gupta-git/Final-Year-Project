@@ -66,42 +66,53 @@ export default function HeroSection() {
     setFormData({ ...formData, [name]: value });
   };
 
+  const [errorMsg, setErrorMsg] = useState("");
+
   const handleSearch = () => {
-    if (!formData.city?.trim()) return alert("Please enter city");
+    setErrorMsg("");
+    if (!formData.city?.trim()) {
+      setErrorMsg("Please enter a city or destination name.");
+      return;
+    }
 
-    if (!formData.checkIn || !formData.checkOut) {
-    alert("Please select both dates");
-    return;
-  }
+    if (activeTab === "hotels") {
+      if (!formData.checkIn || !formData.checkOut) {
+        setErrorMsg("Please select check-in and check-out dates for hotel search.");
+        return;
+      }
 
-  if (new Date(formData.checkOut) <= new Date(formData.checkIn)) {
-    alert("Check-out date must be after check-in date");
-    return;
-  }
+      if (new Date(formData.checkOut) <= new Date(formData.checkIn)) {
+        setErrorMsg("Check-out date must be after check-in date.");
+        return;
+      }
+    }
 
     let query = "",
       route = "";
     if (activeTab === "hotels") {
       query = `${formData.city.trim()} hotels`;
-      route = `/hotels?city=${encodeURIComponent(formData.city.trim())}`;
+      route = `/hotels?city=${encodeURIComponent(formData.city.trim())}&checkIn=${formData.checkIn}&checkOut=${formData.checkOut}`;
     } else if (activeTab === "places") {
       query = `${formData.city.trim()} places`;
       route = `/places?city=${encodeURIComponent(formData.city.trim())}`;
     } else if (activeTab === "cities") {
       query = formData.city.trim();
-      route = `/explore`; // Assume cities go to explore or city listing, there is no /cities route
+      route = `/explore?city=${encodeURIComponent(formData.city.trim())}`;
     } else if (activeTab === "restaurants") {
       query = `${formData.city.trim()} restaurants`;
       route = `/RestaurantLandingPage?city=${encodeURIComponent(formData.city.trim())}`;
     } else {
       query = formData.city.trim();
-      route = `/explore`; // Fallback since travel route is not defined
+      route = `/explore`;
     }
 
     dispatch(smartSearch(query))
       .unwrap()
       .then(() => navigate(route))
-      .catch((err) => console.error("API ERROR:", err));
+      .catch((err) => {
+        console.error("API ERROR:", err);
+        navigate(route);
+      });
   };
 
   const handleTabClick = (key) => {
@@ -193,7 +204,14 @@ export default function HeroSection() {
           </div>
 
           {/* Search Card */}
-          <div className="mt-6 sm:mt-8 md:mt-10 bg-white/50 p-3 sm:p-5 md:p-8 rounded-2xl shadow-lg flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end">
+          <div className="mt-6 sm:mt-8 md:mt-10 bg-white/70 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-3xl shadow-xl flex flex-col gap-4 border border-white/60">
+            {errorMsg && (
+              <div className="w-full bg-rose-50 border border-rose-200 text-rose-700 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2 animate-fadeIn">
+                <span>⚠️</span>
+                <span>{errorMsg}</span>
+              </div>
+            )}
+            <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end">
             {/* Destination */}
             <div className="flex flex-col gap-1.5 sm:gap-2 w-full md:flex-1">
               <span className="text-[9px] sm:text-xs font-semibold uppercase text-gray-900 tracking-wide">
@@ -203,39 +221,42 @@ export default function HeroSection() {
                 <input
                   type="text"
                   name="city"
-                  placeholder="City or destination"
+                  placeholder="City or destination (e.g., Jaipur, Goa)"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-700 px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base pl-9 sm:pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  className="w-full rounded-xl border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition shadow-inner"
                 />
               </div>
             </div>
 
             {/* Check-in */}
             <div className="flex flex-col gap-1.5 sm:gap-2 w-full md:flex-1">
-              <span className="text-[9px] sm:text-xs font-semibold uppercase text-gray-900 tracking-wide">
+              <span className="text-[9px] sm:text-xs font-semibold uppercase text-gray-900 tracking-wide flex items-center justify-between">
                 Check-in
+                {activeTab !== "hotels" && <span className="text-[10px] text-gray-400 font-normal lowercase">(optional)</span>}
               </span>
               <input
                 type="date"
                 name="checkIn"
                 value={formData.checkIn}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-gray-700 px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                className="w-full rounded-xl border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
               />
             </div>
 
             {/* Check-out */}
             <div className="flex flex-col gap-1.5 sm:gap-2 w-full md:flex-1">
-              <span className="text-[9px] sm:text-xs font-semibold uppercase text-gray-900 tracking-wide">
+              <span className="text-[9px] sm:text-xs font-semibold uppercase text-gray-900 tracking-wide flex items-center justify-between">
                 Check-out
+                {activeTab !== "hotels" && <span className="text-[10px] text-gray-400 font-normal lowercase">(optional)</span>}
               </span>
               <input
                 type="date"
                 name="checkOut"
                 value={formData.checkOut}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-gray-700 px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                className="w-full rounded-xl border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
               />
             </div>
 
@@ -243,10 +264,11 @@ export default function HeroSection() {
             <div className="w-full md:w-auto">
               <button
                 onClick={handleSearch}
-                className="w-full md:w-auto bg-linear-to-br from-[#c67c4e] to-[#b86c3d] text-white px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 rounded-xl text-xs sm:text-sm md:text-base font-semibold flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:scale-[1.03] hover:shadow-xl active:scale-[0.97]"
+                className="w-full md:w-auto bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-700 hover:to-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 md:py-3.5 rounded-xl text-xs sm:text-sm md:text-base font-bold flex items-center justify-center gap-2 shadow-lg hover:shadow-amber-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
-                Search
+                <span>Search</span>
               </button>
+            </div>
             </div>
           </div>
 

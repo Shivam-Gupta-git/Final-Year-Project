@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchNearbyPlaces } from "../../features/user/placeSlice";
+import { smartSearch } from "../../features/user/searchSlice";
 import PlaceHeader from "../../components/Place/PlaceHeader";
 import PlaceFilters from "../../components/Place/PlaceFilters";
 import PlaceSummary from "../../components/Place/PlaceSummary";
@@ -67,6 +68,12 @@ const PlacePage = ({ cityId }) => {
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
     );
   };
+
+  useEffect(() => {
+    if (cityParam && searchPlaces.length === 0) {
+      dispatch(smartSearch(`${cityParam} places`));
+    }
+  }, [cityParam, searchPlaces.length, dispatch]);
 
   useEffect(() => {
     requestUserLocation();

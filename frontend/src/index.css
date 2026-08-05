@@ -15,6 +15,18 @@
   --text-main: #2d1f16;
   --text-desc: #6f5a4b;
   --text-muted: #a07d63;
+
+  /* Semantic status colors */
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-error: #ef4444;
+  --status-info: #3b82f6;
+}
+
+/* Accessibility focus-visible styles */
+*:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
 }
 
 .ui-container {

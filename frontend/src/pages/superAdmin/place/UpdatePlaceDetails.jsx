@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useNavigate, useParams } from "react-router-dom";
@@ -33,9 +33,11 @@ function UpdatePlaceDetails() {
     dispatch(getActivePlacesCityWise());
   }, [dispatch]);
 
+  const loadedPlaceIdRef = useRef(null);
+
   /* 🔥 Find Place */
   useEffect(() => {
-    if (cityWisePlaces.length > 0) {
+    if (cityWisePlaces.length > 0 && loadedPlaceIdRef.current !== id) {
       let found;
 
       for (let city of cityWisePlaces) {
@@ -44,6 +46,7 @@ function UpdatePlaceDetails() {
       }
 
       if (found) {
+        loadedPlaceIdRef.current = id;
         setFormData({
           name: found.name || "",
           description: found.description || "",
