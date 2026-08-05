@@ -37,7 +37,7 @@ export const register = createAsyncThunk("auth/register", async (data, thunkAPI)
 /* --------------- verifyEmail ------------------- */
 export const verifyEmail = createAsyncThunk("auth/verifyEmail", async (token, thunkAPI) => {
   try {
-    const response = await axios.post("http://localhost:3000/api/user/user-verification", null, {
+    const response = await apiClient.post("/api/user/user-verification", null, {
       headers: {
         Authorization: `Bearer ${token}`
       }

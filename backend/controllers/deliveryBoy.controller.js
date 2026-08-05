@@ -214,7 +214,7 @@ export const acceptOrder = async (req, res) => {
   try {  
     const userId = req.user._id;
     const orderId = req.params.id;
-    const deliveryBoy = await DeliveryBoy.findOne(userId);
+    const deliveryBoy = await DeliveryBoy.findOne({ user: userId });
     console.log("deliveryBoy", deliveryBoy);
 
     if (!deliveryBoy) {
@@ -269,7 +269,7 @@ export const pickupOrder = async (req, res) => {
     const userId = req.user._id;
     const orderId = req.params.id;
 
-    const deliveryBoy = await DeliveryBoy.findOne({ userId });
+    const deliveryBoy = await DeliveryBoy.findOne({ user: userId });
 
     if (!deliveryBoy) {
       return res.status(404).json({
@@ -451,9 +451,9 @@ export const deliverOrder = async (req, res) => {
 export const getOrderForTracking = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const order = await Order.findById(orderId)
+    const order = await FoodOrder.findById(orderId)
       .populate("deliveryBoy", "name phone location")
-      .populate("user", "name phone");
+      .populate("user", "userName contactNumber");
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 

@@ -99,6 +99,7 @@ adminRouter.patch("/city/:id/approve", isAuthenticated, authorize("super_admin")
 adminRouter.patch("/hotel/:id/approve", isAuthenticated, authorize("super_admin"), approveHotel)
 adminRouter.patch("/place/:id/approve", isAuthenticated, authorize("super_admin"), approvePlace)
 adminRouter.patch("/resturant/:id/approve", isAuthenticated , authorize("super_admin"), approveResturant)
+adminRouter.patch("/restaurant/:id/approve", isAuthenticated , authorize("super_admin"), approveResturant)
 adminRouter.patch("/travel-options/:id/approve", isAuthenticated, authorize("super_admin"), approveTravelOptions)
 adminRouter.patch("/review/:id/approve" , isAuthenticated , authorize("super_admin"), approveReview)
 
@@ -107,6 +108,7 @@ adminRouter.patch("/city/:id/reject", isAuthenticated, authorize("super_admin"),
 adminRouter.patch("/hotel/:id/reject", isAuthenticated, authorize("super_admin"), rejectHotel)
 adminRouter.patch("/place/:id/reject", isAuthenticated , authorize("super_admin"), rejectPlace)
 adminRouter.patch("/resturant/:id/reject", isAuthenticated, authorize("super_admin"), rejectResturant)
+adminRouter.patch("/restaurant/:id/reject", isAuthenticated, authorize("super_admin"), rejectResturant)
 adminRouter.patch("/travel-options/:id/reject", isAuthenticated, authorize("super_admin"), rejectTravelOption)
 adminRouter.patch("/review/:id/reject", isAuthenticated, authorize("super_admin"), rejectReview)
 

@@ -99,7 +99,7 @@ export const getReviewsByTarget = async (req, res) => {
       targetId,
       status: "active",
     })
-      .populate("user", "name")
+      .populate("user", "userName avatar")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -127,7 +127,7 @@ const updateTargetRating = async (targetId, targetType) => {
     {
       $match: {
         targetId: new mongoose.Types.ObjectId(targetId),
-        status: "approved",
+        status: "active",
       },
     },
     {
@@ -142,10 +142,12 @@ const updateTargetRating = async (targetId, targetType) => {
   const avgRating = stats[0]?.avgRating || 0;
   const totalReviews = stats[0]?.total || 0;
 
-  await TargetModel.findByIdAndUpdate(targetId, {
-    averagerating: avgRating,
-    totalReviews,
-  });
+  if (TargetModel) {
+    await TargetModel.findByIdAndUpdate(targetId, {
+      averageRating: avgRating,
+      totalReviews,
+    });
+  }
 };
 
 export const approveReview = async (req, res) => {

@@ -598,7 +598,7 @@ export const acceptOrder = async (req, res) => {
       return res.status(400).json({ message: `Order already ${order.status}` });
 
     // Optional: fetch restaurant info from admin or restaurant model
-    const restaurant = await Restaurant.findOne({ admin: adminId });
+    const restaurant = await Restaurant.findOne({ owner: adminId });
     if (!restaurant)
       return res
         .status(400)
